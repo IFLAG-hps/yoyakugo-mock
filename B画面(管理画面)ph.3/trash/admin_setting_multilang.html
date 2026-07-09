@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>基本設定｜管理画面モック</title>
+
+  <!-- Material Design Components CSS -->
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Material Design Components JavaScript -->
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <link href="./style.css" rel="stylesheet">
+  <style>
+    /* admin_setting.html専用のスタイル */
+    .search-form-label {
+      width: 200px !important;
+      min-width: 200px;
+    }
+
+    /* グループのトグルボタン */
+    .business-hours-toggle {
+      background: none;
+      border: none;
+      color: #6b7280;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 4px;
+      margin-left: 8px;
+      transition: transform 0.2s ease;
+    }
+
+    .business-hours-toggle:hover {
+      color: #1e90ff;
+    }
+
+    .business-hours-toggle.expanded {
+      transform: rotate(180deg);
+    }
+
+    /* グループヘッダー */
+    .mdc-business-hours-header {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      padding: 10px 0;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .mdc-calendar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+
+    /* 設定グループ */
+    .settings-group {
+      transition: max-height 0.3s ease;
+    }
+
+    /* 時間・分のセレクトボックス */
+    .time-select-hour {
+      width: 70px !important;
+      display: inline-block;
+    }
+
+    .time-select-minute {
+      width: 70px !important;
+      display: inline-block;
+    }
+
+    /* 日曜日のスタイル */
+    .mdc-calendar-day.sunday {
+      background-color: #ffe6e6 !important;
+      color: #d32f2f !important;
+    }
+
+    /* 土曜日のスタイル */
+    .mdc-calendar-day.saturday {
+      background-color: #e6f3ff !important;
+      color: #1565c0 !important;
+    }
+
+    /* 13日のスタイル */
+    .mdc-calendar-day.day-13 {
+      background-color: #ffe6e6 !important;
+      color: #d32f2f !important;
+    }
+
+    /* 13日かつ日曜日の場合は日曜日スタイルを優先 */
+    .mdc-calendar-day.day-13.sunday {
+      background-color: #ffe6e6 !important;
+      color: #d32f2f !important;
+    }
+
+    /* 13日かつ土曜日の場合は13日スタイルを優先 */
+    .mdc-calendar-day.day-13.saturday {
+      background-color: #ffe6e6 !important;
+      color: #d32f2f !important;
+    }
+
+    /* 日付セルを相対位置に */
+    .mdc-calendar-day {
+      position: relative;
+    }
+
+    /* トグルボタンのスタイル */
+    .day-toggle-button {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      z-index: 2;
+      transition: all 0.2s ease;
+    }
+
+    .day-toggle-button:hover {
+      background-color: #f0f0f0;
+      border-color: #999;
+    }
+
+    .day-toggle-button.closed {
+      background-color: #d32f2f;
+      border-color: #d32f2f;
+      color: white;
+    }
+
+    .day-toggle-button.closed::after {
+      content: '✕';
+    }
+
+    .day-toggle-button.open::after {
+      content: '○';
+    }
+
+
+    /* 営業カレンダーの横幅を親要素に合わせる */
+    .search-form-input .mdc-calendar {
+      width: 100%;
+      max-width: none;
+    }
+
+    /* 営業カレンダーのグリッドも親要素に合わせる */
+    .search-form-input .mdc-calendar .mdc-calendar-grid {
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+        <div>
+        <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+        <strong>管理者太郎</strong>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+          <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+          <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+          <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+          <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+          <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+          <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+          <a href="./admin_setting.html" data-target="settings" class="active">⚙ 基本設定</a>
+          <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+      </nav>
+      <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="main-section">
+
+            <div class="main-header">
+                <h2 class="main-title">🛠 基本設定</h2>
+            </div>
+
+            <div class="tab-list-container">
+                <div class="tab-list">
+<!--
+                    <button class="tab-button active" data-tab="tab-basic">基本情報</button>
+                    <button class="tab-button" data-tab="tab-web-reception">WEB受付設定</button>
+-->
+                </div>
+            </div>
+
+            <div class="tab-content-container">
+
+                <div class="tab-content active" id="tab-basic">
+                    <div class="setting-form-section">
+                    <form id="basicSettingsForm" name="basicSettingsForm" method="post">
+                        <div class="search-form-content">
+
+                            <!-- 基本設定グループ -->
+                            <div class="mdc-business-hours-header">
+                                <h3 class="mdc-calendar-title clickable" onclick="toggleBasicSettings()">
+                                    基本情報<button type="button" class="business-hours-toggle expanded" onclick="toggleBasicSettings(); event.stopPropagation();">▽</button>
+                                </h3>
+                            </div>
+
+                            <div class="search-form-grid-setting settings-group" id="basicSettingsGroup">
+                                <div class="search-form-row">
+                                    <div class="search-form-label">店舗・施設名<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="txtName" name="txtName" class="form-input" placeholder="店舗・施設名を入力してください" value="●●整骨院">
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">店舗・施設の説明</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="3" id="txStoreDescription" name="txStoreDescription" class="form-textarea-small" placeholder="店舗・施設の説明を入力してください（例：地域密着型の整骨院として、患者様一人ひとりに寄り添った治療を心がけています）"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">郵便番号<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="txtZip1" name="txtZip1" class="form-input form-zip" value="111" maxlength="3">
+                                     －
+                                        <input type="text" id="txtZip2" name="txtZip2" class="form-input form-zip" value="2222" maxlength="4">
+                                        <button type="button" id="btnZipSearch" class="search-btn">郵便番号から住所検索</button>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">都道府県<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <select name="selProv" id="selProv">
+                                            <option class="selProvIsBlank" value="" title="" style="overflow-x: hidden;"></option>
+                                            <optgroup label="関東">
+                                                <option class="selProv13" value="13" title="東京都" style="overflow-x: hidden;" selected>東京都</option>
+                                                </optgroup>
+                                            <optgroup label="沖縄">
+                                                <option class="selProv47" value="47" title="沖縄県" style="overflow-x: hidden;">沖縄県</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">市区郡<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="txtCity" name="txtCity" class="form-input" value="港区">
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">町村字番地<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="txtAddress1" name="txtAddress1" class="form-input" value="海岸１－１－１">
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">建物名</div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="txtAddress2" name="txtAddress2" class="form-input" value="安全ビル3F">
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">電話番号<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <input type="tel" id="txtPhone" name="txtPhone" class="form-input" value="01-2345-6789">
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">店舗・施設からの<br/>お知らせ</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="5" id="txNote" name="txNote" class="form-textarea-small">初回診察の方は保険証を必ずお持ちください。
+予約時間の10分前にはご来院ください。</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 営業時間設定グループ -->
+                            <div class="mdc-business-hours-header">
+                                <h3 class="mdc-calendar-title clickable" onclick="toggleBusinessHoursSettings()">
+                                    営業時間・定休日<button type="button" class="business-hours-toggle" onclick="toggleBusinessHoursSettings(); event.stopPropagation();">▽</button>
+                                </h3>
+                            </div>
+
+                            <div class="search-form-grid-setting settings-group hidden" id="businessHoursSettingsGroup">
+                                <div class="search-form-row">
+                                    <div class="search-form-label">営業時間<span class="required">*</span></div>
+                                    <div class="search-form-input">
+                                        <table class="business-hours-table">
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>定休日</th>
+                                                    <th>営業時間</th>
+                                                    <th>休憩時間</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="day-label">月</td>
+                                                    <td><input type="checkbox" id="holiday_mon" name="holiday_mon" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_mon_hour" name="open_mon_hour" class="form-input time-select-hour"></select>：<select id="open_mon_minute" name="open_mon_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_mon_hour" name="close_mon_hour" class="form-input time-select-hour"></select>：<select id="close_mon_minute" name="close_mon_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_mon_hour" name="break_start_mon_hour" class="form-input time-select-hour"></select>：<select id="break_start_mon_minute" name="break_start_mon_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_mon_hour" name="break_end_mon_hour" class="form-input time-select-hour"></select>：<select id="break_end_mon_minute" name="break_end_mon_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">火</td>
+                                                    <td><input type="checkbox" id="holiday_tue" name="holiday_tue" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_tue_hour" name="open_tue_hour" class="form-input time-select-hour"></select>：<select id="open_tue_minute" name="open_tue_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_tue_hour" name="close_tue_hour" class="form-input time-select-hour"></select>：<select id="close_tue_minute" name="close_tue_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_tue_hour" name="break_start_tue_hour" class="form-input time-select-hour"></select>：<select id="break_start_tue_minute" name="break_start_tue_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_tue_hour" name="break_end_tue_hour" class="form-input time-select-hour"></select>：<select id="break_end_tue_minute" name="break_end_tue_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">水</td>
+                                                    <td><input type="checkbox" id="holiday_wed" name="holiday_wed" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_wed_hour" name="open_wed_hour" class="form-input time-select-hour"></select>：<select id="open_wed_minute" name="open_wed_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_wed_hour" name="close_wed_hour" class="form-input time-select-hour"></select>：<select id="close_wed_minute" name="close_wed_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_wed_hour" name="break_start_wed_hour" class="form-input time-select-hour"></select>：<select id="break_start_wed_minute" name="break_start_wed_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_wed_hour" name="break_end_wed_hour" class="form-input time-select-hour"></select>：<select id="break_end_wed_minute" name="break_end_wed_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">木</td>
+                                                    <td><input type="checkbox" id="holiday_thu" name="holiday_thu" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_thu_hour" name="open_thu_hour" class="form-input time-select-hour"></select>：<select id="open_thu_minute" name="open_thu_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_thu_hour" name="close_thu_hour" class="form-input time-select-hour"></select>：<select id="close_thu_minute" name="close_thu_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_thu_hour" name="break_start_thu_hour" class="form-input time-select-hour"></select>：<select id="break_start_thu_minute" name="break_start_thu_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_thu_hour" name="break_end_thu_hour" class="form-input time-select-hour"></select>：<select id="break_end_thu_minute" name="break_end_thu_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">金</td>
+                                                    <td><input type="checkbox" id="holiday_fri" name="holiday_fri" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_fri_hour" name="open_fri_hour" class="form-input time-select-hour"></select>：<select id="open_fri_minute" name="open_fri_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_fri_hour" name="close_fri_hour" class="form-input time-select-hour"></select>：<select id="close_fri_minute" name="close_fri_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_fri_hour" name="break_start_fri_hour" class="form-input time-select-hour"></select>：<select id="break_start_fri_minute" name="break_start_fri_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_fri_hour" name="break_end_fri_hour" class="form-input time-select-hour"></select>：<select id="break_end_fri_minute" name="break_end_fri_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">土</td>
+                                                    <td><input type="checkbox" id="holiday_sat" name="holiday_sat" onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_sat_hour" name="open_sat_hour" class="form-input time-select-hour"></select>：<select id="open_sat_minute" name="open_sat_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="close_sat_hour" name="close_sat_hour" class="form-input time-select-hour"></select>：<select id="close_sat_minute" name="close_sat_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_sat_hour" name="break_start_sat_hour" class="form-input time-select-hour"></select>：<select id="break_start_sat_minute" name="break_start_sat_minute" class="form-input time-select-minute"></select>
+                                                        ～
+                                                        <select id="break_end_sat_hour" name="break_end_sat_hour" class="form-input time-select-hour"></select>：<select id="break_end_sat_minute" name="break_end_sat_minute" class="form-input time-select-minute"></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">日</td>
+                                                    <td><input type="checkbox" id="holiday_sun" name="holiday_sun" checked onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_sun_hour" name="open_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="open_sun_minute" name="open_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                        ～
+                                                        <select id="close_sun_hour" name="close_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="close_sun_minute" name="close_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_sun_hour" name="break_start_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_sun_minute" name="break_start_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                        ～
+                                                        <select id="break_end_sun_hour" name="break_end_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_sun_minute" name="break_end_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="day-label">祝</td>
+                                                    <td><input type="checkbox" id="holiday_hol" name="holiday_hol" checked onchange="toggleTimeInputs(this)"></td>
+                                                    <td>
+                                                        <select id="open_hol_hour" name="open_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="open_hol_minute" name="open_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                        ～
+                                                        <select id="close_hol_hour" name="close_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="close_hol_minute" name="close_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                    </td>
+                                                    <td>
+                                                        <select id="break_start_hol_hour" name="break_start_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_hol_minute" name="break_start_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                        ～
+                                                        <select id="break_end_hol_hour" name="break_end_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_hol_minute" name="break_end_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="search-form-row">
+                                    <div class="search-form-label">営業時間の備考</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="3" id="txBusinessHoursNote" name="txBusinessHoursNote" class="form-input" placeholder="営業時間に関する備考を入力してください（例：年末年始は休業、臨時休業日など）"></textarea>
+                                    </div>
+                                </div>
+
+                                <!-- カレンダー -->
+                                <div class="search-form-row">
+                                    <div class="search-form-label">特定の定休日</div>
+                                    <div class="search-form-input">
+                                        <div class="mdc-calendar">
+                                            <div class="mdc-calendar-header">
+                                                <h3 class="mdc-calendar-title">定休日カレンダー</h3>
+                                                <div class="date-controls">
+                                                    <button type="button" class="date-btn" onclick="previousMonth(event)">
+                                                        <i class="material-icons">chevron_left</i>
+                                                        前月
+                                                    </button>
+                                                    <button type="button" class="date-btn outlined" onclick="goToToday(event)">
+                                                        <i class="material-icons">today</i>
+                                                        今月
+                                                    </button>
+                                                    <input type="text" class="date-input" id="currentMonth" value="2025年1月" readonly>
+                                                    <button type="button" class="date-btn" onclick="nextMonth(event)">
+                                                        次月
+                                                        <i class="material-icons">chevron_right</i>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div class="mdc-calendar-grid" id="calendarGrid">
+                                                <!-- カレンダーヘッダー -->
+                                                <div class="mdc-calendar-day-header">日</div>
+                                                <div class="mdc-calendar-day-header">月</div>
+                                                <div class="mdc-calendar-day-header">火</div>
+                                                <div class="mdc-calendar-day-header">水</div>
+                                                <div class="mdc-calendar-day-header">木</div>
+                                                <div class="mdc-calendar-day-header">金</div>
+                                                <div class="mdc-calendar-day-header">土</div>
+                                                <!-- カレンダー日付はJavaScriptで生成 -->
+                                            </div>
+                                            <!-- カレンダー使い方説明 -->
+                                            <div style="margin-top: 15px; padding: 12px 16px; background-color: #f0f7ff; border-left: 4px solid #1e90ff; border-radius: 4px;">
+                                                <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.6;">
+                                                    <span style="color: #1e90ff; font-weight: 600;">💡 使い方：</span>
+                                                    <span class="day-toggle-button open" style="display: inline-flex; position: relative; top: 0; right: 0; margin: 0 4px; vertical-align: middle;"></span><span class="day-toggle-button closed" style="display: inline-flex; position: relative; top: 0; right: 0; margin: 0 4px; vertical-align: middle;"></span>をクリックすると、特定の定休日の設定ができます。<br>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 利用規約・プライバシーポリシーグループ -->
+                            <div class="mdc-business-hours-header">
+                                <h3 class="mdc-calendar-title clickable" onclick="togglePolicySettings()">
+                                    受付・予約ページ<button type="button" class="business-hours-toggle" onclick="togglePolicySettings(); event.stopPropagation();">▽</button>
+                                </h3>
+                            </div>
+
+                            <div class="search-form-grid-setting settings-group hidden" id="policySettingsGroup">
+                                <div class="search-form-row">
+                                    <div class="search-form-label">受付・予約枠の表示ピッチ<span class="required">*</span></div>
+                                    <div class="search-form-input radio-group">
+                                        <label>
+                                            <input type="radio" id="radDisplayPitch15" name="radDisplayPitch" value="15">
+                                            <span>15分</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" id="radDisplayPitch30" name="radDisplayPitch" value="30" checked>
+                                            <span>30分</span>
+                                        </label>
+                                        <label>
+                                            <input type="radio" id="radDisplayPitch60" name="radDisplayPitch" value="60">
+                                            <span>60分</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">利用規約</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="20" id="txTermsOfService" name="txTermsOfService" class="form-textarea" placeholder="利用規約を入力してください">第1条(規約の適用)
+1. 予約GOユーザー利用規約(以下「本規約」といいます)は、株式会社アイフラッグ(以下「当社」といいます)が管理・運営するインターネット上(PC向け、モバイル向け双方を含むものとします)の総合予約サービスサイト「予約GO」及びこれに付随する各種サービス(以下「予約GO」を含めて「本サービス」といいます)の利用者(以下「ユーザー」といいます)に対して適用されます。
+2.本規約の内容は、ユーザーへの事前の通知なしに変更することがあります。ユーザーは、本サービスの利用に際して、本サービス上に掲載されている最新の本規約を確認するものとします。
+3.当社が本サービス上に掲載するルール等が存在する場合、当該ルール等は、本規約の一部を構成するものとします。
+
+第2条(本サービスの利用について)
+1. 当社が別途定める場合を除き、本サービスに利用料金は発生しません。また、ユーザーは、本サービスの利用にあたり、会員登録その他の申込み手続を要しません。
+2. ユーザーは、当社が別途定める場合により本サービスに利用料金が必要となる場合、当該利用料金を、当社所定の方法で当社に対して支払うものとします。
+3. 本サービスに掲載の事業・店舗を開設・運営する施設等(以下「施設等」といいます)は自己の責任において本サービスのサイト上で施設等のサービス(以下「施設サービス」といいます)を提供しており、当社は施設サービスの提供に関し何らの関与もしないものとします。ユーザーは、本サービスを通じて施設等へ予約をする場合、自己の責任において施設等を利用するものとし、施設等が本サービス内で取扱う商品やサービスの仕様又は内容に関する記載、施設等における個人情報の取扱い等については、当該施設等に直接問い合わせるものとします。また、ユーザーは、施設等の利用に際して、本規約のほか、当該施設等との間の契約に従うものとします。
+4. 本サービスは、当社から予約受付完了の通知がユーザーに到達した時点で、施設等への予約が成立したものとします。
+5. ユーザーが施設等に予約を行ったにも関わらず、無断キャンセルを行ったと当社が判断した場合、又は当社が当該施設等から無断キャンセルの報告を受けた場合、当社は、当該ユーザーに事前に通知することなく、本サービスの一部又は全部の利用の停止、損害賠償の請求等当社が必要と判断する措置を講じることができるものとします。なお、この場合において、ユーザーが、別途施設等が定めるキャンセル規定により、施設等に対してキャンセルを起因とした債務を負っている場合、当該施設等が定める方法によって、当該施設等が定める弁済期日までにこれを弁済することを表明し、保証するものとします。
+6. ユーザーは、施設等への来店ができないことが判明した場合、速やかに当該施設等に対して電話その他の連絡手段による連絡をした上で、当該施設等の指示に従うものとします。なお、この場合においてユーザーが、別途施設等が定めるキャンセル規定により、施設等に対してキャンセルを起因とした債務を負っている場合、当該施設等が定める方法によって、当該施設等が定める弁済期日までにこれを弁済することを表明し、保証するものとします。
+7. 本サービスの利用にあたって、ユーザーと施設等との間で生じたトラブル（本サービスサイト上に掲載される施設等の掲載情報の誤りにより生じるトラブル等を含みますがこれに限りません）については、ユーザーと施設等の間で解決するものとし、当社に故意又は重大な過失がない限り、当社は一切責任を負いません。
+8. 前項の規定にかかわらず、当社は、当社が前項のトラブルの解決のために合理的に必要と認める措置（本サービスの利用停止を含みますが、これに限りません）を講じることができるものとします。
+9. 当社は、前項の規定に基づき講じた措置によって生じた損害について、当社に故意又は重大な過失がない限り一切責任を負いません。
+
+第3条(ユーザー情報の管理)
+1.  ユーザーは、本サービスの利用に必要な所定の情報（メールアドレス、パスワード、認証情報を含みますが、それらに限られません）(以下「ユーザー情報」といいます)の不正利用の防止に努めるとともに、その管理について一切の責任を持つものとします。
+2. ユーザーは、ユーザー情報に関しては、自己の責任において正確な情報を入力するものとします。当該ユーザー情報の誤りや虚偽の記載に基づく施設等その他第三者とのトラブルに関して、当社は一切の責任を負いません。
+
+第4条(ユーザーの責任)
+1. ユーザーは、本サービスを利用するために必要なあらゆる設備と環境、機器、ソフトウェア、通信手段(パソコン・タブレット型端末等の機器、インターネット回線等の環境を含みますが、これらに限りません)を自己の責任と費用において用意するものとします。
+
+第5条(ユーザーの禁止事項)
+1. 本サービス上に掲載する画像、動画、口コミ、施設等の掲載情報等の著作権は当社又はそのライセンサーに帰属します。ユーザーは、著作権法その他関係法令等で認められる引用の範囲を超えて、当社の事前の承諾なく、当該画像、動画、口コミ、施設等の掲載情報等を使用できないものとします。
+2. ユーザーは、本サービスの利用にあたって、以下の行為に該当し、又は該当するおそれがあると当社が判断する行為を行ってはならないものとします。
+(1) 他人になりすまして情報を送信又は書き込む行為
+(2) 当社の承認した以外の方法により本サービスを利用する行為
+(3) 本サービスを商用目的で利用する行為
+(4) 本サービスを無断で改変する行為
+(5) 当社のサーバー等のコンピューターに不正にアクセスしたり、有害なコンピュータプログラム等を送信又は書き込む行為、及びスパムメール、チェーンレター、ジャンクメール等を送信したりする行為
+(6) 当社、施設等又は第三者の肖像権、著作権、商標権その他の知的財産権を侵害し、又は侵害するおそれのある行為
+(7) 当社、施設等又は第三者を誹謗中傷する行為、又は名誉、プライバシー等を傷つける行為、もしくはそれらのおそれのある行為
+(8) 公序良俗に反する内容の情報、文書又は図形等を他人に公開する行為
+(9) 自己、他人又は第三者の名称、住所、電話番号、電子メールアドレス、クレジットカード情報等、意図的に虚偽の情報（実在しない架空の情報を含みますが、これに限りません）を登録する行為
+(10) 当社又は第三者に対する迷惑行為、不快感を抱かせる行為、及び不利益となる行為
+(11) 口コミにおいて、施設等の関係者が当該施設等に関する内容を投稿する行為
+(12) 犯罪的行為に結びつく行為
+(13) 本サービスの運営を妨げ、あるいは当社、当社の関連会社、又は当社の提携先の信用を毀損させるような行為
+(14) 施設等が別途定めるキャンセル規定等によってユーザーが負う債務を履行しない行為（理由の如何を問いません）
+(15) その他、法律、法令、公序良俗又は本規約に違反する行為又は違反のおそれのある行為
+3. ユーザーは、本サービスを通じて施設等へ予約を行うにあたり、以下の行為に該当し、又は該当するおそれがあると当社が判断する行為を行ってはならないものとします。
+(1) 本サービスを通じた予約の無断キャンセル
+(2) 同日の同時間帯に複数の施設等へ予約する等、当該施設等への来店や予約内容のサービスを受けることが不可能と認められるような行為
+4. 当社は、ユーザーが前2項の規定に違反した場合、その他当社が本サービスの運営上不適当と判断する行為を行った場合には、当該ユーザーに対して、本サービスの利用停止、損害賠償の請求等当社が必要と判断する措置（法的措置を含みますが、これに限りません）を行うことができるものとします。また、ユーザーは、当社が本項の規定に基づいて行った措置に対して、異議を申し立てないものとします。
+5. ユーザーは、本条第1項、第2項、又は第3項に違反し、当社、施設等又は第三者に損害を与えた場合、自己の責任と費用をもって、当該損害の一切を賠償するものとします。
+
+第6条(当社の責任)
+1.当社は、本サービスにおいて信頼できるサービスや情報をユーザーへお届けすべく努力をしていますが、以下の各号について、一切保証しないものとします。ユーザーは、本サービス及び本サービスを通じて予約する施設等の利用に際しては、ユーザー自身で、本サービス及び本サービスを通じて予約する施設等において提供される情報やサービスの有用性等を判断し、ユーザー自身の責任で利用するものとします。
+(1) 本サービス上で提供される全ての情報（本サービス、及び本サービス上に表示される、一切の情報等を含み、以下同様とします）に関する、有用性、適合性、完全性、正確性、安全性、合法性、最新性等
+(2) ユーザーが本サービス上において提供される情報を利用して施設等と交渉又は予約、もしくは契約の申込又は締結等を行う場合において、当該行為に関する一切
+(3) 本サービス及び本サービスを通じて入手できる商品、役務、情報等が利用者の希望又は期待を満たす適切なものであること
+(4) 本サービスの提供に不具合、エラー又は障害が生じないこと
+(5) 本サービスに関連して送信される電子メール、ウェブコンテンツ等に、コンピュータウィルス等の有害なものが含まれていないこと
+(6) 本サービスの存続又は同一性が維持されること
+2. 当社は、ユーザーの本サービスの利用又は利用不能により生じる一切の損害（本項各号に定める損害や、前項により利用者又は第三者に生じた損害、精神的苦痛、又はその他の金銭的損失を含む一切の不利益を含みますが、これらに限りません）につき、当社に故意又は重大な過失がない限り、当社は一切その責任を負わないものとします。
+(1) 本サービスを介して行う、施設等又は第三者が提供するコンテンツのダウンロード及びサービス並びにウェブサイト等の第三者サービス(以下「第三者サービス」といいます)へのアクセス等の行為により、ユーザーに生じた損害
+(2) 当社が相当の安全策を講じたにもかかわらず、本サービスの無断改変、本サービスに関するデータへの不正アクセス、コンピュータウィルスの混入等の不正行為が行われ、これに起因してユーザーに生じた損害
+(3) 通信回線やコンピューターの障害等による、当社のサーバーやシステム、本サービスの中断、遅延、中止、データ消失等により生じた損害
+3. 本サービス及び本規約に関連して当社が責任を負う場合であっても、当社に故意又は重過失がある場合を除き、当社の責任は直接かつ通常の損害に限られるものとします。
+
+第7条(サービスの変更、停止、廃止)
+1. 当社は、次の各号に該当する場合、ユーザーへの事前の通知や承諾なしに、本サービスの一時的な停止を行うことがあるものとします。
+(1) 本サービスの保守又は仕様の変更を行う場合
+(2) 天災、事変その他非常事態が発生し、又は発生するおそれがあり、本サービスの運営が困難又は不可能となった場合
+(3) 当社が、本サービスの運営上及びその他の理由で本サービスの一時的な運用停止が必要と判断した場合
+(4) 本サービス提供のためのシステムの不良及び第三者からの不正アクセス、コンピュータウィルスの感染等により本サービスを提供できない場合
+(5) 法令等に基づく措置により本サービスが提供できない場合
+2. 前項の規定により本サービスの運用が一時的に停止され、これに起因してユーザーに損害が生じた場合であっても、当社に故意又は重大な過失がない限り、当社は一切責任を負いません。なお、当社は、前項各号により本サービスの運用を停止する場合、事前に本サービス上その他当社が適当と判断する方法で、その旨を通知するものとします。ただし、緊急を要する場合は、この限りではないものとします。
+3. 当社は、自己の都合により本サービスを変更、停止、又は廃止することができるものとします。
+4. 当社は、本サービスを廃止する場合には、ユーザーに対し、事前にその旨を本サービス上その他当社が適当と判断する方法で通知するものとします。
+5. 本サービスの廃止に起因してユーザー又は第三者に損害が発生した場合であっても、当社に故意又は重大な過失がない限り、当社は一切責任を負いません。
+
+第8条(規約の変更)
+1. 当社は、ユーザーの承諾なく、本規約の内容を変更することができるものとし、変更する場合、変更後の本規約の内容を、ユーザーに対し、当社が指定する方法により通知するものとします。
+2. ユーザーは、本規約等の変更後に、本サービスの利用を継続した場合は、当該利用規約等の変更に同意したとみなされることを、予め承諾します。
+
+第9条(通知)
+1. 当社からユーザーへの通知は、書面の送付、電子メールの送信、ファックスの送信、Ｗｅｂサイトへの掲載又はその他当社が適切と判断する方法により行うものとします。
+2. 前項の通知が書面の送付による場合、当該書面が送付された日の翌々日（ただし、その間に法定休日がある場合は法定休日を加算した日）にユーザーに到達したものとみなすものとし、電子メールの送信又はファックスの送信による場合は、当該電子メールもしくは当該ファックスが送信された時点でユーザーに到達したものとみなすものとします。また、前項の通知がＷｅｂサイトへの掲載による場合、Ｗｅｂサイトに掲載された時点でユーザーに到達したものとみなすものとします。
+3. ユーザーが第1項の通知を確認しなかったことにより不利益を被ったとしても、当社に故意又は重大な過失がない限り、当社は一切責任を負わないものとします。
+
+第10条(ユーザー情報の取扱い)
+1. 当社は、本サービスを通じてユーザーの個人情報を取得する場合、当該個人情報の取り扱いについて、別途当社が定める個人情報保護方針に基づき適切に管理します。
+2. ユーザーは、施設等を利用する場合、当該施設等に対し、自らの責任と判断においてユーザー情報を提供するものとし、当該施設等におけるユーザー情報の取扱いについては、本規約に定めるほか、当該施設等が定めるプライバシーポリシーに従うものとします。
+3. 本サービスは、予約情報を共有するために当社が別途指定する第三者サービスと連携する場合があります。ユーザーは、その場合、予約情報、個人情報を含むユーザー情報が、当該第三者サービスに提供される場合があることに予め承諾するものとします。
+4. ユーザーは、施設等がユーザーに対して送信するメールの開封情報を、当社及びその業務委託先が閲覧及び確認した上で、問い合わせ対応、障害・トラブル時の調査対応、本サービス利用状況の把握、施設等に対する本サービス利用状況の報告、及び本サービスを含む当社が運営するサービスの運営・改善・企画等に利用することを、予め承諾するものとします。なお、本項に規定する利用の期間は、ユーザーが本サービスの利用を終了した(理由を問いません)後も継続することがあるものとします。
+
+第11条(秘密保持)
+ユーザーは、本サービスに関連して当社がユーザーに対して秘密に取り扱うことを求めて開示した非公知の情報について、当社の事前の書面による承諾がある場合を除き、秘密に取り扱うものとします。
+
+第12条(権利義務譲渡の禁止)
+ユーザーは、本サービスに関するユーザーとしての地位及び当該地位に基づく権利義務を、当社が予め承諾した場合を除き、第三者に譲渡し又は担保に供してはならないものとします。
+
+第13条(反社会的勢力の排除)
+1. ユーザーは、過去、現在及び将来にわたって、反社会的勢力（暴力団、暴力団員、暴力団員でなくなった時から5年を経過しない者、暴力団準構成員、暴力団関係企業、総会屋等、社会運動等標ぼうゴロまたは特殊知能暴力集団等、その他これらに準ずる者をいいます）に該当しないことを保証し、暴力的行為、詐術・脅迫行為、業務妨害行為等、法令に抵触する行為又はそのおそれのある行為を行わないものとします。
+2. ユーザーが前項の規定に違反した場合には、当社は事前に通告することなくユーザーの本サービス利用を停止する等の措置を講じることができるものとします。これによりユーザーに不利益又は損害が生じたとしても、当社は一切の責任を負わないものとします。
+3. 前項に基づく契約の解除によって、当社が損害を被った場合には、ユーザーは当社に対してこれを賠償する責を負うものとします。
+
+第14条(分離可能性)
+1. 本規約の一部が法令に基づいて無効と判断されても、その他の規定は有効とします。
+2. 本規約の一部があるユーザーとの関係で無効とされ、又は取り消された場合でも、本規約はその他のユーザーとの関係では有効とします。
+
+第15条(準拠法)
+本サービス及び本規約は、日本法に準拠するものとします。
+
+以上
+制定日：202〇年〇月〇日
+                                        </textarea>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">プライバシーポリシー</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="20" id="txPrivacyPolicy" name="txPrivacyPolicy" class="form-textarea" placeholder="プライバシーポリシーを入力してください">「株式会社アイフラッグ」は、予約GOを「サービス提供者」に提供しています。
+このサービスを提供するにあたり、「サービス提供者」 の公式なプライバシーポリシーを「株式会社アイフラッグ」のドメイン内で作成しています。
+【サービス提供者】
+
+
+
+【1】個人情報の保護についての考え方
+　○○（以下「当施設」という）では、では、お客様及び当施設の事業活動に関わるすべての方々（株主様、従業者 等を含み、以下総称して「ご本人様」といいます）の個人情報が、個人情報保護法並びに個人の人格尊重（プライバシー保護）の理念の下に適正かつ慎重に取り扱われるべきものであり、法令遵守のみならず、個人の権利利益と密接に関わるものであるという認識に基づき、個人情報の取扱いに際して以下の事項を誓約させていただきます。
+1.個人情報の保護に関する法律、同法についての個人情報保護委員会ガイドラインその他の関係法令等を遵守するとともに、一般に公正妥当と認められる個人情報の取扱いに関する慣行に準拠し、適切に取扱います。また、適宜、取扱いの改善に努めます。
+2. 個人情報の取扱いに関する規定を明確にし、従業員等に周知徹底します。また、取引先等に対しても適切に個人情報を取扱うように要請します。
+3. 個人情報の取得に際しては、利用目的を特定して通知または公表し、必要な場合は利用の同意を得た上で、その利用目的に従って個人情報を取扱います。
+4. 個人情報を取扱うに当たっては、原則として利用目的に必要な範囲内で保存期間を定めるものとし、法令により例外として扱うことが認められている場合を除き、保存期間経過または利用目的を達成した後は、個人情報を遅滞なく消去します。
+5. 個人情報の漏えい、滅失、またはき損の防止を図るため、組織的、人的、物理的及び技術的な安全管理措置を行います。並びに不適合が発生した場合、その原因を除去し再発しないように是正処置を行います。
+6. 保有する個人情報について、お客様ご本人からの開示、訂正、削除、利用停止の依頼を所定の窓口でお受けして、誠意をもって対応します。
+7. 事業の内容及び規模を考慮し、適切な個人情報の取得、利用及び提供を行います。特定された利用目的の達成に必要な範囲を超えて個人情報を取扱う場合の承認の手続きを定め、目的外利用がされていないことを監視するなど、目的外利用が行われないようにします。
+8. 苦情及び相談に対して適切かつ迅速に対応するため、苦情及び相談対応の責任者や手順等を定めて対応します。また、問題の及ぶ範囲を最小限にするように適切に処置をします。
+9. 定期的な内部監査、社会情勢の変化や技術の進歩等を通して、個人情報保護マネジメントシステムの継続的改善を行います。
+【2】事業の内容及び規模を考慮した適切な個人情報の取扱いに関すること
+　当施設は、当施設が遂行する各事業において必要となる個人情報を取得しますが、これらの個人情報は下記の目的で利用させていただきます。また、当施設は、業務を円滑に進めるため、業務の一部を委託し、業務委託先に対して必要な範囲内で個人情報を提供することがありますが、この場合、当施設は当該委託先との間で個人情報の取扱いに関する契約の締結をはじめ、適切な監督を実施します。
+（1）利用目的
+1. 個人情報を取扱う当施設が取り扱う事業（以下「当施設事業」といいます。）における商品・サービスの提供
+2. 前号に関するアフターサービスの提供
+3. 当施設事業その他に関する各種料金の請求収納及び債権保全（各種料金の請求収納のため個人情報の取扱いを委託する場合を含みます）
+4. 当施設事業に関する新商品・新サービスの検討、開発
+5. 前号の商品・サービスに関する情報のご案内
+6. 当施設事業における営業・勧誘方法の研修及び適正化のための従業員教育
+7. 当施設事業に関する市場調査その他の調査研究
+8. 懸賞及びキャンペーン等の実施
+9. 経営分析のための統計数値作成及び分析結果の利用
+10. 個人情報保護法に基づく開示請求等への対応、並びに個人情報の取扱いに関する監視及び監査
+11. CSR（企業の社会的責任）に関する活動
+12. 当施設の取引先との契約関係の管理
+13. 従業員等の雇用（採用を含みます。）及び人事管理
+14. 従業員等の福利厚生（従業員持株会、福利厚生会等の案内及び運営管理を含みます。）
+15. 施設及び機器の管理
+16. 下記（2）記載の目的等の第三者提供
+17. その他、前各号に係る業務の遂行上必要な範囲
+
+（２）第三者提供
+1. 当施設は、支払期限を経過したにもかかわらず、当施設事業に係る料金等を支払わない者がいる場合や、不払い額及び滞納額に争いがある場合等において、その者の氏名、住所、生年月日、争いがある場合はその情報等を、当施設事業に係る料金不払いの発生を防ぐことを目的として、当該事業に関わる他の事業者に対し提供する場合があります。なお、当施設が取扱う当該個人情報の管理について責任を有する者は、当施設です。
+2. 当施設は、支払期限を経過したにもかかわらず、当施設事業に係る料金等を支払わない者がいる場合、滞納料金回収の目的で、滞納料金債権を譲渡し、その譲受人に対し、料金滞納者の氏名、住所、生年月日、不払い額等の情報を提供する場合があります。
+3. 当施設は、ご本人様が当施設提携先の提供するサービスや商品の申込みをしようとする際に、氏名、住所、連絡先など当施設にすでに登録されている情報のうち、申込みに必要な情報を当該提携先に開示することがあります。
+【3】第三者への開示・提供
+　当施設は、本プライバシーポリシーに記載した業務委託先等への提供の場合、【2】の（2）に記載の目的に利用する場合、及び以下の何れかに該当する場合を除き、個人情報を第三者へ開示または提供しません。
+1. ご本人様の同意がある場合
+2. 統計的なデータなどご本人様を識別することができない状態で開示・提供する場合
+3. 法令に基づき開示・提供を求められた場合
+4. 人の生命、身体または財産の保護のために必要な場合であって、ご本人様の同意を得ることが困難である場合
+5. 国または地方公共団体等が公的な事務を実施するうえで、協力する必要がある場合であって、ご本人様の同意を得ることにより当該事務の遂行に支障を及ぼすおそれがある場合
+【4】開示の手続き
+　当施設の保有個人データに関して、ご本人様がご自身の情報の開示をご希望される場合には、お申し出いただいた方がご本人であることを確認したうえで、合理的な期間及び範囲で、原則として書面により回答します。なお、法令により開示の申し出には応じられない場合があります。
+【5】訂正・削除等
+　当施設の保有個人データに関して、ご本人様がご自身の情報の訂正または削除をご希望される場合には、お申し出いただいた方がご本人であることを確認したうえで、合理的な期間及び範囲で訂正または削除します。
+【6】利用停止・消去
+　当施設の保有個人データに関して、ご本人様の情報の利用停止または消去をご希望される場合で、以下の事項のいずれか一つに該当する場合には、お申し出いただいた方がご本人であることを確認したうえで、原則として合理的な期間及び範囲で利用停止または消去します。
+1. 当施設が、ご本人様の同意なく本プライバシーポリシーの2に記載の利用目的の範囲を超えて個人情報を利用したとき
+2. 当施設が、当該個人情報を違法または不正な方法で取得したとき
+3. 当施設が、不正に第三者に個人情報を開示したとき
+　なお、これらの情報の一部または全部を利用停止または消去した場合、不本意ながらご要望に添ったサービスの提供ができなくなることがありますので、ご理解とご協力を賜りますようお願い申し上げます。また、労働基準法等、法令に基づき保有しております情報については、利用停止または消去のお申し出には応じられない場合があります。
+【7】開示等の受付方法・窓口
+　当施設の保有個人データに関する、上記【4】【5】【6】のお申し出及びその他の個人情報に関するお問い合わせは、以下の方法にて受け付けます。なお、この受付方法によらない開示等の求めには応じられない場合がありますので、ご了承ください。
+（1）受付手続
+　下記の宛先にお申込ください。受付手続についての詳細は、お申し出いただいた際にご案内申し上げますが、下記の窓口及び方法によりご本人様（または代理人）であることの確認をしたうえで、原則として書面により回答いたします。また、お申し出内容によっては、当施設所定の申し込み書面をご提出いただく場合があります。
+
+≪プライバシーポリシーに関する問合せ先≫
+○○
+個人情報取扱い窓口
+ (肩書・部署・役職等)
+電話：××－××××－×××（無料）
+受付時間：平日10:00 ～18:00
+※土日祝祭日を除きます。
+お申込みに際しては、ご本人またはご本人の代理人であることの確認のために、以下の情報をご提出いただきます。
+
+1. ご本人からのお申込の場合
+a. 電話口での確認方法
+氏名、住所、電話番号、生年月日などの当施設ご登録の確認
+b. 申込書面をご提出いただく際に同封いただくもの
+運転免許書、パスポート、健康保険の被保険者証、外国人登録証の写しのいずれか1つと現住所を確認できる書類（住民票の写し、公共料金の請求書等）
+
+2. 代理人からのお申込の場合
+申込書面をご提出いただく際に同封いただくもの
+代理人であることを示す委任状
+委任状に押印されたご本人様の印鑑の印鑑証明書
+代理人の本人確認書類（ご本人様からのお申込に準ずる）
+なお、ご提出いただいた証明書類等につきましては返却いたしません。
+
+（2）手数料
+　利用目的の通知または開示請求に対し、郵送の方法により回答した場合は、１回の請求につき、返信のための郵送費をご負担いただきます。 請求書類の郵送時に、返送郵送費相当の郵便定額小為替を同封ください。なお、過分にいただいた場合、差額は返却いたしませんのでご了承ください。
+【8】附則
+　このプライバシーポリシーは、202〇年〇月〇日から施行します。なお、法令・各種ガイドライン等の制定や変更等に伴い、このプライバシーポリシーを変更することがあります。
+制定日：2025年12月〇日
+
+                                        </textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 受付・予約完了メールの設定グループ -->
+                            <div class="mdc-business-hours-header">
+                                <h3 class="mdc-calendar-title clickable" onclick="toggleMailSettings()">
+                                    受付・予約メール<button type="button" class="business-hours-toggle" onclick="toggleMailSettings(); event.stopPropagation();">▽</button>
+                                </h3>
+                            </div>
+
+                            <div class="search-form-grid-setting settings-group hidden" id="mailSettingsGroup">
+                                <div class="search-form-row">
+                                    <div class="search-form-label">本文</div>
+                                    <div class="search-form-input" id="mailContent">
+                                        <a href="javascript:void(0);" id="toggleMailBody" onclick="toggleMailBodyContent()">本文を表示する</a>
+                                        <div id="mailBodyContent" class="hidden">
+                                            いつも「(店舗・施設名)」をご利用いただきまして誠にありがとうございます。<br/><br/>
+                                            受付・予約が完了いたしましたので、ご連絡申し上げます。<br/>
+                                            下記内容をご確認ください。<br/><br/>
+                                            -----------------------<br/>
+                                            　受付内容<br/>
+                                            -----------------------<br/>
+                                            【店舗・施設名】(店舗・施設名)<br/>
+                                            【店舗電話番号】(店舗・施設の電話番号)<br/>
+                                            【ID】(ID)<br/>
+                                            【受付・予約日時】受付日時(YYYY/MM/DD HH:MM)<br/>
+                                            【受付内容】(メニュー名)<br/>
+                                            -----------------------<br/>
+                                            　受付内容<br/>
+                                            -----------------------<br/>
+                                            【お名前】(顧客名(姓)　顧客名(名))　様<br/>
+                                            【フリガナ】(顧客名(セイ)　顧客名(メイ))　様<br/>
+                                            【電話番号】(顧客電話番号)<br/>
+                                            【メールアドレス】(顧客メールアドレス)<br/>
+                                            【コメント】(受付・予約時に入力したコメント)<br/><br/>
+                                            受付・予約内容の変更・キャンセルにつきましては、お電話にて承ります。<br/>
+                                            (店舗・施設の電話番号)<br/><br/>
+                                            ※このメールは送信専用のため返信はできません。<br/><br/>
+                                        </div>
+                                        <textarea rows="8" id="txReservationMailBody" name="txReservationMailBody" class="form-textarea-small" placeholder="本文に追加する内容を入力してください"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">署名</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="5" id="txReservationMailSignature" name="txReservationMailSignature" class="form-textarea-small" placeholder="署名を入力してください"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="search-form-actions">
+                                <button type="submit" id="OP0053RF01" name="OP0053RF01" class="search-btn">保存</button>
+                            </div>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+  <script>
+    // カレンダー用変数
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+
+    // 各日付の休業状態を管理（キー: 'YYYY-MM-DD', 値: true=休業, false=営業）
+    let closedDates = {
+        // デフォルトで日曜日、13日、14日、20日を休業に設定
+    };
+
+    // カレンダー生成関数
+    function generateCalendar() {
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthElement = document.getElementById('currentMonth');
+
+        // ヘッダーを除く既存の日付要素をクリア
+        const existingDays = calendarGrid.querySelectorAll('.mdc-calendar-day');
+        existingDays.forEach(day => day.remove());
+
+        // 月の表示を更新
+        currentMonthElement.value = `${currentYear}年${currentMonth + 1}月`;
+
+        // 月の最初の日と最後の日を取得
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const firstDayOfWeek = firstDay.getDay();
+        const daysInMonth = lastDay.getDate();
+
+        // 前月の日付を表示
+        const prevMonth = new Date(currentYear, currentMonth - 1, 0);
+        const daysInPrevMonth = prevMonth.getDate();
+
+        for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+            const dayElement = createDayElement(daysInPrevMonth - i, true);
+            calendarGrid.appendChild(dayElement);
+        }
+
+        // 今月の日付を表示
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayElement = createDayElement(day, false);
+            calendarGrid.appendChild(dayElement);
+        }
+
+        // 来月の日付を表示（35セルまで埋める - 5行×7列）
+        const totalCells = 35;
+        const usedCells = firstDayOfWeek + daysInMonth;
+        const remainingCells = totalCells - usedCells;
+
+        for (let day = 1; day <= remainingCells; day++) {
+            const dayElement = createDayElement(day, true);
+            calendarGrid.appendChild(dayElement);
+        }
+    }
+
+    // 日付キーを生成
+    function getDateKey(year, month, day) {
+        return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    // 日付が休業かどうかをチェック
+    function isDateClosed(year, month, day) {
+        const dateKey = getDateKey(year, month, day);
+        if (closedDates.hasOwnProperty(dateKey)) {
+            return closedDates[dateKey];
+        }
+
+        // デフォルトで日曜日、13日、14日、20日を休業に設定
+        const date = new Date(year, month, day);
+        const dayOfWeek = date.getDay();
+        return dayOfWeek === 0 || day === 13 || day === 14 || day === 20;
+    }
+
+    // 営業時間テーブルから曜日の時間を取得
+    function getBusinessHoursForDay(dayOfWeek) {
+        const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+        const dayName = dayNames[dayOfWeek];
+
+        const openHour = document.getElementById(`open_${dayName}_hour`);
+        const openMinute = document.getElementById(`open_${dayName}_minute`);
+        const closeHour = document.getElementById(`close_${dayName}_hour`);
+        const closeMinute = document.getElementById(`close_${dayName}_minute`);
+        const breakStartHour = document.getElementById(`break_start_${dayName}_hour`);
+        const breakStartMinute = document.getElementById(`break_start_${dayName}_minute`);
+        const breakEndHour = document.getElementById(`break_end_${dayName}_hour`);
+        const breakEndMinute = document.getElementById(`break_end_${dayName}_minute`);
+
+        if (openHour && closeHour) {
+            const openTime = `${openHour.value}:${openMinute.value}`;
+            const closeTime = `${closeHour.value}:${closeMinute.value}`;
+            const breakStartTime = `${breakStartHour.value}:${breakStartMinute.value}`;
+            const breakEndTime = `${breakEndHour.value}:${breakEndMinute.value}`;
+
+            return `${openTime}～${closeTime}<br>休憩 ${breakStartTime}～${breakEndTime}`;
+        }
+
+        return '';
+    }
+
+    // シフト情報を取得
+    function getShiftInfo(day, isOtherMonth) {
+        if (isOtherMonth) return '';
+
+        // 休業かチェック
+        if (isDateClosed(currentYear, currentMonth, day)) {
+            return '休';
+        }
+
+        // 営業時間テーブルから曜日の時間を取得
+        const date = new Date(currentYear, currentMonth, day);
+        const dayOfWeek = date.getDay();
+        return getBusinessHoursForDay(dayOfWeek);
+    }
+
+    // 日付要素を作成
+    function createDayElement(day, isOtherMonth) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'mdc-calendar-day';
+        if (isOtherMonth) {
+            dayElement.classList.add('other-month');
+        }
+
+        // 今日の日付かチェック
+        const today = new Date();
+        if (!isOtherMonth &&
+            currentYear === today.getFullYear() &&
+            currentMonth === today.getMonth() &&
+            day === today.getDate()) {
+            dayElement.classList.add('today');
+        }
+
+        // 曜日を判定してクラスを追加
+        if (!isOtherMonth) {
+            const date = new Date(currentYear, currentMonth, day);
+            const dayOfWeek = date.getDay();
+
+            // 日曜日（0）の場合はsundayクラスを追加
+            if (dayOfWeek === 0) {
+                dayElement.classList.add('sunday');
+            }
+            // 土曜日（6）の場合はsaturdayクラスを追加
+            else if (dayOfWeek === 6) {
+                dayElement.classList.add('saturday');
+            }
+
+            // 13日の場合はday-13クラスを追加
+            if (day === 13) {
+                dayElement.classList.add('day-13');
+            }
+        }
+
+        const shiftInfo = getShiftInfo(day, isOtherMonth);
+        const isClosed = !isOtherMonth && isDateClosed(currentYear, currentMonth, day);
+
+        dayElement.innerHTML = `
+            <div class="mdc-day-number">${day}</div>
+            ${!isOtherMonth ? `<div class="day-toggle-button ${isClosed ? 'closed' : 'open'}" data-day="${day}"></div>` : ''}
+            ${shiftInfo ? `<div class="mdc-shift-info">${shiftInfo}</div>` : ''}
+        `;
+
+        // トグルボタンのクリックイベント
+        if (!isOtherMonth) {
+            const toggleButton = dayElement.querySelector('.day-toggle-button');
+            if (toggleButton) {
+                toggleButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleDayStatus(currentYear, currentMonth, day);
+                });
+            }
+        }
+
+        return dayElement;
+    }
+
+    // 日付の営業/休業状態をトグル
+    function toggleDayStatus(year, month, day) {
+        const dateKey = getDateKey(year, month, day);
+        const currentStatus = isDateClosed(year, month, day);
+        closedDates[dateKey] = !currentStatus;
+        generateCalendar();
+    }
+
+    // 前月
+    function previousMonth(event) {
+        if (event) event.preventDefault();
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        generateCalendar();
+    }
+
+    // 次月
+    function nextMonth(event) {
+        if (event) event.preventDefault();
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        generateCalendar();
+    }
+
+    // 今日
+    function goToToday(event) {
+        if (event) event.preventDefault();
+        const today = new Date();
+        currentYear = today.getFullYear();
+        currentMonth = today.getMonth();
+        generateCalendar();
+    }
+
+    // 時間セレクトボックスの初期化
+    function initializeTimeSelects() {
+        // 時間のオプションを生成（0〜23時）
+        const hourSelects = document.querySelectorAll('.time-select-hour');
+        hourSelects.forEach(select => {
+            for (let hour = 0; hour < 24; hour++) {
+                const option = document.createElement('option');
+                option.value = String(hour).padStart(2, '0');
+                option.textContent = String(hour).padStart(2, '0');
+                select.appendChild(option);
+            }
+        });
+
+        // 分のオプションを生成（00、15、30、45分）
+        const minuteSelects = document.querySelectorAll('.time-select-minute');
+        const minutes = ['00', '15', '30', '45'];
+        minuteSelects.forEach(select => {
+            minutes.forEach(minute => {
+                const option = document.createElement('option');
+                option.value = minute;
+                option.textContent = minute;
+                select.appendChild(option);
+            });
+        });
+
+        // デフォルト値を設定
+        const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'hol'];
+        days.forEach(day => {
+            // 営業開始時間: 09:00
+            const openHour = document.getElementById(`open_${day}_hour`);
+            const openMinute = document.getElementById(`open_${day}_minute`);
+            if (openHour) openHour.value = '09';
+            if (openMinute) openMinute.value = '00';
+
+            // 営業終了時間: 平日は18:00、土日祝は17:00
+            const closeHour = document.getElementById(`close_${day}_hour`);
+            const closeMinute = document.getElementById(`close_${day}_minute`);
+            if (closeHour) {
+                if (day === 'sat') {
+                    closeHour.value = '17';
+                } else {
+                    closeHour.value = '18';
+                }
+            }
+            if (closeMinute) closeMinute.value = '00';
+
+            // 休憩開始時間: 12:00
+            const breakStartHour = document.getElementById(`break_start_${day}_hour`);
+            const breakStartMinute = document.getElementById(`break_start_${day}_minute`);
+            if (breakStartHour) breakStartHour.value = '12';
+            if (breakStartMinute) breakStartMinute.value = '00';
+
+            // 休憩終了時間: 13:00
+            const breakEndHour = document.getElementById(`break_end_${day}_hour`);
+            const breakEndMinute = document.getElementById(`break_end_${day}_minute`);
+            if (breakEndHour) breakEndHour.value = '13';
+            if (breakEndMinute) breakEndMinute.value = '00';
+        });
+    }
+
+    // 基本設定の表示/非表示切り替え
+    function toggleBasicSettings() {
+        const basicSettingsGroup = document.getElementById('basicSettingsGroup');
+        const currentTarget = event.currentTarget;
+        const toggleButton = currentTarget.querySelector('.business-hours-toggle') || currentTarget;
+
+        basicSettingsGroup.classList.toggle('hidden');
+        toggleButton.classList.toggle('expanded');
+    }
+
+    // 営業時間設定の表示/非表示切り替え
+    function toggleBusinessHoursSettings() {
+        const businessHoursSettingsGroup = document.getElementById('businessHoursSettingsGroup');
+        const currentTarget = event.currentTarget;
+        const toggleButton = currentTarget.querySelector('.business-hours-toggle') || currentTarget;
+
+        businessHoursSettingsGroup.classList.toggle('hidden');
+        toggleButton.classList.toggle('expanded');
+    }
+
+    // メール設定の表示/非表示切り替え
+    function toggleMailSettings() {
+        const mailSettingsGroup = document.getElementById('mailSettingsGroup');
+        const currentTarget = event.currentTarget;
+        const toggleButton = currentTarget.querySelector('.business-hours-toggle') || currentTarget;
+
+        mailSettingsGroup.classList.toggle('hidden');
+        toggleButton.classList.toggle('expanded');
+    }
+
+    // 利用規約・プライバシーポリシー設定の表示/非表示切り替え
+    function togglePolicySettings() {
+        const policySettingsGroup = document.getElementById('policySettingsGroup');
+        const currentTarget = event.currentTarget;
+        const toggleButton = currentTarget.querySelector('.business-hours-toggle') || currentTarget;
+
+        policySettingsGroup.classList.toggle('hidden');
+        toggleButton.classList.toggle('expanded');
+    }
+
+    // 定休日チェックボックスの状態変更処理
+    function toggleTimeInputs(checkbox) {
+        const row = checkbox.closest('tr');
+        // selectタグのみを取得（営業時間と休憩時間のプルダウン）
+        const timeSelects = row.querySelectorAll('select.time-select-hour, select.time-select-minute');
+
+        if (checkbox.checked) {
+            // チェックが入った場合：時間入力フィールドを非活性にする
+            timeSelects.forEach(select => {
+                select.disabled = true;
+            });
+        } else {
+            // チェックが外れた場合：時間入力フィールドを活性にする
+            timeSelects.forEach(select => {
+                select.disabled = false;
+            });
+        }
+    }
+
+    // メール本文の表示/非表示切り替え
+    function toggleMailBodyContent() {
+        const mailBodyContent = document.getElementById('mailBodyContent');
+        const toggleLink = document.getElementById('toggleMailBody');
+
+        mailBodyContent.classList.toggle('hidden');
+        if (mailBodyContent.classList.contains('hidden')) {
+            toggleLink.textContent = '本文を表示する';
+        } else {
+            toggleLink.textContent = '本文を表示しない';
+        }
+    }
+
+    // ページ読み込み時の初期化
+    document.addEventListener('DOMContentLoaded', () => {
+        // 時間セレクトボックスを初期化
+        initializeTimeSelects();
+
+        // カレンダーを初期化
+        generateCalendar();
+    });
+  </script>
+</body>
+</html>

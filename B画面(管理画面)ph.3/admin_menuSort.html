@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>メニュー並び変え｜管理画面モック</title>
+
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus" class="active">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <!-- Main -->
+        <main class="main">
+            <!-- メニュー並び替えセクション -->
+            <div class="main-section">
+                <div class="main-header">
+                    <h2 class="main-title">🛠 メニュー並び替え</h2>
+                </div>
+
+                <div class="sort-container">
+                    <div class="sort-info">
+                        <p>メニューをドラッグ&ドロップで並び替えることができます。</p>
+                    </div>
+
+                    <div class="menu-list" id="menuList">
+                        <!-- メニューアイテムがここに動的に追加されます -->
+                    </div>
+
+                    <div class="sort-actions">
+                        <button type="button" class="form-btn modal-btn-save"
+                            onclick="saveSortOrder()">並び替えを保存</button>
+                        <button type="button" class="form-btn form-btn-cancel" onclick="goBack()">閉じる</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // サンプルメニューデータ
+        const sampleMenus = [
+            {id: 1, name: 'カット', duration: '60分', price: '3000円'},
+            {id: 2, name: 'シャンプー', duration: '60分', price: '2000円'},
+            {id: 3, name: '【初めて割】カット', duration: '30分', price: '2500円'},
+            {id: 4, name: 'カラーリング', duration: '120分', price: '8000円'},
+            {id: 5, name: 'パーマ', duration: '180分', price: '12000円'}
+        ];
+
+        let draggedElement = null;
+
+        // ページ読み込み時にメニューリストを初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeMenuList();
+        });
+
+        // メニューリストを初期化
+        function initializeMenuList() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+
+            sampleMenus.forEach((menu, index) => {
+                const menuItem = createMenuItem(menu, index + 1);
+                menuList.appendChild(menuItem);
+            });
+        }
+
+        // メニューアイテムを作成
+        function createMenuItem(menu, order) {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'drag-item';
+            menuItem.draggable = true;
+            menuItem.dataset.menuId = menu.id;
+
+            menuItem.innerHTML = `
+            <div class="drag-handle">⋮⋮</div>
+            <div class="drag-info">
+                <div class="drag-name">${menu.name} | ${menu.price} | ${menu.duration}</div>
+            </div>
+            <div class="drag-order">${order}</div>
+        `;
+
+            // ドラッグイベントを追加
+            menuItem.addEventListener('dragstart', handleDragStart);
+            menuItem.addEventListener('dragend', handleDragEnd);
+            menuItem.addEventListener('dragover', handleDragOver);
+            menuItem.addEventListener('drop', handleDrop);
+
+            return menuItem;
+        }
+
+        // ドラッグ開始
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+
+        // ドラッグ終了
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedElement = null;
+
+            // すべてのdrag-overクラスを削除
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        // ドラッグオーバー
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+
+            return false;
+        }
+
+        // ドロップ
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                const menuList = document.getElementById('menuList');
+                const draggedIndex = Array.from(menuList.children).indexOf(draggedElement);
+                const targetIndex = Array.from(menuList.children).indexOf(this);
+
+                if (draggedIndex < targetIndex) {
+                    menuList.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    menuList.insertBefore(draggedElement, this);
+                }
+
+                // 順序番号を更新
+                updateOrderNumbers();
+            }
+
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        // 順序番号を更新
+        function updateOrderNumbers() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach((item, index) => {
+                const orderElement = item.querySelector('.menu-order');
+                orderElement.textContent = index + 1;
+            });
+        }
+
+        // 並び替えを保存
+        function saveSortOrder() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            const newOrder = Array.from(menuItems).map(item => ({
+                id: parseInt(item.dataset.menuId),
+                order: Array.from(menuItems).indexOf(item) + 1
+            }));
+
+            console.log('新しい並び順:', newOrder);
+
+            // メニュー管理画面に戻る
+            window.location.href = './admin_menus.html';
+        }
+
+        // 戻るボタンの処理
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+
+</html>

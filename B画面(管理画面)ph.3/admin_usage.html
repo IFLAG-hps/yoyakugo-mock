@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>利用料金の情報｜管理画面モック</title>
+    <link href="./style.css" rel="stylesheet">
+    <style>
+        /* 利用料金パネル：ヘッダー（アイコン・タイトル・説明ボタン） */
+        .usage-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: var(--radius) var(--radius) 0 0;
+            margin: -16px -16px 0 -16px;
+        }
+        .usage-panel-header h3 {
+            margin: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .usage-panel-header .icon-check {
+            color: var(--ok);
+            font-size: 18px;
+        }
+        /* ラベル・値の2列テーブル */
+        .usage-info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .usage-info-table td {
+            padding: 5px 5px;
+            border: 1px solid var(--line);
+            vertical-align: top;
+        }
+        .usage-info-table td:first-child {
+            width: 220px;
+            background: #f8fafc;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .usage-info-table td:last-child {
+            background: #fff;
+        }
+        /* タブ */
+        .usage-tab-list {
+            display: flex;
+            gap: 0;
+            margin-top: 18px;
+            margin-bottom: 0;
+            padding: 0;
+            list-style: none;
+            border-bottom: 1px solid var(--line);
+        }
+        .usage-tab-list li { margin: 0; }
+        .usage-tab-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--line);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            background: #f1f5f9;
+            color: #000;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 2px;
+        }
+        .usage-tab-btn:hover { background: #e2e8f0; color: var(--text); }
+        .usage-tab-btn.active {
+            border-color: var(--line);
+            position: relative;
+            margin-bottom: -1px;
+            padding-bottom: 11px;
+            background: #10B981;
+            color: #fff;
+        }
+        .usage-tab-content { display: none; }
+        .usage-tab-content.active { display: block; }
+        /* ご利用料金一覧パネル */
+        .usage-list-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            margin-top: -1px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+        }
+        .usage-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .usage-list-header h3 {
+            margin: 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .usage-list-toolbar {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 0;
+            padding-left: 10px;
+            padding-right: 18px;
+        }
+        .usage-list-toolbar label { margin-right: 4px; color: var(--text); }
+        .usage-list-toolbar select {
+            padding: 6px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .usage-list-pager-wrap {
+            margin-top: 12px;
+            padding: 0px 18px 12px 18px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            justify-content: flex-end;
+        }
+        /* ご利用料金一覧テーブル：列幅固定 */
+        .usage-list-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .usage-list-table th:nth-child(1),
+        .usage-list-table td:nth-child(1) { width: 15%; }
+        .usage-list-table th:nth-child(2),
+        .usage-list-table td:nth-child(2) { width: 25%; }
+        .usage-list-table th:nth-child(3),
+        .usage-list-table td:nth-child(3) { width: 15%; }
+        .usage-list-table th:nth-child(4),
+        .usage-list-table td:nth-child(4) { width: 15%; }
+        .usage-list-table th:nth-child(5),
+        .usage-list-table td:nth-child(5) { width: 30%; }
+        /* お引落明細テーブル：列幅固定 */
+        .withdrawal-details-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .withdrawal-details-table th:nth-child(1),
+        .withdrawal-details-table td:nth-child(1) { width: 15%; }
+        .withdrawal-details-table th:nth-child(2),
+        .withdrawal-details-table td:nth-child(2) { width: 25%; }
+        .withdrawal-details-table th:nth-child(3),
+        .withdrawal-details-table td:nth-child(3) { width: 15%; }
+        .withdrawal-details-table th:nth-child(4),
+        .withdrawal-details-table td:nth-child(4) { width: 15%; }
+        .withdrawal-details-table th:nth-child(5),
+        .withdrawal-details-table td:nth-child(5) { width: 30%; }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage" class="active">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+
+        <main class="main">
+            <div class="main-section">
+                <div class="main-header">
+                    <h2 class="main-title">💰 利用料金の情報</h2>
+                </div>
+
+                <!-- ご契約内容 -->
+                <div class="card" style="margin-top: 10px; margin-bottom: 5px;">
+                    <div class="usage-panel-header">
+                        <h3>ご契約内容</h3>
+                    </div>
+                    <table class="usage-info-table">
+                        <tr>
+                            <td style="text-align: right;">契約プラン名</td>
+                            <td>予約GO 月額プラン</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right;">オプション名</td>
+                            <td>予約GO 多言語管理<br>予約GO Googleで予約</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- タブ -->
+                <ul class="usage-tab-list" role="tablist">
+                    <li><button type="button" class="usage-tab-btn active" role="tab" data-tab="tab-usage-list" aria-selected="true">ご利用料金一覧</button></li>
+                    <li><button type="button" class="usage-tab-btn" role="tab" data-tab="tab-withdrawal" aria-selected="false">お引落明細一覧</button></li>
+<!--                    <li><button type="button" class="usage-tab-btn" role="tab" data-tab="tab-invoice" aria-selected="false">ご請求書</button></li>-->
+                </ul>
+
+                <!-- ご利用料金一覧 -->
+                <div class="usage-tab-content active" id="tab-usage-list" role="tabpanel">
+                    <div class="usage-list-card">
+                        <div class="usage-list-toolbar">
+                            <span>
+                                <label>ご利用年月</label>
+                                <select id="usageYearSelect">
+                                    <option value="2026">2026</option>
+                                    <option value="">すべて</option>
+                                </select>
+                                年
+                                <select id="usageMonthSelect">
+                                    <option value="02">02</option>
+                                    <option value="01">01</option>
+                                    <option value="">すべて</option>
+                                </select>
+                                月
+                            </span>
+                            <span>合計金額: <span id="usageTotalAmount">0</span>円</span>
+                        </div>
+                        <div class="usage-list-pager-wrap">
+                            <div class="results-info" style="margin-right: auto;">
+                                <span class="results-count">全<span id="recordCount">15</span>件</span>
+                            </div>
+                            <div class="pagination-controls">
+                                <select id="usagePageSizeSelect" name="selPageSizeSelect" class="page-size-select">
+                                    <option value="10" selected>10件</option>
+                                    <option value="20">20件</option>
+                                    <option value="50">50件</option>
+                                    <option value="100">100件</option>
+                                </select>
+                                <div class="pagination">
+                                    <button type="button" id="usageFirstPage" class="page-btn">«</button>
+                                    <button type="button" id="usagePrePage" class="page-btn">‹</button>
+                                    <span class="page-info">
+                                        <input id="usageCurPage" type="text" value="1" class="page-input" readonly>
+                                        /<span id="usageTotalPage">1</span>ページ
+                                    </span>
+                                    <button type="button" id="usageNextPage" class="page-btn">›</button>
+                                    <button type="button" id="usageLastPage" class="page-btn">»</button>
+                                </div>
+                                <span class="page-range">
+                                    (<span id="usageFromRecord">0</span>-<span id="usageToRecord">0</span>件/全<span id="usageRecordCount">0</span>件)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="results-table-container">
+                            <table class="results-table usage-list-table">
+                                <thead>
+                                    <tr>
+                                        <th>ご利用年月</th>
+                                        <th>内訳</th>
+                                        <th>金額</th>
+                                        <th>お支払方法</th>
+                                        <th>備考</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usageListTableBody">
+                                    <tr data-year="2026" data-month="02" data-amount="2700">
+                                        <td>2026/02</td>
+                                        <td>予約GO 月額プラン(2月分)</td>
+                                        <td>2,700円（税込）</td>
+                                        <td>口座振替</td>
+                                        <td>　</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="02" data-amount="1500">
+                                        <td>2026/02</td>
+                                        <td>予約GO 多言語管理(2月分)</td>
+                                        <td>1,500円（税込）</td>
+                                        <td>口座振替</td>
+                                        <td>　</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="02" data-amount="1500">
+                                        <td>2026/02</td>
+                                        <td>予約GO Googleで予約(2月分)</td>
+                                        <td>1,500円（税込）</td>
+                                        <td>口座振替</td>
+                                        <td>　</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="01" data-amount="2700">
+                                        <td>2026/01</td>
+                                        <td>予約GO 月額プラン(1月分)</td>
+                                        <td>2,700円（税込）</td>
+                                        <td>口座振替</td>
+                                        <td>　</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- お引落明細一覧 -->
+                <div class="usage-tab-content" id="tab-withdrawal" role="tabpanel">
+                    <div class="usage-list-card">
+                        <div class="usage-list-toolbar">
+                            <span>
+                                <label>引落年月</label>
+                                <select id="withdrawalYearSelect">
+                                    <option value="2026">2026</option>
+                                    <option value="">すべて</option>
+                                </select>
+                                年
+                                <select id="withdrawalMonthSelect">
+                                    <option value="02">02</option>
+                                    <option value="01">01</option>
+                                    <option value="">すべて</option>
+                                </select>
+                                月
+                            </span>
+                            <span>合計金額: <span id="withdrawalTotalAmount">0</span>円</span>
+                        </div>
+                        <div class="usage-list-pager-wrap">
+                            <div class="results-info" style="margin-right: auto;">
+                                <span class="results-count">全<span id="withdrawalRecordCount">0</span>件</span>
+                            </div>
+                            <div class="pagination-controls">
+                                <select id="withdrawalPageSizeSelect" name="selPageSizeSelect" class="page-size-select">
+                                    <option value="10" selected>10件</option>
+                                    <option value="20">20件</option>
+                                    <option value="50">50件</option>
+                                    <option value="100">100件</option>
+                                </select>
+                                <div class="pagination">
+                                    <button type="button" id="withdrawalFirstPage" class="page-btn">«</button>
+                                    <button type="button" id="withdrawalPrePage" class="page-btn">‹</button>
+                                    <span class="page-info">
+                                        <input id="withdrawalCurPage" type="text" value="1" class="page-input" readonly>
+                                        /<span id="withdrawalTotalPage">1</span>ページ
+                                    </span>
+                                    <button type="button" id="withdrawalNextPage" class="page-btn">›</button>
+                                    <button type="button" id="withdrawalLastPage" class="page-btn">»</button>
+                                </div>
+                                <span class="page-range">
+                                    (<span id="withdrawalFromRecord">0</span>-<span id="withdrawalToRecord">0</span>件/全<span id="withdrawalUsageRecordCount">0</span>件)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="results-table-container">
+                            <table class="results-table withdrawal-details-table">
+                                <thead>
+                                    <tr>
+                                        <th>引落年月</th>
+                                        <th>内訳</th>
+                                        <th>金額</th>
+                                        <th>引落金融機関</th>
+                                        <th>備考</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="withdrawalListTableBody">
+                                    <tr data-year="2026" data-month="02" data-amount="2700">
+                                        <td>2026/02</td>
+                                        <td>予約GO 月額プラン(1月分)</td>
+                                        <td>2,700円（税込）</td>
+                                        <td>ＪＡＣＣＳ</td>
+                                        <td>6日引落(休業日の場合は翌営業日)</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="02" data-amount="1500">
+                                        <td>2026/02</td>
+                                        <td>予約GO 多言語管理(1月分)</td>
+                                        <td>1,500円（税込）</td>
+                                        <td>ＪＡＣＣＳ</td>
+                                        <td>6日引落(休業日の場合は翌営業日)</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="02" data-amount="1500">
+                                        <td>2026/02</td>
+                                        <td>予約GO Googleで予約(1月分)</td>
+                                        <td>1,500円（税込）</td>
+                                        <td>ＪＡＣＣＳ</td>
+                                        <td>6日引落(休業日の場合は翌営業日)</td>
+                                    </tr>
+                                    <tr data-year="2026" data-month="01" data-amount="2700">
+                                        <td>2026/01</td>
+                                        <td>予約GO 月額プラン(12月分)</td>
+                                        <td>2,700円（税込）</td>
+                                        <td>ＪＡＣＣＳ</td>
+                                        <td>6日引落(休業日の場合は翌営業日)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ご請求書（プレースホルダー） 
+                <div class="usage-tab-content" id="tab-invoice" role="tabpanel">
+                    <div class="usage-list-card">
+                        <div class="usage-list-header">
+                            <h3>ご請求書</h3>
+                        </div>
+                        <p style="color: var(--muted); padding: 24px;">ご請求書の内容はここに表示されます。</p>
+                    </div>
+                </div>-->
+            </div>
+        </main>
+    </div>
+    <script>
+        document.querySelectorAll('.usage-tab-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var tabId = this.getAttribute('data-tab');
+                document.querySelectorAll('.usage-tab-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
+                document.querySelectorAll('.usage-tab-content').forEach(function(c) { c.classList.remove('active'); });
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+                var panel = document.getElementById(tabId);
+                if (panel) panel.classList.add('active');
+            });
+        });
+
+        (function() {
+            var yearSelect = document.getElementById('usageYearSelect');
+            var monthSelect = document.getElementById('usageMonthSelect');
+            var tbody = document.getElementById('usageListTableBody');
+            var totalAmountEl = document.getElementById('usageTotalAmount');
+            var fromRecordEl = document.getElementById('usageFromRecord');
+            var toRecordEl = document.getElementById('usageToRecord');
+            var recordCountEl = document.getElementById('usageRecordCount');
+            var recordCountTotalEl = document.getElementById('recordCount');
+
+            function updateUsageList() {
+                var year = yearSelect.value;
+                var month = monthSelect.value;
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                var visible, totalAmount;
+
+                if (month === '') {
+                    visible = rows.slice();
+                    visible.sort(function(a, b) {
+                        var ay = a.getAttribute('data-year');
+                        var am = a.getAttribute('data-month');
+                        var by = b.getAttribute('data-year');
+                        var bm = b.getAttribute('data-month');
+                        if (ay !== by) return Number(by) - Number(ay);
+                        return parseInt(bm, 10) - parseInt(am, 10);
+                    });
+                } else {
+                    visible = rows.filter(function(tr) {
+                        return tr.getAttribute('data-year') === year && tr.getAttribute('data-month') === month;
+                    });
+                }
+
+                rows.forEach(function(tr) {
+                    tr.style.display = visible.indexOf(tr) >= 0 ? '' : 'none';
+                });
+                visible.forEach(function(tr) { tbody.appendChild(tr); });
+
+                totalAmount = visible.reduce(function(sum, tr) {
+                    return sum + (parseInt(tr.getAttribute('data-amount'), 10) || 0);
+                }, 0);
+                totalAmountEl.textContent = totalAmount.toLocaleString();
+
+                var count = visible.length;
+                if (fromRecordEl) fromRecordEl.textContent = count > 0 ? 1 : 0;
+                if (toRecordEl) toRecordEl.textContent = count;
+                if (recordCountEl) recordCountEl.textContent = count;
+                if (recordCountTotalEl) recordCountTotalEl.textContent = count;
+            }
+
+            if (yearSelect) yearSelect.addEventListener('change', updateUsageList);
+            if (monthSelect) monthSelect.addEventListener('change', updateUsageList);
+            if (tbody) updateUsageList();
+        })();
+
+        (function() {
+            var yearSelect = document.getElementById('withdrawalYearSelect');
+            var monthSelect = document.getElementById('withdrawalMonthSelect');
+            var tbody = document.getElementById('withdrawalListTableBody');
+            var totalAmountEl = document.getElementById('withdrawalTotalAmount');
+            var fromRecordEl = document.getElementById('withdrawalFromRecord');
+            var toRecordEl = document.getElementById('withdrawalToRecord');
+            var recordCountEl = document.getElementById('withdrawalUsageRecordCount');
+            var recordCountTotalEl = document.getElementById('withdrawalRecordCount');
+
+            function updateWithdrawalList() {
+                if (!yearSelect || !monthSelect || !tbody) return;
+                var year = yearSelect.value;
+                var month = monthSelect.value;
+                var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+                var visible, totalAmount;
+
+                if (month === '') {
+                    visible = rows.slice();
+                    visible.sort(function(a, b) {
+                        var ay = a.getAttribute('data-year');
+                        var am = a.getAttribute('data-month');
+                        var by = b.getAttribute('data-year');
+                        var bm = b.getAttribute('data-month');
+                        if (ay !== by) return Number(by) - Number(ay);
+                        return parseInt(bm, 10) - parseInt(am, 10);
+                    });
+                } else {
+                    visible = rows.filter(function(tr) {
+                        return tr.getAttribute('data-year') === year && tr.getAttribute('data-month') === month;
+                    });
+                }
+
+                rows.forEach(function(tr) {
+                    tr.style.display = visible.indexOf(tr) >= 0 ? '' : 'none';
+                });
+                visible.forEach(function(tr) { tbody.appendChild(tr); });
+
+                totalAmount = visible.reduce(function(sum, tr) {
+                    return sum + (parseInt(tr.getAttribute('data-amount'), 10) || 0);
+                }, 0);
+                if (totalAmountEl) totalAmountEl.textContent = totalAmount.toLocaleString();
+
+                var count = visible.length;
+                if (fromRecordEl) fromRecordEl.textContent = count > 0 ? 1 : 0;
+                if (toRecordEl) toRecordEl.textContent = count;
+                if (recordCountEl) recordCountEl.textContent = count;
+                if (recordCountTotalEl) recordCountTotalEl.textContent = count;
+            }
+
+            if (yearSelect) yearSelect.addEventListener('change', updateWithdrawalList);
+            if (monthSelect) monthSelect.addEventListener('change', updateWithdrawalList);
+            if (tbody) updateWithdrawalList();
+        })();
+    </script>
+</body>
+
+</html>

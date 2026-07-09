@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ダッシュボード｜管理画面モック</title>
+    <link href="./style.css" rel="stylesheet">
+    <style>
+        /* ボタン用にinline-blockを適用 */
+        .topbar .phase-wrapper {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard" class="active">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <header class="topbar">
+            <span style="margin-right: auto; display: flex; align-items: center; gap: 0;"><span style="font-size: 20px;">🌐</span><a class="" href="../C画面(予約フォーム)/index.html" target="_blank" style="text-decoration: underline; font-weight: bold; font-size: 14px;"> https://d-ssl.dev-xaas.jp/m1234567/tryServ/appoint/index/</a></span>
+            <div class="search">
+            </div>
+            <div class="phase-wrapper">
+                <button class="link-btn" style="white-space: nowrap;">オンラインマニュアル</button>
+                <!--<div class="phase-overlay">フェーズ2</div>-->
+            </div>
+            <button class="link-btn" style="white-space: nowrap;" onclick="window.location.href='admin_password.html'">パスワード変更</button>
+            <button class="link-btn" style="white-space: nowrap;" onclick="window.location.href='admin_login.html'">ログアウト</button>
+        </header>
+        <!-- Main -->
+        <main class="main">
+            <!-- Dashboard -->
+            <section id="dashboard" class="section active">
+                <div class="grid">
+                    <div class="card phase-wrapper">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="margin: 0;">📝 お知らせ</h3>
+                            <div style="font-size: 14px; color: #6b7280;">
+                                ✉ お問い合わせ先：<a href="mailto:info@yoyakugo-system.com" style="color: #1e90ff; text-decoration: none;">info@yoyakugo-system.com</a>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="noticesource">
+                                <div class="notice-slot" style="white-space: nowrap; display: flex; align-items: center; gap: 8px;">2025/11/13 🔗 <a href="./admin_notice.html?id=1" style="color: #1e90ff; text-decoration: underline;">冬季休業のお知らせ</a></div>
+                                <div class="notice-slot" style="white-space: nowrap; display: flex; align-items: center; gap: 8px;">2025/11/12 🔗 <a href="./admin_notice.html?id=2" style="color: #1e90ff; text-decoration: underline;">テストお知らせ</a></div>
+                            </div>
+                            <div style="text-align: right; margin-top: 8px;">
+                                <a href="./admin_notice.html" style="color: #1e90ff; text-decoration: underline; white-space: nowrap;">過去のお知らせを見る</a>
+                            </div>
+                        </div>
+                        <!--<div class="phase-overlay">フェーズ2</div>-->
+                    </div>
+                    <div class="grid cols-2">
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h3 style="margin: 0;">今日の受付・予約</h3>
+                                <div class="kpi" style="text-align: right;">
+                                    <div class="num">12</div>
+                                    <div style="padding-top:10px;">件</div>
+                                    <div class="muted">受付待ち 4 件 / 受付完了 8 件</div>
+                                </div>
+                            </div>
+                            <div class="timeresource">
+                                <div class="slot">
+                                    <div>10:00</div>
+                                    <div>山田太郎｜パーマ｜4,000円｜60分</div>
+                                    <div class="chip">受付待ち</div>
+                                </div>
+                                <div class="slot">
+                                    <div>11:30</div>
+                                    <div>佐藤花子｜カット｜3,000円｜30分</div>
+                                    <div class="chip">受付待ち</div>
+                                </div>
+                                <div class="slot">
+                                    <div>13:00</div>
+                                    <div>鈴木一郎｜カラー｜9,000円｜60分</div>
+                                    <div class="chip">受付待ち</div>
+                                </div>
+                                <div class="slot">
+                                    <div>15:00</div>
+                                    <div>田中実｜カット＆カラー｜12,000円｜90分</div>
+                                    <div class="chip">受付待ち</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                                <h3 style="margin: 0;">空き枠（本日）</h3>
+                                <div>最終更新 09:10</div>
+                            </div>
+                            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                                <span class="chip">11:00</span>
+                                <span class="chip">14:00</span>
+                                <span class="chip">16:30</span>
+                                <span class="chip">18:00</span>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+        </main>
+    </div>
+
+</body>
+
+</html>

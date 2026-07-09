@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PINコード入力｜管理画面モック</title>
+  <link href="./style.css" rel="stylesheet">
+  <style>
+    /* PINコード入力画面専用のスタイル - センター配置・全画面幅 */
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #10b981 0%, #00774E 100%);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .login-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      background: #ffffff;
+      width: 100%;
+      height: 100%;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .login-content-wrapper {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .login-logo svg {
+      width: 220px;
+      height: 70px;
+    }
+
+    .login-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: #000000;
+      margin: 0;
+      padding-left: 20px;
+      text-align: left;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #374151;
+    }
+
+    /* PINコード入力フィールドのスタイル */
+    .pin-input-container {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pin-input {
+      width: 50px;
+      height: 60px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 600;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      caret-color: #1e90ff;
+    }
+
+    .pin-input:focus {
+      border-color: #1e90ff;
+      box-shadow: 0 0 0 3px rgba(30, 144, 255, 0.1), 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .pin-input.filled {
+      border-color: #10b981;
+      background-color: #f0fdf4;
+    }
+
+    .pin-input.error {
+      border-color: #ef4444;
+      background-color: #fef2f2;
+    }
+
+    .info-message {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      color: #1565c0;
+      font-size: 14px;
+      line-height: 1.6;
+      border-radius: 4px;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #10b981 0%, #00774E 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .login-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    }
+
+    .login-button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .login-button:disabled {
+      background: #d1d5db !important;
+      color: #9ca3af !important;
+      cursor: not-allowed !important;
+      opacity: 0.6;
+      transform: none !important;
+    }
+
+    .clear-button {
+      width: 100%;
+      padding: 16px;
+      background: #ffffff;
+      color: #374151;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-button:hover {
+      background: #f9fafb;
+      border-color: #d1d5db;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* エラーメッセージ */
+    .error-message {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #fef2f2;
+      border-left: 4px solid #ef4444;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #991b1b;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .login-card {
+        padding: 40px 20px;
+      }
+    }
+
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .login-footer-text {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .back-to-login-link {
+      font-size: 14px;
+      color: #1e90ff;
+      text-decoration: none;
+      transition: color 0.2s;
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    .back-to-login-link:hover {
+      color: #1565c0;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-content-wrapper">
+        <div class="login-header">
+          <div class="login-logo">
+            <img src="./logo-green.jpg" alt="TryServ" style="width: 150px; height: auto;">
+          </div>
+          <h1 class="login-title">PINコード入力</h1>
+          <p class="login-subtitle">
+          ご登録のメールアドレスにPINコードを送信しました。<br>
+          本人確認のため、メールに記載のPINコードを入力してください。<br>
+          有効期限は5分間です。</p>
+      </div>
+
+        <form id="pinInputForm" name="pinInputForm" class="login-form" method="post">
+
+          <div class="form-group">
+            <label class="form-label">PINコード</label>
+            <div class="pin-input-container">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin1" data-index="0" autocomplete="off">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin2" data-index="1" autocomplete="off">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin3" data-index="2" autocomplete="off">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin4" data-index="3" autocomplete="off">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin5" data-index="4" autocomplete="off">
+              <input type="text" class="pin-input" maxlength="1" pattern="[0-9]" inputmode="numeric" id="pin6" data-index="5" autocomplete="off">
+            </div>
+
+            <!-- エラーメッセージ -->
+            <div class="error-message" id="errorMessage">
+              PINコードが正しくありません。もう一度お試しください。
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button type="submit" id="submitPinBtn" name="submitPinBtn" class="login-button" disabled>認証する</button>
+          </div>
+          <a href="./admin_login.html" class="back-to-login-link">ログインへ戻る</a>
+        </form>
+
+        <div class="login-footer">
+          <p class="login-footer-text">© 2025 Clinic Co. All rights reserved.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // PIN入力フィールドの管理
+    const pinInputs = document.querySelectorAll('.pin-input');
+    const submitBtn = document.getElementById('submitPinBtn');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // 各PIN入力フィールドにイベントリスナーを設定
+    pinInputs.forEach((input, index) => {
+        // 入力時の処理
+        input.addEventListener('input', function(e) {
+            const value = e.target.value;
+
+            // 数字以外を削除
+            if (!/^\d*$/.test(value)) {
+                e.target.value = value.replace(/\D/g, '');
+                return;
+            }
+
+            // 入力があったらfilledクラスを追加
+            if (value) {
+                e.target.classList.add('filled');
+                e.target.classList.remove('error');
+
+                // 次のフィールドにフォーカス
+                if (index < pinInputs.length - 1) {
+                    pinInputs[index + 1].focus();
+                }
+            } else {
+                e.target.classList.remove('filled');
+            }
+
+            // エラーメッセージを非表示
+            errorMessage.classList.remove('show');
+
+            // ボタンの有効/無効を更新
+            updateSubmitButton();
+        });
+
+        // キーダウン時の処理（バックスペースで前のフィールドに戻る）
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                pinInputs[index - 1].focus();
+                pinInputs[index - 1].value = '';
+                pinInputs[index - 1].classList.remove('filled');
+                updateSubmitButton();
+            }
+
+            // 左矢印キーで前のフィールドに移動
+            if (e.key === 'ArrowLeft' && index > 0) {
+                e.preventDefault();
+                pinInputs[index - 1].focus();
+            }
+
+            // 右矢印キーで次のフィールドに移動
+            if (e.key === 'ArrowRight' && index < pinInputs.length - 1) {
+                e.preventDefault();
+                pinInputs[index + 1].focus();
+            }
+        });
+
+        // ペースト時の処理
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text');
+            const digits = pasteData.replace(/\D/g, '').split('').slice(0, 6);
+
+            digits.forEach((digit, i) => {
+                if (pinInputs[i]) {
+                    pinInputs[i].value = digit;
+                    pinInputs[i].classList.add('filled');
+                }
+            });
+
+            // 最後に入力したフィールドか、最後のフィールドにフォーカス
+            const lastIndex = Math.min(digits.length, pinInputs.length - 1);
+            pinInputs[lastIndex].focus();
+
+            updateSubmitButton();
+        });
+
+        // フォーカス時に内容を選択
+        input.addEventListener('focus', function(e) {
+            e.target.select();
+        });
+    });
+
+    // 送信ボタンの有効/無効を更新
+    function updateSubmitButton() {
+        const allFilled = Array.from(pinInputs).every(input => input.value.length === 1);
+        if (allFilled) {
+            submitBtn.removeAttribute('disabled');
+        } else {
+            submitBtn.setAttribute('disabled', 'disabled');
+        }
+    }
+
+    // フォームクリア
+    function clearForm() {
+        pinInputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('filled', 'error');
+        });
+        pinInputs[0].focus();
+        errorMessage.classList.remove('show');
+        updateSubmitButton();
+    }
+
+    // PINコード認証フォームの送信処理
+    document.getElementById('pinInputForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // PINコードを取得
+        const pinCode = Array.from(pinInputs).map(input => input.value).join('');
+
+        console.log('PINコード認証:', { pinCode: pinCode });
+        window.location.href = './admin_index.html';
+    });
+
+    // ページ読み込み時に最初のフィールドにフォーカス
+    document.addEventListener('DOMContentLoaded', function() {
+        pinInputs[0].focus();
+    });
+  </script>
+</body>
+</html>
+

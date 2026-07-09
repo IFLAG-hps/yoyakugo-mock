@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>お知らせ管理｜管理画面モック</title>
+
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <!-- Main -->
+        <main class="main">
+            <!-- お知らせ管理セクション -->
+            <div class="main-section">
+                <div class="main-header">
+                    <h3 class="main-title">📢 お知らせ管理</h3>
+                </div>
+
+                <!-- 検索結果 -->
+                <div class="search-results-header">
+                    <div class="results-info">
+                        <span class="results-count">全<span id="recordCount">1</span>件</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="pageSizeSelect" name="selPageSizeSelect" class="page-size-select">
+                            <option value="10" selected="">10件</option>
+                            <option value="20">20件</option>
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                        </select>
+                        <div class="pagination">
+                            <button id="firstPage" class="page-btn">«</button>
+                            <button id="prePage" class="page-btn">‹</button>
+                            <span class="page-info">
+                                <input id="curPage" type="text" value="1" class="page-input">
+                                /<span id="totalPage">1</span>ページ
+                            </span>
+                            <button id="nextPage" class="page-btn">›</button>
+                            <button id="lastPage" class="page-btn">»</button>
+                        </div>
+                        <span class="page-range">
+                            (<span id="fromRecord">1</span>-<span id="toRecord">1</span>件/全<span
+                                id="recordCount">1</span>件)
+                        </span>
+                    </div>
+                </div>
+
+                <div id="noticeList" class="results-table-container" style="margin: 5px 10px;">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" style="width:15%;">日付</th>
+                                <th class="sortable">お知らせタイトル</th>
+                            </tr>
+                        </thead>
+                        <tbody id="noticeTableBody">
+                            <tr>
+                                <td>2025/11/13</td>
+                                <td>
+                                    <a href="#" onclick="showNoticeModal(1); return false;" style="color: #1e90ff; text-decoration: underline; cursor: pointer;">冬季休業のお知らせ</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025/11/12</td>
+                                <td>
+                                    <a href="#" onclick="showNoticeModal(2); return false;" style="color: #1e90ff; text-decoration: underline; cursor: pointer;">テストお知らせ</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2025/1/1</td>
+                                <td>
+                                    <a href="#" onclick="showNoticeModal(3); return false;" style="color: #1e90ff; text-decoration: underline; cursor: pointer;">謹賀新年</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+        </main>
+    </div>
+
+    <!-- お知らせ詳細モーダル -->
+    <div class="popup-overlay" id="noticeDetailModal" style="display: none;">
+        <div class="normal-modal" id="noticeDetailModalContent">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <h3 class="modal-title" style="margin: 0; margin-right: auto;">冬季休業のお知らせ(テスト)</h3>
+                    <span id="noticeDate" style="margin-right: 30px; color: #6b7280;">2025/11/13</span>
+                </div>
+                <button class="modal-close" onclick="closeNoticeModal()">×</button>
+            </div>
+
+            <div class="modal-body" style="padding: 20px 30px;">
+                <div style="white-space: pre-line; line-height: 1.8; color: #374151;">
+平素は EPARK Doctor をご利用いただきまして、誠にありがとうございます。
+
+誠に勝手ながら、2025年12月30日（火）～2026年1月4日（日）まで冬季休業とさせていただきます。
+2026年1月5日（月）9時より通常通り営業いたします。
+
+ご不便をおかけしますが、何卒ご理解いただきますようお願い致します。
+
+－－－－－－－－－－－－－－－－－－ －－－－－－－－－－－－
+サポートセンター
+住所　：　東京都港区芝公園ｘ－ｘ－ｘ
+電話番号 ： 03-1234-5678
+Eメール　： test@test.com
+営業時間 ： 月～金　9:00～18:30 ※土日祝日、弊社指定休日を除く
+－－－－－－－－－－－－－－－－－－ －－－－－－－－－－－－
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeNoticeModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // お知らせデータ
+        const noticeData = {
+            1: {
+                title: '冬季休業のお知らせ(テスト)',
+                date: '2025/11/13',
+                content: `平素は EPARK Doctor をご利用いただきまして、誠にありがとうございます。
+
+誠に勝手ながら、2025年12月30日（火）～2026年1月4日（日）まで冬季休業とさせていただきます。
+2026年1月5日（月）9時より通常通り営業いたします。
+
+ご不便をおかけしますが、何卒ご理解いただきますようお願い致します。
+
+－－－－－－－－－－－－－－－－－－ －－－－－－－－－－－－
+サポートセンター
+住所　：　東京都港区芝公園ｘ－ｘ－ｘ
+電話番号 ： 03-1234-5678
+Eメール　： test@test.com
+営業時間 ： 月～金　9:00～18:30 ※土日祝日、弊社指定休日を除く
+－－－－－－－－－－－－－－－－－－ －－－－－－－－－－－－`
+            },
+            2 : {
+                title: 'テストお知らせ',
+                date: '2025/11/12',
+                content: `テストテスト`
+            },
+            3 : {
+                title: '謹賀新年',
+                date: '2025/1/1',
+                content: `明けましておめでとうございます
+本年もよろしくお願い申し上げます。`
+            }
+        };
+
+        // お知らせ詳細モーダルを表示
+        function showNoticeModal(noticeId) {
+            const notice = noticeData[noticeId];
+            if (!notice) return;
+
+            const modal = document.getElementById('noticeDetailModal');
+            const modalTitle = modal.querySelector('.modal-title');
+            const noticeDate = document.getElementById('noticeDate');
+            const modalBody = modal.querySelector('.modal-body div');
+
+            modalTitle.textContent = notice.title;
+            noticeDate.textContent = notice.date;
+            modalBody.textContent = notice.content;
+
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+
+        // お知らせ詳細モーダルを閉じる
+        function closeNoticeModal() {
+            const modal = document.getElementById('noticeDetailModal');
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+
+        // モーダル外クリックで閉じる
+        document.getElementById('noticeDetailModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeNoticeModal();
+            }
+        });
+
+        // URLパラメータをチェックしてお知らせ詳細を表示
+        function checkUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.has('id')) {
+                const noticeId = parseInt(urlParams.get('id'));
+                if (noticeId && noticeData[noticeId]) {
+                    // 少し遅延させてモーダルを表示（DOMの準備を待つ）
+                    setTimeout(() => {
+                        showNoticeModal(noticeId);
+                    }, 100);
+                }
+            }
+        }
+
+        // ページ読み込み時にURLパラメータをチェック
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUrlParameters();
+        });
+
+        // ページネーション機能
+        document.getElementById('firstPage').addEventListener('click', () => {
+            document.getElementById('curPage').value = 1;
+            console.log('最初のページへ');
+        });
+
+        document.getElementById('prePage').addEventListener('click', () => {
+            const currentPage = parseInt(document.getElementById('curPage').value);
+            if (currentPage > 1) {
+                document.getElementById('curPage').value = currentPage - 1;
+                console.log('前のページへ');
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const currentPage = parseInt(document.getElementById('curPage').value);
+            const totalPages = parseInt(document.getElementById('totalPage').textContent);
+            if (currentPage < totalPages) {
+                document.getElementById('curPage').value = currentPage + 1;
+                console.log('次のページへ');
+            }
+        });
+
+        document.getElementById('lastPage').addEventListener('click', () => {
+            const totalPages = parseInt(document.getElementById('totalPage').textContent);
+            document.getElementById('curPage').value = totalPages;
+            console.log('最後のページへ');
+        });
+
+        // 表示件数変更
+        document.getElementById('pageSizeSelect').addEventListener('change', function () {
+            console.log('表示件数変更:', this.value);
+        });
+    </script>
+    </div>
+    </div>
+    </main>
+    </div>
+</body>
+
+</html>
+

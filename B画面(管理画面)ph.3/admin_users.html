@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>スタッフ管理｜管理画面モック</title>
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+
+
+    <link href="./style.css" rel="stylesheet">
+    <style>
+        #userTableBody tr.staff-filter-hidden,
+        #userTableBody tr.staff-page-hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .search-results-header {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .pagination-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users" class="active">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© Clinic Co.</div>
+        </aside>
+        <header class="topbar">
+            <div class="search">
+                <input type="search" id="staffSearchInput" placeholder="スタッフ名 を検索"
+                    oninput="filterCustomers(this.value)" />
+            </div>
+            <button type="button" class="regist-btn" onclick="staffAdd(1, '2')"><i class="material-icons">add</i>
+                新規登録</button>
+        </header>
+        <main class="main">
+            <!-- スタッフ管理セクション -->
+            <div class="main-section">
+                <div class="main-header">
+                    <h2 class="main-title">👫 スタッフ管理</h2>
+                    <div class="max-count" style="width: 70%; text-align: right;">登録上限数：99件</div>
+                </div>
+
+                <div class="search-results-header">
+                    <div class="results-info">
+                        <span class="results-count">全<span id="staffListTotalCount">0</span>件</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="staffPageSizeSelect" name="staffPageSizeSelect" class="page-size-select"
+                            title="1ページあたりの表示件数">
+                            <option value="10" selected>10件</option>
+                            <option value="20">20件</option>
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                        </select>
+                        <div class="pagination">
+                            <button type="button" id="staffFirstPage" class="page-btn" aria-label="先頭">«</button>
+                            <button type="button" id="staffPrePage" class="page-btn" aria-label="前">‹</button>
+                            <span class="page-info">
+                                <input id="staffCurPage" type="text" value="1" class="page-input" inputmode="numeric"
+                                    aria-label="現在のページ" />
+                                /<span id="staffTotalPage">1</span>ページ
+                            </span>
+                            <button type="button" id="staffNextPage" class="page-btn" aria-label="次">›</button>
+                            <button type="button" id="staffLastPage" class="page-btn" aria-label="最後">»</button>
+                        </div>
+                        <span class="page-range">
+                            (<span id="staffFromRecord">0</span>-<span id="staffToRecord">0</span>件/全<span
+                                id="staffFilteredCount">0</span>件)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">ID</th>
+                                <th style="width: 20%;">スタッフ名</th>
+                                <th style="width: 20%;">メールアドレス</th>
+                                <th style="width: 20%;">担当者設定</th>
+                                <th style="width: 20%;">管理者権限</th>
+                                <th style="width: 10%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr>
+                                <td>1</td>
+                                <td>テスト花子</td>
+                                <td>test.hanako@example.com</td>
+                                <td>OFF</td>
+                                <td>ON</td>
+                                <td class="action-cell">
+                                    <button class="link-btn" onclick="editUser(1)">編集</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>テスト太郎</td>
+                                <td>test.taro@example.com</td>
+                                <td>ON</td>
+                                <td>OFF</td>
+                                <td class="action-cell">
+                                    <button class="link-btn" onclick="editUser(2)">編集</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>山田てすと</td>
+                                <td>yamada.test@example.com</td>
+                                <td>ON</td>
+                                <td>OFF</td>
+                                <td class="action-cell">
+                                    <button class="link-btn" onclick="editUser(3)">編集</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>佐藤テスト</td>
+                                <td>sato.test@example.com</td>
+                                <td>ON</td>
+                                <td>OFF</td>
+                                <td class="action-cell">
+                                    <button class="link-btn" onclick="editUser(4)">編集</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>5</td>
+                                <td>田中スタッフ</td>
+                                <td>tanaka.user@example.com</td>
+                                <td>ON</td>
+                                <td>ON</td>
+                                <td class="action-cell">
+                                    <button class="link-btn" onclick="editUser(5)">編集</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- スタッフ編集モーダル -->
+    <div class="popup-overlay" id="editStaffModal" style="display: none;">
+        <div class="normal-modal" id="editStaffModalContent">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 4px;">
+                    <span id="editStaffModalTitleIcon" class="modal-title-icon" aria-hidden="true">✏️</span>
+                    <span id="editStaffTitle">スタッフ編集</span>
+                    <span id="editStaffId">（ID：112）</span>
+                </h3>
+                <button class="modal-close" onclick="closeEditStaffModal()">×</button>
+            </div>
+
+            <form id="editStaffForm">
+
+                <div class="form-row" style="margin-bottom: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" for="editStaffName">名前 <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="editStaffName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editStaffEmail">メールアドレス <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="editStaffEmail" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">担当者設定 <span class="required">*</span></label>
+                        <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                                <input type="radio" name="editAssignedStaff" value="on" id="editAssignedStaffOn" style="margin-right: 6px;">
+                                ON
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                                <input type="radio" name="editAssignedStaff" value="off" id="editAssignedStaffOff" style="margin-right: 6px;">
+                                OFF
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">管理者権限 <span class="required">*</span></label>
+                        <div style="display: flex; gap: 20px; align-items: center; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                                <input type="radio" name="editAdminRights" value="on" id="editAdminRightsOn" style="margin-right: 6px;">
+                                ON
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-weight: normal;">
+                                <input type="radio" name="editAdminRights" value="off" id="editAdminRightsOff" style="margin-right: 6px;">
+                                OFF
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" onclick="saveStaffEdit()">保存</button>
+                <button type="button" class="modal-btn modal-btn-delete" onclick="deleteStaff()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditStaffModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let staffCurrentPage = 1;
+
+        function staffGetTableRows() {
+            return Array.prototype.slice.call(document.querySelectorAll('#userTableBody tr'));
+        }
+
+        function staffApplyPagination() {
+            const pageSizeSelect = document.getElementById('staffPageSizeSelect');
+            const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) || 10 : 10;
+            const allRows = staffGetTableRows();
+            const matched = allRows.filter(function (row) {
+                return !row.classList.contains('staff-filter-hidden');
+            });
+            const totalFiltered = matched.length;
+            let totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+            if (totalFiltered === 0) {
+                totalPages = 1;
+            }
+            if (staffCurrentPage > totalPages) {
+                staffCurrentPage = totalPages;
+            }
+            if (staffCurrentPage < 1) {
+                staffCurrentPage = 1;
+            }
+
+            const start = (staffCurrentPage - 1) * pageSize;
+            matched.forEach(function (row, idx) {
+                if (idx >= start && idx < start + pageSize) {
+                    row.classList.remove('staff-page-hidden');
+                } else {
+                    row.classList.add('staff-page-hidden');
+                }
+            });
+            allRows.forEach(function (row) {
+                if (row.classList.contains('staff-filter-hidden')) {
+                    row.classList.remove('staff-page-hidden');
+                }
+            });
+
+            const curInput = document.getElementById('staffCurPage');
+            if (curInput) {
+                curInput.value = String(staffCurrentPage);
+            }
+            const totalPageEl = document.getElementById('staffTotalPage');
+            if (totalPageEl) {
+                totalPageEl.textContent = String(totalPages);
+            }
+            const from = totalFiltered === 0 ? 0 : start + 1;
+            const to = totalFiltered === 0 ? 0 : Math.min(start + pageSize, totalFiltered);
+            const fromEl = document.getElementById('staffFromRecord');
+            const toEl = document.getElementById('staffToRecord');
+            if (fromEl) {
+                fromEl.textContent = String(from);
+            }
+            if (toEl) {
+                toEl.textContent = String(to);
+            }
+            const filteredEl = document.getElementById('staffFilteredCount');
+            if (filteredEl) {
+                filteredEl.textContent = String(totalFiltered);
+            }
+            const listTotalEl = document.getElementById('staffListTotalCount');
+            if (listTotalEl) {
+                listTotalEl.textContent = String(allRows.length);
+            }
+        }
+
+        function staffBindPaginationEvents() {
+            const sel = document.getElementById('staffPageSizeSelect');
+            if (sel) {
+                sel.addEventListener('change', function () {
+                    staffCurrentPage = 1;
+                    staffApplyPagination();
+                });
+            }
+
+            function goFirst() {
+                staffCurrentPage = 1;
+                staffApplyPagination();
+            }
+            function goPrev() {
+                staffCurrentPage -= 1;
+                staffApplyPagination();
+            }
+            function goNext() {
+                staffCurrentPage += 1;
+                staffApplyPagination();
+            }
+            function goLast() {
+                const pageSize = parseInt(document.getElementById('staffPageSizeSelect').value, 10) || 10;
+                const matched = staffGetTableRows().filter(function (r) {
+                    return !r.classList.contains('staff-filter-hidden');
+                });
+                const totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                staffCurrentPage = totalPages;
+                staffApplyPagination();
+            }
+
+            const firstBtn = document.getElementById('staffFirstPage');
+            const preBtn = document.getElementById('staffPrePage');
+            const nextBtn = document.getElementById('staffNextPage');
+            const lastBtn = document.getElementById('staffLastPage');
+            if (firstBtn) {
+                firstBtn.addEventListener('click', goFirst);
+            }
+            if (preBtn) {
+                preBtn.addEventListener('click', goPrev);
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', goNext);
+            }
+            if (lastBtn) {
+                lastBtn.addEventListener('click', goLast);
+            }
+
+            const curInput = document.getElementById('staffCurPage');
+            if (curInput) {
+                function syncCurPageFromInput() {
+                    let v = parseInt(String(curInput.value).trim(), 10);
+                    if (isNaN(v) || v < 1) {
+                        v = 1;
+                    }
+                    const pageSize = parseInt(document.getElementById('staffPageSizeSelect').value, 10) || 10;
+                    const matched = staffGetTableRows().filter(function (r) {
+                        return !r.classList.contains('staff-filter-hidden');
+                    });
+                    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                    if (v > totalPages) {
+                        v = totalPages;
+                    }
+                    staffCurrentPage = v;
+                    staffApplyPagination();
+                }
+                curInput.addEventListener('change', syncCurPageFromInput);
+                curInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        syncCurPageFromInput();
+                        curInput.blur();
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            staffBindPaginationEvents();
+            staffApplyPagination();
+        });
+
+        // スタッフフィルタリング機能（スタッフ名に部分一致）
+        function filterCustomers(searchValue) {
+            const rows = staffGetTableRows();
+            const q = (searchValue || '').trim().toLowerCase();
+
+            rows.forEach(function (row) {
+                if (!q) {
+                    row.classList.remove('staff-filter-hidden');
+                    return;
+                }
+                const staffNameCell = row.cells[1];
+                const staffName = staffNameCell ? staffNameCell.textContent.toLowerCase() : '';
+                if (staffName.includes(q)) {
+                    row.classList.remove('staff-filter-hidden');
+                } else {
+                    row.classList.add('staff-filter-hidden');
+                }
+            });
+            staffCurrentPage = 1;
+            staffApplyPagination();
+        }
+
+        function setStaffModalTitleMode(isRegister) {
+            const iconEl = document.getElementById('editStaffModalTitleIcon');
+            if (!iconEl) return;
+            if (isRegister) {
+                iconEl.textContent = '📝';
+            } else {
+                iconEl.textContent = '✏️';
+            }
+        }
+
+        // 新規スタッフ登録
+        function addNewUser() {
+            window.location.href = './admin_user.html';
+        }
+
+        // 新規スタッフ登録（ボタン用）
+        function staffAdd(resourceId, type) {
+            // 新規登録モーダルを表示
+            showNewStaffModal();
+        }
+
+        // スタッフ編集
+        function editUser(userId) {
+            console.log('スタッフ編集:', userId);
+            // モーダルを表示
+            showEditStaffModal(userId);
+        }
+
+        // スタッフ編集モーダルを表示
+        function showEditStaffModal(userId) {
+            // サンプルデータを設定（実際の実装ではAPIから取得）
+            const staffData = getStaffDataById(userId);
+
+            document.getElementById('editStaffName').value = staffData.name;
+            document.getElementById('editStaffEmail').value = staffData.email;
+
+            // 担当者設定のラジオボタンを設定
+            const assignedStaffValue = staffData.assignedStaff || 'on';
+            document.getElementById('editAssignedStaffOn').checked = assignedStaffValue === 'on';
+            document.getElementById('editAssignedStaffOff').checked = assignedStaffValue === 'off';
+
+            // 管理者権限のラジオボタンを設定
+            const adminRightsValue = staffData.adminRights || 'off';
+            document.getElementById('editAdminRightsOn').checked = adminRightsValue === 'on';
+            document.getElementById('editAdminRightsOff').checked = adminRightsValue === 'off';
+            // IDフィールドを表示する
+            document.getElementById('editStaffId').style.display = 'block';
+
+            // モーダルタイトルを変更
+            setStaffModalTitleMode(false);
+            document.getElementById('editStaffTitle').textContent = 'スタッフ編集';
+
+            // 保存ボタンのテキストを編集用に設定
+            document.querySelector('#editStaffModal .modal-btn-save').textContent = '保存';
+
+            // 削除ボタンを表示
+            document.querySelector('#editStaffModal .modal-btn-delete').style.display = 'inline-block';
+
+            document.getElementById('editStaffModal').style.display = 'flex';
+            document.getElementById('editStaffModal').classList.add('show');
+        }
+
+        // 新規登録モーダルを表示
+        function showNewStaffModal() {
+            document.getElementById('editStaffName').value = '';
+            document.getElementById('editStaffEmail').value = '';
+
+            // 担当者設定のラジオボタンをデフォルト値に設定
+            document.getElementById('editAssignedStaffOn').checked = true;
+            document.getElementById('editAssignedStaffOff').checked = false;
+
+            // 管理者権限のラジオボタンをデフォルト値に設定
+            document.getElementById('editAdminRightsOn').checked = false;
+            document.getElementById('editAdminRightsOff').checked = true;
+            // IDフィールドを表示する
+            document.getElementById('editStaffId').style.display = 'none';
+
+            // モーダルタイトルを変更
+            setStaffModalTitleMode(true);
+            document.getElementById('editStaffTitle').textContent = 'スタッフ登録';
+
+            // 保存ボタンのテキストを新規登録用に設定
+            document.querySelector('#editStaffModal .modal-btn-save').textContent = '登録';
+
+            // 削除ボタンを非表示
+            document.querySelector('#editStaffModal .modal-btn-delete').style.display = 'none';
+
+            document.getElementById('editStaffModal').style.display = 'flex';
+            document.getElementById('editStaffModal').classList.add('show');
+        }
+
+        // スタッフデータを取得（サンプルデータ）
+        function getStaffDataById(userId) {
+            const staffData = {
+                1: {id: '1', name: 'テスト花子', email: 'test.hanako@example.com', notes: '', assignedStaff: 'on', adminRights: 'off'},
+                2: {id: '2', name: 'テスト太郎', email: 'test.taro@example.com', notes: '', assignedStaff: 'on', adminRights: 'off'},
+                3: {id: '3', name: '山田てすと', email: 'yamada.test@example.com', notes: '', assignedStaff: 'on', adminRights: 'off'},
+                4: {id: '4', name: '佐藤テスト', email: 'sato.test@example.com', notes: '', assignedStaff: 'on', adminRights: 'off'},
+                5: {id: '5', name: '田中スタッフ', email: 'tanaka.user@example.com', notes: '', assignedStaff: 'on', adminRights: 'off'}
+            };
+            return staffData[userId] || {id: userId, name: '', email: '', notes: '', assignedStaff: 'on', adminRights: 'off'};
+        }
+
+        // スタッフ編集モーダルを閉じる
+        function closeEditStaffModal() {
+            document.getElementById('editStaffModal').style.display = 'none';
+            document.getElementById('editStaffModal').classList.remove('show');
+        }
+
+        // スタッフ編集を保存
+        function saveStaffEdit() {
+            const staffName = document.getElementById('editStaffName').value;
+            const staffEmail = document.getElementById('editStaffEmail').value;
+
+            // ラジオボタンから値を取得
+            const assignedStaffRadio = document.querySelector('input[name="editAssignedStaff"]:checked');
+            const assignedStaff = assignedStaffRadio ? assignedStaffRadio.value : 'on';
+
+            const adminRightsRadio = document.querySelector('input[name="editAdminRights"]:checked');
+            const adminRights = adminRightsRadio ? adminRightsRadio.value : 'off';
+
+            const modalTitle = document.querySelector('#editStaffModal .modal-title').textContent;
+
+            // 新規登録か編集かを判定
+            const isNewStaff = modalTitle.includes('新規');
+
+            // バリデーション
+            if (!staffName || !staffEmail) {
+                alert('必須項目を入力してください。');
+                return;
+            }
+
+            // 編集時のみスタッフIDのバリデーション
+            if (!isNewStaff) {
+                if (!staffId) {
+                    alert('スタッフIDは必須です。');
+                    return;
+                }
+
+                // スタッフIDの半角英数チェック
+                if (!/^[a-zA-Z0-9]+$/.test(staffId)) {
+                    alert('スタッフIDは半角英数で入力してください。');
+                    return;
+                }
+            }
+
+            console.log('スタッフ保存:', {
+                staffId, staffName, staffEmail, assignedStaff, adminRights, isNewStaff
+            });
+
+            // ここで実際の保存処理を行う
+            // 例: APIに送信、ローカルストレージに保存など
+
+            closeEditStaffModal();
+
+            // テーブルを更新（実際の実装では、更新されたデータを反映）
+            location.reload();
+        }
+
+        // スタッフ削除
+        function deleteStaff() {
+            const staffName = document.getElementById('editStaffName').value;
+
+            if (confirm(`スタッフ「${staffName}」を削除してもよろしいですか？\nこの操作は取り消せません。`)) {
+
+                // ここで実際の削除処理を行う
+                // 例: APIに送信、ローカルストレージから削除など
+
+                closeEditStaffModal();
+
+                // テーブルを更新（実際の実装では、削除された行を除去）
+                location.reload();
+            }
+        }
+
+        // モーダルの外側をクリックした時に閉じる
+        document.addEventListener('click', function (event) {
+            const editStaffModal = document.getElementById('editStaffModal');
+
+            if (event.target === editStaffModal) {
+                closeEditStaffModal();
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>

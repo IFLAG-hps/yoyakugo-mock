@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>管理画面の操作履歴｜管理画面モック</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="./style.css" rel="stylesheet">
+    <style>
+        /* 操作履歴モック専用 */
+        .oplog-alert {
+            background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+            border: 1px solid #fecdd3;
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .oplog-alert h3 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            color: #9f1239;
+        }
+
+        .oplog-alert p {
+            margin: 0 0 6px 0;
+            font-size: 13px;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .oplog-alert a {
+            color: #0b1f3a;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        /* 保存期間：見出し・選択肢・ボタンを1行（狭い幅では折り返し） */
+        .oplog-retention-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 18px;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .oplog-retention-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 0 0 auto;
+            line-height: 1.3;
+        }
+
+        .oplog-retention-bar .oplog-radio-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 18px;
+            flex: 1 1 auto;
+            min-width: min(280px, 100%);
+        }
+
+        .oplog-retention-actions {
+            flex: 0 0 auto;
+            margin-left: auto;
+        }
+
+        .oplog-retention-actions .btn {
+            white-space: nowrap;
+        }
+
+        /* h2 の下のブロック区切り（保存期間の下に一覧エリア） */
+        .oplog-list-block {
+            padding-top: 18px;
+        }
+
+        .oplog-list-subheader {
+            margin: 0;
+            padding: 0 18px 14px;
+        }
+
+        /* 保存期間の設定見出し（.oplog-retention-title）と同じ文字サイズ */
+        .oplog-list-subheader h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .oplog-radio-row label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        /* 受付・予約一覧の検索モーダルに近いフォーム（枠線なし） */
+        .oplog-search-form {
+            padding: 0 18px 8px;
+        }
+
+        .oplog-search-form .form-label {
+            display: block;
+            margin: 8px 0 4px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.8rem;
+        }
+
+        .oplog-search-form .form-input {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .oplog-search-form .form-group {
+            margin-bottom: 0;
+        }
+
+        /* スタッフ列と機能列を同じ幅（3列グリッドの1列分）に揃える */
+        .oplog-search-form .oplog-search-grid-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .oplog-search-form .oplog-search-grid-row .form-group {
+            min-width: 0;
+        }
+
+        .oplog-search-form .oplog-search-span-2 {
+            grid-column: span 2;
+        }
+
+        /* 受付・予約管理の date-input-group / calendar-btn と同系（操作履歴は日付のみ） */
+        .oplog-search-form .date-input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .oplog-search-form .calendar-btn {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+        .oplog-search-form .calendar-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .oplog-operation-date-range {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 10px 14px;
+        }
+
+        .oplog-search-form .date-input-group .form-input {
+            width: auto;
+            flex: 1;
+            min-width: 120px;
+            max-width: 220px;
+            box-sizing: border-box;
+        }
+
+        .oplog-date-separator {
+            align-self: center;
+            font-size: 0.9rem;
+            color: #666;
+            padding: 0 4px;
+        }
+
+        .results-table.oplog-table th {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .results-table.oplog-table td {
+            font-size: 12px;
+            vertical-align: top;
+        }
+
+        .oplog-cell-narrow {
+            white-space: nowrap;
+        }
+
+        .oplog-op-content {
+            word-break: break-word;
+            max-width: 280px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                    <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                    <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html" class="active">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <main class="main">
+            <div class="main-section">
+                <div class="main-header">
+                    <h2 class="main-title">📜 管理画面の操作履歴</h2>
+                </div>
+
+                <div class="oplog-list-block">
+                <div class="oplog-list-subheader">
+                    <h3>操作履歴の一覧</h3>
+                </div>
+
+                <div class="oplog-search-form" role="search" aria-label="検索条件">
+                    <div class="oplog-search-grid-row">
+                        <div class="form-group">
+                            <label class="form-label" for="oplogStaff">スタッフ</label>
+                            <select class="form-input" id="oplogStaff">
+                                <option value="" selected></option>
+                                <option value="">山田太郎</option>
+                                <option value="">佐藤花子</option>
+                                <option value="">鈴木次郎</option>
+                                <option value="">山田まいこ</option>
+                                <option value="">久世</option>
+                            </select>
+                        </div>
+                        <div class="form-group oplog-search-span-2">
+                            <label class="form-label" for="oplogFromDate">操作日</label>
+                            <div class="oplog-operation-date-range">
+                                <div class="date-input-group">
+                                    <input type="text" class="form-input" id="oplogFromDate" name="oplogFromDate" value="" readonly aria-label="操作日（開始）" />
+                                    <button type="button" class="calendar-btn" onclick="openDateCalendar('oplogFromDate')">📅</button>
+                                </div>
+                                <span class="oplog-date-separator">～</span>
+                                <div class="date-input-group">
+                                    <input type="text" class="form-input" id="oplogToDate" name="oplogToDate" value="" readonly aria-label="操作日（終了）" />
+                                    <button type="button" class="calendar-btn" onclick="openDateCalendar('oplogToDate')">📅</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="oplog-search-grid-row">
+                        <div class="form-group">
+                            <label class="form-label" for="oplogFeature">機能</label>
+                            <select class="form-input" id="oplogFeature">
+                                <option value="" selected></option>
+                                <option value="dashboard">ダッシュボード</option>
+                                <option value="reservations">受付・予約管理</option>
+                                <option value="customers">顧客管理</option>
+                                <option value="menus">メニュー管理</option>
+                                <option value="resources">リソース管理</option>
+                                <option value="users">スタッフ管理</option>
+                                <option value="settings">基本設定</option>
+                                <option value="multilang">多言語管理</option>
+                                <option value="google-feed">Googleで予約</option>
+                                <option value="operation-log">操作履歴</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="oplogPageSelect">ページ</label>
+                            <select class="form-input" id="oplogPageSelect">
+                                <option value="" selected></option>
+                                <option>トップページ</option>
+                                <option>ログイン</option>
+                                <option>ログアウト</option>
+                                <option>メニュー一覧</option>
+                                <option>メニュー登録</option>
+                                <option>メニュー編集</option>
+                                <option>メニューの並び替え</option>
+                                <option>受付・予約一覧</option>
+                                <option>受付・予約編集</option>
+                                <option>受付・予約登録</option>
+                                <option>顧客一覧</option>
+                                <option>顧客登録</option>
+                                <option>顧客編集</option>
+                                <option>リソース一覧</option>
+                                <option>リソース登録</option>
+                                <option>リソース編集</option>
+                                <option>シフト設定</option>
+                                <option>基本設定</option>
+                                <option>Googleで予約</option>
+                                <option>多言語管理</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="oplogButtonSelect">ボタン</label>
+                            <select class="form-input" id="oplogButtonSelect">
+                                <option value="" selected></option>
+                                <option>ログイン</option>
+                                <option>ログアウト</option>
+                                <option>検索</option>
+                                <option>登録</option>
+                                <option>更新</option>
+                                <option>削除</option>
+                                <option>並び順</option>
+                                <option>並び順保存</option>
+                                <option>ネット受付停止</option>
+                                <option>ネット受付再開</option>
+                                <option>保存</option>
+                                <option>変更して登録</option>
+                                <option>受付完了</option>
+                                <option>受付待ちに戻す</option>
+                                <option>キャンセル実行</option>
+                                <option>ブロック</option>
+                                <option>開始/終了</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="search-form-actions" style="margin-top: 20px; white-space: nowrap;">
+                        <button type="button" class="link-btn">検索</button>
+                        <button type="button" class="clear-btn">クリア</button>
+                    </div>
+                </div>
+
+                <div class="search-results-header search-results-header--top-border">
+                    <div class="results-info">
+                        <span class="results-count">全<span>39</span>件</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="oplogPageSizeSelect" name="oplogPageSizeSelect" class="page-size-select" aria-label="表示件数">
+                            <option value="10" selected>10件</option>
+                            <option value="20">20件</option>
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                        </select>
+                        <div class="pagination">
+                            <button type="button" class="page-btn" aria-label="先頭">«</button>
+                            <button type="button" class="page-btn" aria-label="前">‹</button>
+                            <span class="page-info">
+                                <input type="text" class="page-input" value="1" aria-label="現在ページ" />
+                                /<span>4</span>ページ
+                            </span>
+                            <button type="button" class="page-btn" aria-label="次">›</button>
+                            <button type="button" class="page-btn" aria-label="最後">»</button>
+                        </div>
+                        <span class="page-range">
+                            (<span>1</span>-<span>10</span>件/全<span>39</span>件)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="results-table-container">
+                    <table class="results-table oplog-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort-type="datetime" scope="col">操作日時</th>
+                                <th class="sortable" data-sort-type="text" scope="col">スタッフ名</th>
+                                <th class="sortable" data-sort-type="text" scope="col">アクセス元IP</th>
+                                <th class="sortable" data-sort-type="text" scope="col">機能</th>
+                                <th class="sortable" data-sort-type="text" scope="col">ページ</th>
+                                <th class="sortable" data-sort-type="text" scope="col">ボタン</th>
+                                <th class="sortable" data-sort-type="text" scope="col">操作内容</th>
+                            </tr>
+                        </thead>
+                        <tbody id="oplogTableBody">
+                            <tr>
+                                <td class="oplog-cell-narrow">2026/04/02<br />15:52:12</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>受付・予約管理</td>
+                                <td>ブロック登録</td>
+                                <td>ブロック</td>
+                                <td class="oplog-op-content">受付ブロックを登録しました。(ブロックID：11)</td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="oplog-cell-narrow">2026/04/02<br />15:46:23</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td class="oplog-op-content">スタッフ名[久世]がログインしました。</td>
+                            </tr>
+                            <tr>
+                                <td class="oplog-cell-narrow">2026/04/02<br />14:49:50</td>
+                                <td>山田太郎</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td class="oplog-op-content">スタッフ名[山田太郎]がログインしました。</td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="oplog-cell-narrow">2026/04/01<br />13:45:25</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td class="oplog-op-content">スタッフ名[久世]がログインしました。</td>
+                            </tr>
+                            <tr>
+                                <td class="oplog-cell-narrow">2026/04/01<br />11:28:24</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td>ログイン</td>
+                                <td class="oplog-op-content">スタッフ名[久世]がログインしました。</td>
+                            </tr>
+                            <tr>
+                                <td class="oplog-cell-narrow">2026/03/31<br />14:16:47</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>メニュー</td>
+                                <td>メニュー登録</td>
+                                <td>登録</td>
+                                <td class="oplog-op-content">メニューを新規登録しました。（メニューID：4）</td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="oplog-cell-narrow">2026/03/31<br />14:16:04</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>メニュー</td>
+                                <td>メニュー登録</td>
+                                <td>登録</td>
+                                <td class="oplog-op-content">メニューを新規登録しました。（メニューID：3）</td>
+                            </tr>
+                            <tr>
+                                <td class="oplog-cell-narrow">2026/03/31<br />11:29:18</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>メニュー</td>
+                                <td>メニュー登録</td>
+                                <td>登録</td>
+                                <td class="oplog-op-content">メニューを新規登録しました。（メニューID：2）</td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td class="oplog-cell-narrow">2026/03/30<br />17:11:00</td>
+                                <td>久世</td>
+                                <td class="oplog-cell-narrow" style="text-align:right;">123.253.152.94</td>
+                                <td>メニュー</td>
+                                <td>メニュー登録</td>
+                                <td>登録</td>
+                                <td class="oplog-op-content">メニューを新規登録しました。（メニューID：1）</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="popup-overlay" id="dateCalendarOverlay" style="display: none; z-index: 10002;" onclick="closeDateCalendar()">
+        <div class="calendar-popup" id="dateCalendarModal" onclick="event.stopPropagation()">
+            <div class="calendar-popup-header">
+                <h3 class="calendar-popup-title">📅 日付を選択</h3>
+                <button type="button" class="calendar-popup-close" onclick="closeDateCalendar()">×</button>
+            </div>
+            <div class="calendar-popup-content" style="flex-direction: column;">
+                <div id="dateCalendarContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/oplog_date_calendar.js"></script>
+    <script>
+(function () {
+    var table = document.querySelector('.oplog-table');
+    var tbody = document.getElementById('oplogTableBody');
+    if (!table || !tbody) return;
+
+    var headers = table.querySelectorAll('thead th.sortable');
+    var sortState = { index: -1, dir: 1 };
+
+    function cellText(tr, col) {
+        return tr.cells[col].innerText.replace(/\s+/g, ' ').trim();
+    }
+
+    function parseDateTimeCell(tr) {
+        var el = tr.cells[0];
+        var t = el.innerText.replace(/\u00a0/g, ' ').trim();
+        var parts = t.split(/\r?\n/);
+        var datePart = parts[0] || '';
+        var timePart = parts[1] || '00:00:00';
+        var dm = datePart.match(/(\d{4})\/(\d{2})\/(\d{2})/);
+        var tm = timePart.match(/(\d{1,2}):(\d{2}):(\d{2})/);
+        if (!dm) return 0;
+        var h = tm ? +tm[1] : 0;
+        var mi = tm ? +tm[2] : 0;
+        var s = tm ? +tm[3] : 0;
+        return new Date(+dm[1], +dm[2] - 1, +dm[3], h, mi, s).getTime();
+    }
+
+    function compare(a, b, col, type) {
+        if (type === 'datetime') {
+            return parseDateTimeCell(a) - parseDateTimeCell(b);
+        }
+        return cellText(a, col).localeCompare(cellText(b, col), 'ja');
+    }
+
+    headers.forEach(function (th, colIndex) {
+        th.setAttribute('role', 'button');
+        th.setAttribute('tabindex', '0');
+        th.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                th.click();
+            }
+        });
+        th.addEventListener('click', function () {
+            var type = th.getAttribute('data-sort-type') || 'text';
+            if (sortState.index === colIndex) {
+                sortState.dir = -sortState.dir;
+            } else {
+                sortState.index = colIndex;
+                sortState.dir = 1;
+            }
+
+            var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            rows.sort(function (ra, rb) {
+                return compare(ra, rb, colIndex, type) * sortState.dir;
+            });
+            rows.forEach(function (r) {
+                tbody.appendChild(r);
+            });
+
+            headers.forEach(function (h) {
+                h.removeAttribute('aria-sort');
+                var old = h.querySelector('.sort-indicator');
+                if (old) old.remove();
+            });
+            var ind = document.createElement('span');
+            ind.className = 'sort-indicator';
+            ind.setAttribute('aria-hidden', 'true');
+            ind.textContent = sortState.dir === 1 ? '▲' : '▼';
+            th.appendChild(ind);
+            th.setAttribute('aria-sort', sortState.dir === 1 ? 'ascending' : 'descending');
+        });
+    });
+})();
+    </script>
+</body>
+
+</html>

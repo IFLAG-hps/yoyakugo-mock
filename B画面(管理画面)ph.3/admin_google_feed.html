@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Petit bonheur Googleで予約｜管理画面モック</title>
+  
+  <!-- Material Design Components CSS -->
+  <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Material Design Components JavaScript -->
+  <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+  <link href="./style.css" rel="stylesheet">
+  <style>
+    /* admin_google_feed.html 専用のスタイル */
+    .search-form-label {
+      width: 200px !important;
+      min-width: 200px;
+    }
+    
+    /* データ連携グループヘッダー */
+    .mdc-business-hours-header {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      padding: 10px 0;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .mdc-calendar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0;
+    }
+    
+    /* トグル（開始/終了）は style.css の .view-toggle / .view-toggle-button を使用 */
+    
+    /* 店舗情報表示エリア（card phase-wrapper 同様：白背景・リンクは下線付きで右下） */
+    .shop-info-block {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid var(--line, #e5e7eb);
+      border-radius: var(--radius, 8px);
+      box-shadow: var(--shadow, 0 1px 3px rgba(0,0,0,0.08));
+    }
+    .shop-info-block .shop-info-row {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #374151;
+    }
+    .shop-info-block .shop-info-body .shop-info-row:last-of-type {
+      margin-bottom: 0;
+    }
+    .shop-info-block .shop-info-label {
+      display: inline-block;
+      width: 100px;
+      min-width: 100px;
+      color: #6b7280;
+      margin-right: 20px;
+      vertical-align: top;
+    }
+    .shop-info-block .shop-info-value {
+      display: inline-block;
+      vertical-align: top;
+    }
+    .shop-info-block .shop-info-link-wrap {
+      text-align: right;
+      margin-top: 12px;
+    }
+    .shop-info-block .link-change {
+      font-size: 14px;
+      color: #1e90ff;
+      text-decoration: underline;
+    }
+    .shop-info-block .link-change:hover {
+      text-decoration: underline;
+    }
+    /* ナビ「Googleで予約」右横の⚠️（少し大きめ） */
+    .nav-indicator-dot {
+      margin-left: auto;
+      font-size: 1.35em;
+      line-height: 1;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+        <div>
+        <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+        <strong>管理者太郎</strong>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+          <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+          <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+          <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+          <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+          <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+          <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+          <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+          <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+          <a href="./admin_operation_log.html">📜 操作履歴</a>
+          <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+          <a href="./admin_google_feed.html" data-target="google-feed" class="active">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+      </nav>
+      <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="main-section">
+            
+            <div class="main-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                <h2 class="main-title">🔗 Googleで予約</h2>
+                <span class="last-linkage-datetime" style="font-size: 14px; color: #6b7280;">最終データ連携日時 : 2026/02/04 10:00:00</span>
+            </div>
+            
+            <div class="tab-content-container">
+                <div class="tab-content active" id="tab-google-feed">
+                    <div class="setting-form-section">
+                    <form id="googleFeedForm" name="googleFeedForm" method="post">
+                        <div class="search-form-content">
+                            
+                            <!-- 店舗・施設情報（表示のみ・card phase-wrapper 風：白背景・リンクは下線付きで右下） -->
+                            <div class="shop-info-block">
+                                <div class="shop-info-body">
+                                    <div class="shop-info-row"><span class="shop-info-label">店舗・施設名</span><span class="shop-info-value">●●接骨院</span></div>
+                                    <div class="shop-info-row"><span class="shop-info-label">住所</span><span class="shop-info-value">東京都 港区 海岸１－１－１ 安全ビル3F</span></div>
+                                    <div class="shop-info-row"><span class="shop-info-label">電話番号</span><span class="shop-info-value">01-2345-6789</span></div>
+                                </div>
+                                <div class="shop-info-link-wrap">
+                                    <a href="./admin_setting.html" class="link-change">変更する</a>
+                                </div>
+                            </div>
+                            
+                            <div class="search-form-grid-setting settings-group" id="dataLinkageGroup">
+                                <div class="search-form-row">
+                                    <div class="search-form-label">プレイスID</div>
+                                    <div class="search-form-input">
+                                        <input type="text" id="placeId" name="placeId" class="form-input" placeholder="プレイスIDを入力" value="ChIJh6p-i9yLGGARv73uTst9K7I" readonly disabled>
+                                    </div>
+                                </div>
+                                <div class="search-form-row">
+                                    <div class="search-form-label">データ連携</div>
+                                    <div class="search-form-input">
+                                        <div class="view-toggle">
+                                            <button type="button" class="view-toggle-button active" id="linkageStart" name="linkageType" value="start">開始</button>
+                                            <button type="button" class="view-toggle-button" id="linkageEnd" name="linkageType" value="end">終了</button>
+                                        </div>
+                                        <small class="form-help">データ連携の開始または終了を選択してください</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <script>
+    function doUpdateLinkage(value) {
+      console.log('送信値:', value);
+    }
+
+    document.getElementById('linkageStart').addEventListener('click', function() {
+      if (this.classList.contains('active')) return;
+      this.classList.add('active');
+      document.getElementById('linkageEnd').classList.remove('active');
+      doUpdateLinkage('start');
+    });
+
+    document.getElementById('linkageEnd').addEventListener('click', function() {
+      if (this.classList.contains('active')) return;
+      if (!confirm('データ連携を終了してよろしいですか？')) return;
+      this.classList.add('active');
+      document.getElementById('linkageStart').classList.remove('active');
+      doUpdateLinkage('end');
+    });
+  </script>
+</body>
+</html>

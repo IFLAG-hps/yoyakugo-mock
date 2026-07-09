@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>リソースグループ｜管理画面モック</title>
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <link href="./style.css" rel="stylesheet">
+    <style>
+        #resourceGroupTableBody tr.rg-filter-hidden,
+        #resourceGroupTableBody tr.rg-page-hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .results-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .results-table {
+                min-width: 520px;
+            }
+            .action-cell {
+                white-space: nowrap;
+            }
+            .search-results-header {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .pagination-controls {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                    <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                    <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources" class="active">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <header class="topbar">
+            <div class="search">
+                <input type="search" id="resourceGroupSearch" placeholder="リソースグループ名 を検索"
+                    oninput="filterResourceGroups(this.value)" />
+            </div>
+            <button type="button" class="regist-btn" onclick="resourceGroupAdd()"><i class="material-icons">add</i>
+                新規登録</button>
+            <button type="button" class="btn normal-btn" onclick="resourceSetting()">リソース管理</button>
+        </header>
+        <main class="main">
+            <div class="main-section">
+                <div class="main-header">
+                    <h2 class="main-title">💺 リソースグループ</h2>
+                    <div class="max-count" style="width: 70%; text-align: right;">
+                        登録上限数：<span id="resourceGroupMax">99</span>件
+                    </div>
+                </div>
+
+                <div class="search-results-header">
+                    <div class="results-info">
+                        <span class="results-count">全<span id="rgListTotalCount">0</span>件</span>
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="rgPageSizeSelect" name="rgPageSizeSelect" class="page-size-select"
+                            title="1ページあたりの表示件数">
+                            <option value="10" selected>10件</option>
+                            <option value="20">20件</option>
+                            <option value="50">50件</option>
+                            <option value="100">100件</option>
+                        </select>
+                        <div class="pagination">
+                            <button type="button" id="rgFirstPage" class="page-btn" aria-label="先頭">«</button>
+                            <button type="button" id="rgPrePage" class="page-btn" aria-label="前">‹</button>
+                            <span class="page-info">
+                                <input id="rgCurPage" type="text" value="1" class="page-input" inputmode="numeric"
+                                    aria-label="現在のページ" />
+                                /<span id="rgTotalPage">1</span>ページ
+                            </span>
+                            <button type="button" id="rgNextPage" class="page-btn" aria-label="次">›</button>
+                            <button type="button" id="rgLastPage" class="page-btn" aria-label="最後">»</button>
+                        </div>
+                        <span class="page-range">
+                            (<span id="rgFromRecord">0</span>-<span id="rgToRecord">0</span>件/全<span
+                                id="rgFilteredCount">0</span>件)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="results-table-container">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 10%;">ID</th>
+                                <th style="width: 50%;">リソースグループ名</th>
+                                <th style="width: 20%;">種別</th>
+                                <th style="width: 20%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resourceGroupTableBody">
+                            <tr>
+                                <td>1</td>
+                                <td>リソースグループ1</td>
+                                <td>設備・機器類</td>
+                                <td class="action-cell">
+                                    <button type="button" class="link-btn" onclick="editResourceGroup(1)">編集</button>
+                                    <button type="button" class="link-btn" onclick="copyResourceGroup(1)">コピー</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td>2</td>
+                                <td>リソースグループ2</td>
+                                <td>設備・機器類</td>
+                                <td class="action-cell">
+                                    <button type="button" class="link-btn" onclick="editResourceGroup(2)">編集</button>
+                                    <button type="button" class="link-btn" onclick="copyResourceGroup(2)">コピー</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>リソースグループ3</td>
+                                <td>設備・機器類</td>
+                                <td class="action-cell">
+                                    <button type="button" class="link-btn" onclick="editResourceGroup(3)">編集</button>
+                                    <button type="button" class="link-btn" onclick="copyResourceGroup(3)">コピー</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td>4</td>
+                                <td>リソースグループ4</td>
+                                <td>担当者</td>
+                                <td class="action-cell">
+                                    <button type="button" class="link-btn" onclick="editResourceGroup(4)">編集</button>
+                                    <button type="button" class="link-btn" onclick="copyResourceGroup(4)">コピー</button>
+                                </td>
+                            </tr>
+                            <tr class="table-row-alt">
+                                <td>5</td>
+                                <td>リソースグループ5</td>
+                                <td>担当者</td>
+                                <td class="action-cell">
+                                    <button type="button" class="link-btn" onclick="editResourceGroup(5)">編集</button>
+                                    <button type="button" class="link-btn" onclick="copyResourceGroup(5)">コピー</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- リソースグループ登録モーダル -->
+    <div class="popup-overlay" id="resourceGroupModal" style="display: none;">
+        <div class="normal-modal resource-group-modal" id="resourceGroupModalContent">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                    <span id="rgModalTitleIcon" class="modal-title-icon" aria-hidden="true">📝</span>
+                    <span id="rgModalTitle">リソースグループの登録</span>
+                    <span id="resourceGroupId"></span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeResourceGroupModal()" aria-label="閉じる">×</button>
+            </div>
+            <div class="rg-modal-body">
+                <div class="rg-left">
+                    <div id="rgGroupsContainer" class="rg-groups-container"></div>
+                </div>
+                <div class="rg-right">
+                    <div class="rg-pool-section rg-pool-staff-wrap">
+                        <h4 class="rg-pool-title"> 担当者</h4>
+                        <p class="rg-pool-sub">矢印（←）でリソースグループに追加できます。</p>
+                        <ul id="rgPoolStaff" class="rg-list rg-drop-zone" data-zone="pool-staff"></ul>
+                    </div>
+                    <div class="rg-pool-section rg-pool-equip-wrap">
+                        <h4 class="rg-pool-title"> 設備・機器類</h4>
+                        <p class="rg-pool-sub">矢印（←）でリソースグループに追加できます。</p>
+                        <ul id="rgPoolEquipment" class="rg-list rg-drop-zone" data-zone="pool-equipment"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" onclick="saveResourceGroupSet()">登録</button>
+                <button type="button" id="rgModalDeleteBtn" class="modal-btn modal-btn-delete" onclick="deleteResourceGroupSet()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeResourceGroupModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const RESOURCE_GROUP_MAX = 99;
+        let rgCurrentPage = 1;
+
+        function rgGetTableRows() {
+            return Array.prototype.slice.call(document.querySelectorAll('#resourceGroupTableBody tr'));
+        }
+
+        function rgApplyPagination() {
+            const pageSize = parseInt(document.getElementById('rgPageSizeSelect').value, 10) || 10;
+            const allRows = rgGetTableRows();
+            const matched = allRows.filter(function (row) {
+                return !row.classList.contains('rg-filter-hidden');
+            });
+            const totalFiltered = matched.length;
+            let totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+            if (totalFiltered === 0) {
+                totalPages = 1;
+            }
+            if (rgCurrentPage > totalPages) {
+                rgCurrentPage = totalPages;
+            }
+            if (rgCurrentPage < 1) {
+                rgCurrentPage = 1;
+            }
+
+            const start = (rgCurrentPage - 1) * pageSize;
+            matched.forEach(function (row, idx) {
+                if (idx >= start && idx < start + pageSize) {
+                    row.classList.remove('rg-page-hidden');
+                } else {
+                    row.classList.add('rg-page-hidden');
+                }
+            });
+            allRows.forEach(function (row) {
+                if (row.classList.contains('rg-filter-hidden')) {
+                    row.classList.remove('rg-page-hidden');
+                }
+            });
+
+            const curInput = document.getElementById('rgCurPage');
+            if (curInput) {
+                curInput.value = String(rgCurrentPage);
+            }
+            const totalPageEl = document.getElementById('rgTotalPage');
+            if (totalPageEl) {
+                totalPageEl.textContent = String(totalPages);
+            }
+            const from = totalFiltered === 0 ? 0 : start + 1;
+            const to = totalFiltered === 0 ? 0 : Math.min(start + pageSize, totalFiltered);
+            const fromEl = document.getElementById('rgFromRecord');
+            const toEl = document.getElementById('rgToRecord');
+            if (fromEl) {
+                fromEl.textContent = String(from);
+            }
+            if (toEl) {
+                toEl.textContent = String(to);
+            }
+            const filteredEl = document.getElementById('rgFilteredCount');
+            if (filteredEl) {
+                filteredEl.textContent = String(totalFiltered);
+            }
+            const listTotalEl = document.getElementById('rgListTotalCount');
+            if (listTotalEl) {
+                listTotalEl.textContent = String(allRows.length);
+            }
+        }
+
+        function rgBindPaginationEvents() {
+            const sel = document.getElementById('rgPageSizeSelect');
+            if (sel) {
+                sel.addEventListener('change', function () {
+                    rgCurrentPage = 1;
+                    rgApplyPagination();
+                });
+            }
+
+            function goFirst() {
+                rgCurrentPage = 1;
+                rgApplyPagination();
+            }
+            function goPrev() {
+                rgCurrentPage -= 1;
+                rgApplyPagination();
+            }
+            function goNext() {
+                rgCurrentPage += 1;
+                rgApplyPagination();
+            }
+            function goLast() {
+                const pageSize = parseInt(document.getElementById('rgPageSizeSelect').value, 10) || 10;
+                const matched = rgGetTableRows().filter(function (r) {
+                    return !r.classList.contains('rg-filter-hidden');
+                });
+                const totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                rgCurrentPage = totalPages;
+                rgApplyPagination();
+            }
+
+            const firstBtn = document.getElementById('rgFirstPage');
+            const preBtn = document.getElementById('rgPrePage');
+            const nextBtn = document.getElementById('rgNextPage');
+            const lastBtn = document.getElementById('rgLastPage');
+            if (firstBtn) {
+                firstBtn.addEventListener('click', goFirst);
+            }
+            if (preBtn) {
+                preBtn.addEventListener('click', goPrev);
+            }
+            if (nextBtn) {
+                nextBtn.addEventListener('click', goNext);
+            }
+            if (lastBtn) {
+                lastBtn.addEventListener('click', goLast);
+            }
+
+            const curInput = document.getElementById('rgCurPage');
+            if (curInput) {
+                function syncCurPageFromInput() {
+                    let v = parseInt(String(curInput.value).trim(), 10);
+                    if (isNaN(v) || v < 1) {
+                        v = 1;
+                    }
+                    const pageSize = parseInt(document.getElementById('rgPageSizeSelect').value, 10) || 10;
+                    const matched = rgGetTableRows().filter(function (r) {
+                        return !r.classList.contains('rg-filter-hidden');
+                    });
+                    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                    if (v > totalPages) {
+                        v = totalPages;
+                    }
+                    rgCurrentPage = v;
+                    rgApplyPagination();
+                }
+                curInput.addEventListener('change', syncCurPageFromInput);
+                curInput.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        syncCurPageFromInput();
+                        curInput.blur();
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const maxEl = document.getElementById('resourceGroupMax');
+            if (maxEl) {
+                maxEl.textContent = String(RESOURCE_GROUP_MAX);
+            }
+            rgBindPaginationEvents();
+            rgApplyPagination();
+        });
+
+        function filterResourceGroups(searchValue) {
+            const rows = rgGetTableRows();
+            const q = (searchValue || '').trim().toLowerCase();
+
+            rows.forEach(function (row) {
+                if (!q) {
+                    row.classList.remove('rg-filter-hidden');
+                    return;
+                }
+                const name = (row.cells[1] && row.cells[1].textContent) || '';
+                const note = (row.cells[2] && row.cells[2].textContent) || '';
+                const hay = (name + ' ' + note).toLowerCase();
+                if (hay.includes(q)) {
+                    row.classList.remove('rg-filter-hidden');
+                } else {
+                    row.classList.add('rg-filter-hidden');
+                }
+            });
+            rgCurrentPage = 1;
+            rgApplyPagination();
+        }
+
+        function resourceGroupAdd() {
+            resourceGroupSet('new');
+        }
+
+        // リソースの設定
+        function resourceSetting() {
+            window.location.href = './admin_resources.html';
+        }
+
+        /* --- リソースグループ設定（resourceGroupSet） --- */
+        const RG_MASTER_STAFF = [
+            { id: 'userA', label: 'スタッフA' },
+            { id: 'userB', label: 'スタッフB' },
+            { id: 'userC', label: 'スタッフC' },
+            { id: 'userD', label: 'スタッフD' },
+            { id: 'userE', label: 'スタッフE' },
+            { id: 'userF', label: 'スタッフF' }
+        ];
+        const RG_MASTER_EQUIPMENT = [
+            { id: 'resourceA', label: 'チェアA' },
+            { id: 'resourceB', label: 'チェアB' },
+            { id: 'resourceC', label: 'チェアC' },
+            { id: 'resourceD', label: 'チェアD' },
+            { id: 'resourceE', label: 'チェアE' }
+        ];
+
+        const RG_MENU_SEED = {
+            1: {
+                groups: [
+                    {
+                        id: 'g1',
+                        title: 'リソースグループ1',
+                        kind: 'equipment',
+                        items: [
+                            { type: 'equipment', id: 'resourceD', label: 'チェアD' },
+                            { type: 'equipment', id: 'resourceA', label: 'チェアA' },
+                            { type: 'equipment', id: 'resourceE', label: 'チェアE' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userA', 'userB', 'userC', 'userD', 'userE', 'userF'],
+                poolEquipmentIds: ['resourceB', 'resourceC']
+            },
+            2: {
+                groups: [
+                    {
+                        id: 'g2',
+                        title: 'リソースグループ2',
+                        kind: 'equipment',
+                        items: [
+                            { type: 'equipment', id: 'resourceD', label: 'チェアD' },
+                            { type: 'equipment', id: 'resourceA', label: 'チェアA' },
+                            { type: 'equipment', id: 'resourceE', label: 'チェアE' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userA', 'userB', 'userC', 'userD', 'userE', 'userF'],
+                poolEquipmentIds: ['resourceB', 'resourceC']
+            },
+            3: {
+                groups: [
+                    {
+                        id: 'g3',
+                        title: 'リソースグループ3',
+                        kind: 'equipment',
+                        items: [
+                            { type: 'equipment', id: 'resourceD', label: 'チェアD' },
+                            { type: 'equipment', id: 'resourceA', label: 'チェアA' },
+                            { type: 'equipment', id: 'resourceE', label: 'チェアE' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userA', 'userB', 'userC', 'userD', 'userE', 'userF'],
+                poolEquipmentIds: ['resourceB', 'resourceC']
+            },
+            4: {
+                groups: [
+                    {
+                        id: 'g4',
+                        title: 'リソースグループ4',
+                        kind: 'equipment',
+                        items: [
+                            { type: 'equipment', id: 'resourceD', label: 'チェアD' },
+                            { type: 'equipment', id: 'resourceA', label: 'チェアA' },
+                            { type: 'equipment', id: 'resourceE', label: 'チェアE' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userA', 'userB', 'userC', 'userD', 'userE', 'userF'],
+                poolEquipmentIds: ['resourceB', 'resourceC']
+            },
+            5: {
+                groups: [
+                    {
+                        id: 'g5',
+                        title: 'リソースグループ5',
+                        kind: 'equipment',
+                        items: [
+                            { type: 'equipment', id: 'resourceD', label: 'チェアD' },
+                            { type: 'equipment', id: 'resourceA', label: 'チェアA' },
+                            { type: 'equipment', id: 'resourceE', label: 'チェアE' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userA', 'userB', 'userC', 'userD', 'userE', 'userF'],
+                poolEquipmentIds: ['resourceB', 'resourceC']
+            },
+            6: {
+                groups: [
+                    {
+                        id: 'g6',
+                        title: 'リソースグループ6',
+                        kind: 'staff',
+                        items: [
+                            { type: 'staff', id: 'userE', label: 'スタッフE' },
+                            { type: 'staff', id: 'userA', label: 'スタッフA' },
+                            { type: 'staff', id: 'userD', label: 'スタッフD' },
+                            { type: 'staff', id: 'userB', label: 'スタッフB' },
+                            { type: 'staff', id: 'userC', label: 'スタッフC' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userF'],
+                poolEquipmentIds: ['resourceA', 'resourceB', 'resourceC', 'resourceD', 'resourceE']
+            },
+            7: {
+                groups: [
+                    {
+                        id: 'g7',
+                        title: 'リソースグループ7',
+                        kind: 'staff',
+                        items: [
+                            { type: 'staff', id: 'userE', label: 'スタッフE' },
+                            { type: 'staff', id: 'userA', label: 'スタッフA' },
+                            { type: 'staff', id: 'userD', label: 'スタッフD' },
+                            { type: 'staff', id: 'userB', label: 'スタッフB' },
+                            { type: 'staff', id: 'userC', label: 'スタッフC' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userF'],
+                poolEquipmentIds: ['resourceA', 'resourceB', 'resourceC', 'resourceD', 'resourceE']
+            },
+            8: {
+                groups: [
+                    {
+                        id: 'g8',
+                        title: 'リソースグループ8',
+                        kind: 'staff',
+                        items: [
+                            { type: 'staff', id: 'userE', label: 'スタッフE' },
+                            { type: 'staff', id: 'userA', label: 'スタッフA' },
+                            { type: 'staff', id: 'userD', label: 'スタッフD' },
+                            { type: 'staff', id: 'userB', label: 'スタッフB' },
+                            { type: 'staff', id: 'userC', label: 'スタッフC' }
+                        ]
+                    }
+                ],
+                poolStaffIds: ['userF'],
+                poolEquipmentIds: ['resourceA', 'resourceB', 'resourceC', 'resourceD', 'resourceE']
+            }
+        };
+
+        /** 種別ラジオ変更時、この値で右サイドの未割当プール表示を切り替える（null のときは先頭グループの種別） */
+        let rgLastPanelKind = null;
+        let rgModalContextMenuId = null;
+
+        /** admin_resources.html のリソース表示色（resource-color-option）と同じパレット */
+        var RG_RESOURCE_MOCK_PALETTE = [
+            '#1976D2', '#009688', '#009D5B', '#607D8B', '#8D7EBF', '#342071', '#E91E63', '#A74E78',
+            '#F44336', '#FF5722', '#E89046', '#C08E26', '#7A3E11', '#374046', '#000000'
+        ];
+
+        /** 種別＋ID から安定した色インデックス（アイテムごとに常に同じ色） */
+        function rgPaletteIndexForItem(item) {
+            var key = String(item.type) + ':' + String(item.id);
+            var hash = 0;
+            for (var i = 0; i < key.length; i++) {
+                hash = ((hash << 5) - hash) + key.charCodeAt(i);
+                hash |= 0;
+            }
+            var idx = Math.abs(hash) % RG_RESOURCE_MOCK_PALETTE.length;
+            return idx;
+        }
+
+        /** リソース管理のパレット色をそのまま背景に、アイテム名は白（枠はやや抑えめ） */
+        function rgResourceMockBgStyleForItem(item) {
+            var hex = RG_RESOURCE_MOCK_PALETTE[rgPaletteIndexForItem(item)];
+            return (
+                ' style="background-color:' + hex + ';border:1px solid rgba(0,0,0,0.22);color:#fff;"'
+            );
+        }
+
+        /**
+         * @param {{ type: string, id: string, label: string }} item
+         * @param {'group'|'pool'} placement - group: 割当（→で未割当へ） / pool: 未割当（←でグループへ）
+         */
+        function rgItemHtml(item, placement) {
+            const isStaff = item.type === 'staff';
+            const cls = isStaff ? 'rg-item--staff' : 'rg-item--equipment';
+            const mockBg = rgResourceMockBgStyleForItem(item);
+            const labelSpan = '<span class="rg-item-label">' + rgEscapeHtmlAttr(item.label) + '</span>';
+            const btnToPool =
+                '<button type="button" class="rg-move-btn rg-move-to-pool" title="未割当に戻す" aria-label="未割当に戻す">' +
+                '→' +
+                '</button>';
+            const btnToGroup =
+                '<button type="button" class="rg-move-btn rg-move-to-group" title="グループに追加" aria-label="グループに追加">' +
+                '←' +
+                '</button>';
+            const dragHandle =
+                '<span class="rg-drag-handle" title="ドラッグして並べ替え">' +
+                '<i class="material-icons rg-drag-handle-icon" aria-hidden="true">drag_indicator</i>' +
+                '</span>';
+            var inner;
+            var dragAttr;
+            if (placement === 'group') {
+                inner = dragHandle + labelSpan + btnToPool;
+                dragAttr = ' draggable="true"';
+            } else {
+                inner = btnToGroup + labelSpan;
+                dragAttr = ' draggable="false"';
+            }
+            return (
+                '<li class="rg-item rg-item--resource-mock ' + cls + '" data-type="' + item.type + '" data-id="' +
+                rgEscapeHtmlAttr(String(item.id)) + '"' + dragAttr + mockBg + '>' + inner + '</li>'
+            );
+        }
+
+        /** 割当リスト内の並べ替え用（同じ ul 内のみ） */
+        let rgDraggedGroupItem = null;
+
+        function rgGetDragAfterElementInList(container, y) {
+            const draggableElements = Array.prototype.slice
+                .call(container.querySelectorAll('.rg-item:not(.rg-dragging)'))
+                .filter(function (child) {
+                    return child.parentNode === container;
+                });
+            return draggableElements.reduce(
+                function (closest, child) {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    }
+                    return closest;
+                },
+                { offset: Number.NEGATIVE_INFINITY, element: undefined }
+            ).element;
+        }
+
+        function rgEscapeHtmlAttr(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        function rgGroupMetaHtml(idx, title, kind) {
+            const k = kind === 'equipment' ? 'equipment' : 'staff';
+            return (
+                '<div class="rg-group-name-row">' +
+                '<label class="form-label" for="rgGroupName-' + idx + '">グループ名 <span class="required">*</span></label>' +
+                '<input type="text" class="form-input rg-group-name-input" id="rgGroupName-' + idx + '" autocomplete="off" value="' +
+                rgEscapeHtmlAttr(title) + '" />' +
+                '</div>' +
+                '<div class="rg-group-kind-row">' +
+                '<label class="form-label">種別 <span class="required">*</span></label>' +
+                '<div class="rg-kind-radios">' +
+                '<label class="rg-kind-label"><input type="radio" class="rg-group-kind-input" name="rgGroupKind-' + idx + '" value="staff"' + (k === 'staff' ? ' checked' : '') + '> 担当者</label>' +
+                '<label class="rg-kind-label"><input type="radio" class="rg-group-kind-input" name="rgGroupKind-' + idx + '" value="equipment"' + (k === 'equipment' ? ' checked' : '') + '> 設備・機器類</label>' +
+                '</div></div>' +
+                '<p class="rg-hint rg-group-hint">条件にあったリソースが、<strong>上から順に優先</strong>されます。ドラッグで並べ替えができます。<br/>矢印（→）でリソースグループから外すことができます。<br/>受付時に人数が指定されている場合は、定員や最少受付人数の条件に合うリソースが、より優先されます。</p>'
+            );
+        }
+
+        function rgBuildGroupsFromSeed(resourceGroupId) {
+            const seed = RG_MENU_SEED[resourceGroupId];
+            const container = document.getElementById('rgGroupsContainer');
+            if (!seed) {
+                container.innerHTML =
+                    '<div class="rg-group-block">' +
+                    rgGroupMetaHtml(0, 'リソースグループ 1', 'staff') +
+                    '<ul class="rg-list rg-drop-zone" data-zone="group" data-group-index="0"></ul></div>';
+                RG_MASTER_STAFF.forEach(function (s) {
+                    document.getElementById('rgPoolStaff').insertAdjacentHTML('beforeend', rgItemHtml({ type: 'staff', id: s.id, label: s.label }, 'pool'));
+                });
+                RG_MASTER_EQUIPMENT.forEach(function (e) {
+                    document.getElementById('rgPoolEquipment').insertAdjacentHTML('beforeend', rgItemHtml({ type: 'equipment', id: e.id, label: e.label }, 'pool'));
+                });
+                return;
+            }
+
+            let html = '';
+            seed.groups.forEach(function (g, idx) {
+                html +=
+                    '<div class="rg-group-block">' +
+                    rgGroupMetaHtml(idx, g.title, g.kind) +
+                    '<ul class="rg-list rg-drop-zone" data-zone="group" data-group-index="' +
+                    idx +
+                    '">';
+                g.items.forEach(function (it) {
+                    html += rgItemHtml(it, 'group');
+                });
+                html += '</ul></div>';
+            });
+            container.innerHTML = html;
+
+            document.getElementById('rgPoolStaff').innerHTML = '';
+            document.getElementById('rgPoolEquipment').innerHTML = '';
+
+            const staffById = Object.fromEntries(RG_MASTER_STAFF.map(function (s) { return [s.id, s]; }));
+            const equipById = Object.fromEntries(RG_MASTER_EQUIPMENT.map(function (e) { return [e.id, e]; }));
+
+            seed.poolStaffIds.forEach(function (id) {
+                const s = staffById[id];
+                if (s) {
+                    document.getElementById('rgPoolStaff').insertAdjacentHTML('beforeend', rgItemHtml({ type: 'staff', id: s.id, label: s.label }, 'pool'));
+                }
+            });
+            seed.poolEquipmentIds.forEach(function (id) {
+                const e = equipById[id];
+                if (e) {
+                    document.getElementById('rgPoolEquipment').insertAdjacentHTML('beforeend', rgItemHtml({ type: 'equipment', id: e.id, label: e.label }, 'pool'));
+                }
+            });
+        }
+
+        function rgItemLabelFromLi(li) {
+            const el = li.querySelector('.rg-item-label');
+            return el ? el.textContent : '';
+        }
+
+        /** 割当済み → 未割当へ */
+        function rgMoveItemToPool(li, skipUpdate) {
+            const type = li.dataset.type;
+            const id = li.dataset.id;
+            const label = rgItemLabelFromLi(li);
+            const pool = type === 'staff' ? document.getElementById('rgPoolStaff') : document.getElementById('rgPoolEquipment');
+            if (!pool) return;
+            li.remove();
+            pool.insertAdjacentHTML('beforeend', rgItemHtml({ type: type, id: id, label: label }, 'pool'));
+            if (!skipUpdate) {
+                rgUpdatePoolDraggability();
+            }
+        }
+
+        /** 種別変更時：当該グループの割当一覧を空にし、項目は未割当プールへ戻す */
+        function rgClearAssignedListInBlock(groupBlock) {
+            const ul = groupBlock.querySelector('.rg-list.rg-drop-zone[data-zone="group"]');
+            if (!ul) return;
+            const items = Array.prototype.slice.call(ul.querySelectorAll('.rg-item'));
+            items.forEach(function (li) {
+                rgMoveItemToPool(li, true);
+            });
+            rgUpdatePoolDraggability();
+        }
+
+        /** 未割当 → 種別が一致する先頭のグループへ追加 */
+        function rgMoveItemToGroup(li) {
+            const type = li.dataset.type;
+            const id = li.dataset.id;
+            const label = rgItemLabelFromLi(li);
+            let targetUl = null;
+            document.querySelectorAll('#rgGroupsContainer .rg-group-block').forEach(function (block) {
+                const kindInput = block.querySelector('.rg-group-kind-input:checked');
+                const gKind = kindInput ? kindInput.value : '';
+                if (rgGroupKindMatchesItem(gKind, type) && !targetUl) {
+                    targetUl = block.querySelector('.rg-list.rg-drop-zone[data-zone="group"]');
+                }
+            });
+            if (!targetUl) {
+                alert('この項目を割り当てられるグループ（種別が一致するグループ）がありません。');
+                return;
+            }
+            li.remove();
+            targetUl.insertAdjacentHTML('beforeend', rgItemHtml({ type: type, id: id, label: label }, 'group'));
+            rgUpdatePoolDraggability();
+        }
+
+        /**
+         * @param {number|string} resourceGroupId - 'new' または編集対象ID
+         * @param {number|string} [copyFromSeedId] - 新規登録モーダルで、コピー元のリソースグループID（RG_MENU_SEED のキー）
+         */
+        function setRgModalTitleMode(isRegister) {
+            const iconEl = document.getElementById('rgModalTitleIcon');
+            if (!iconEl) return;
+            if (isRegister) {
+                iconEl.textContent = '📝';
+            } else {
+                iconEl.textContent = '✏️';
+            }
+        }
+
+        function resourceGroupSet(resourceGroupId, copyFromSeedId) {
+            rgModalContextMenuId = resourceGroupId;
+            const deleteBtn = document.getElementById('rgModalDeleteBtn');
+            const seedIdForBuild =
+                resourceGroupId === 'new' && copyFromSeedId != null && copyFromSeedId !== ''
+                    ? copyFromSeedId
+                    : resourceGroupId;
+
+            if (resourceGroupId === 'new') {
+                setRgModalTitleMode(true);
+                document.getElementById('rgModalTitle').textContent = 'リソースグループ登録';
+                document.getElementById('resourceGroupId').textContent = '';
+                document.querySelector('#resourceGroupModal .modal-btn-save').textContent = '登録';
+                if (deleteBtn) deleteBtn.hidden = true;
+            } else {
+                setRgModalTitleMode(false);
+                document.getElementById('rgModalTitle').textContent = 'リソースグループ編集';
+                document.getElementById('resourceGroupId').textContent = '（ID：' + resourceGroupId + '）';
+                document.querySelector('#resourceGroupModal .modal-btn-save').textContent = '保存';
+                if (deleteBtn) deleteBtn.hidden = false;
+            }
+
+            document.getElementById('rgPoolStaff').innerHTML = '';
+            document.getElementById('rgPoolEquipment').innerHTML = '';
+            rgLastPanelKind = null;
+            rgBuildGroupsFromSeed(seedIdForBuild);
+            rgUpdatePoolDraggability();
+
+            const modal = document.getElementById('resourceGroupModal');
+            modal.style.display = 'flex';
+            modal.classList.add('show');
+        }
+
+        /** 右サイドに表示するプール（未割当：担当者 / 設備）の種別。ラジオ未操作時は先頭グループの種別 */
+        function rgGetRightPanelKind() {
+            if (rgLastPanelKind === 'staff' || rgLastPanelKind === 'equipment') {
+                return rgLastPanelKind;
+            }
+            const first = document.querySelector(
+                '#rgGroupsContainer .rg-group-block .rg-group-kind-input:checked'
+            );
+            return first ? first.value : 'staff';
+        }
+
+        /** 種別に応じて右サイドの未割当リストをどちらか一方だけ表示 */
+        function rgSyncRightPoolVisibility() {
+            const kind = rgGetRightPanelKind();
+            const staffWrap = document.querySelector('#resourceGroupModal .rg-pool-staff-wrap');
+            const equipWrap = document.querySelector('#resourceGroupModal .rg-pool-equip-wrap');
+            if (!staffWrap || !equipWrap) return;
+            if (kind === 'staff') {
+                staffWrap.style.display = '';
+                equipWrap.style.display = 'none';
+            } else {
+                staffWrap.style.display = 'none';
+                equipWrap.style.display = '';
+            }
+        }
+
+        /** 種別に応じて右プール表示を切替え、未割当の「←」を割当可否で有効化 */
+        function rgUpdatePoolDraggability() {
+            rgSyncRightPoolVisibility();
+
+            function hasAssignableGroupForType(type) {
+                let found = false;
+                document.querySelectorAll('#rgGroupsContainer .rg-group-block').forEach(function (block) {
+                    const kindInput = block.querySelector('.rg-group-kind-input:checked');
+                    const gKind = kindInput ? kindInput.value : '';
+                    if (rgGroupKindMatchesItem(gKind, type)) {
+                        found = true;
+                    }
+                });
+                return found;
+            }
+
+            document.querySelectorAll('#rgPoolStaff .rg-move-to-group').forEach(function (btn) {
+                btn.disabled = !hasAssignableGroupForType('staff');
+            });
+            document.querySelectorAll('#rgPoolEquipment .rg-move-to-group').forEach(function (btn) {
+                btn.disabled = !hasAssignableGroupForType('equipment');
+            });
+        }
+
+        function rgGroupKindMatchesItem(kind, itemType) {
+            if (itemType === 'staff' && kind === 'staff') return true;
+            if (itemType === 'equipment' && kind === 'equipment') return true;
+            return false;
+        }
+
+        function closeResourceGroupModal() {
+            const modal = document.getElementById('resourceGroupModal');
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+
+        function rgSerializeFromDom() {
+            const groups = [];
+            document.querySelectorAll('#rgGroupsContainer .rg-group-block').forEach(function (block) {
+                const nameInput = block.querySelector('.rg-group-name-input');
+                const title = nameInput ? nameInput.value.trim() : '';
+                const kindInput = block.querySelector('input.rg-group-kind-input:checked');
+                const kind = kindInput ? kindInput.value : '';
+                const items = [];
+                block.querySelectorAll('.rg-list .rg-item').forEach(function (li) {
+                    const labelEl = li.querySelector('.rg-item-label');
+                    items.push({
+                        type: li.dataset.type,
+                        id: li.dataset.id,
+                        label: labelEl ? labelEl.textContent : ''
+                    });
+                });
+                groups.push({ title: title, kind: kind, items: items });
+            });
+
+            const poolStaff = [];
+            document.querySelectorAll('#rgPoolStaff .rg-item').forEach(function (li) {
+                const labelEl = li.querySelector('.rg-item-label');
+                poolStaff.push({ type: 'staff', id: li.dataset.id, label: labelEl ? labelEl.textContent : '' });
+            });
+            const poolEquip = [];
+            document.querySelectorAll('#rgPoolEquipment .rg-item').forEach(function (li) {
+                const labelEl = li.querySelector('.rg-item-label');
+                poolEquip.push({ type: 'equipment', id: li.dataset.id, label: labelEl ? labelEl.textContent : '' });
+            });
+
+            return { groups: groups, poolStaff: poolStaff, poolEquipment: poolEquip };
+        }
+
+        function saveResourceGroupSet() {
+            const data = rgSerializeFromDom();
+            for (let gi = 0; gi < data.groups.length; gi++) {
+                if (!data.groups[gi].title || !String(data.groups[gi].title).trim()) {
+                    alert('グループ名を入力してください。');
+                    const inputs = document.querySelectorAll('#rgGroupsContainer .rg-group-name-input');
+                    if (inputs[gi]) {
+                        inputs[gi].focus();
+                    }
+                    return;
+                }
+                if (!data.groups[gi].kind || (data.groups[gi].kind !== 'staff' && data.groups[gi].kind !== 'equipment')) {
+                    alert('種別を選択してください。');
+                    return;
+                }
+            }
+            closeResourceGroupModal();
+        }
+
+        function deleteResourceGroupSet() {
+            if (!confirm('リソースグループ情報を削除します。よろしいですか？')) {
+                return;
+            }
+            closeResourceGroupModal();
+        }
+
+        (function rgInitResourceGroupModalUi() {
+            const modal = document.getElementById('resourceGroupModal');
+            if (!modal) return;
+
+            modal.addEventListener('dragstart', function (e) {
+                const li = e.target.closest('.rg-item');
+                if (!li) return;
+                const ul = li.closest('.rg-list.rg-drop-zone');
+                if (!ul || ul.dataset.zone !== 'group') return;
+                if (e.target.closest('.rg-move-btn')) {
+                    e.preventDefault();
+                    return;
+                }
+                rgDraggedGroupItem = li;
+                li.classList.add('rg-dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', li.dataset.id || '');
+            });
+
+            modal.addEventListener('dragend', function () {
+                if (rgDraggedGroupItem) {
+                    rgDraggedGroupItem.classList.remove('rg-dragging');
+                }
+                rgDraggedGroupItem = null;
+                modal.querySelectorAll('.rg-list[data-zone="group"].rg-sort-target-over').forEach(function (el) {
+                    el.classList.remove('rg-sort-target-over');
+                });
+            });
+
+            modal.addEventListener('dragover', function (e) {
+                if (!rgDraggedGroupItem) return;
+                const ul = e.target.closest('ul.rg-list.rg-drop-zone');
+                if (!ul || ul.dataset.zone !== 'group') return;
+                if (rgDraggedGroupItem.parentNode !== ul) return;
+
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                ul.classList.add('rg-sort-target-over');
+
+                const after = rgGetDragAfterElementInList(ul, e.clientY);
+                if (after == null) {
+                    ul.appendChild(rgDraggedGroupItem);
+                } else {
+                    ul.insertBefore(rgDraggedGroupItem, after);
+                }
+            });
+
+            modal.addEventListener('dragleave', function (e) {
+                const ul = e.target.closest('ul.rg-list.rg-drop-zone[data-zone="group"]');
+                if (ul && e.relatedTarget && !ul.contains(e.relatedTarget)) {
+                    ul.classList.remove('rg-sort-target-over');
+                }
+            });
+
+            modal.addEventListener('drop', function (e) {
+                const ul = e.target.closest('ul.rg-list.rg-drop-zone[data-zone="group"]');
+                if (ul) {
+                    e.preventDefault();
+                    ul.classList.remove('rg-sort-target-over');
+                }
+            });
+
+            modal.addEventListener('change', function (e) {
+                if (e.target && e.target.classList && e.target.classList.contains('rg-group-kind-input')) {
+                    rgLastPanelKind = e.target.value;
+                    const block = e.target.closest('.rg-group-block');
+                    if (block) {
+                        rgClearAssignedListInBlock(block);
+                    } else {
+                        rgUpdatePoolDraggability();
+                    }
+                }
+            });
+
+            modal.addEventListener('click', function (e) {
+                const toPool = e.target.closest('.rg-move-to-pool');
+                if (toPool) {
+                    e.preventDefault();
+                    const li = toPool.closest('.rg-item');
+                    if (li) {
+                        rgMoveItemToPool(li);
+                    }
+                    return;
+                }
+                const toGroup = e.target.closest('.rg-move-to-group');
+                if (toGroup) {
+                    e.preventDefault();
+                    if (toGroup.disabled) {
+                        return;
+                    }
+                    const li = toGroup.closest('.rg-item');
+                    if (li) {
+                        rgMoveItemToGroup(li);
+                    }
+                    return;
+                }
+                if (e.target === modal) {
+                    closeResourceGroupModal();
+                }
+            });
+        })();
+
+        function editResourceGroup(id) {
+            resourceGroupSet(id);
+        }
+
+        function copyResourceGroup(id) {
+            resourceGroupSet('new', id);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1222 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>シフト設定｜管理画面モック</title>
+
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+
+    <!-- カレンダー用カスタムスタイル -->
+    <style>
+        /* 日曜日のスタイル */
+        .mdc-calendar-day.sunday {
+            background-color: #ffe6e6 !important;
+            /* 薄ピンク */
+            color: #d32f2f !important;
+            /* 赤文字 */
+        }
+
+        /* 土曜日のスタイル */
+        .mdc-calendar-day.saturday {
+            background-color: #e6f3ff !important;
+            /* 薄い水色 */
+            color: #1565c0 !important;
+            /* 紺色 */
+        }
+
+        /* 13日のスタイル */
+        .mdc-calendar-day.day-13 {
+            background-color: #ffe6e6 !important;
+            /* 薄ピンク */
+            color: #d32f2f !important;
+            /* 赤文字 */
+        }
+
+        /* 13日かつ日曜日の場合は日曜日スタイルを優先 */
+        .mdc-calendar-day.day-13.sunday {
+            background-color: #ffe6e6 !important;
+            /* 薄ピンク */
+            color: #d32f2f !important;
+            /* 赤文字 */
+        }
+
+        /* 13日かつ土曜日の場合は13日スタイルを優先 */
+        .mdc-calendar-day.day-13.saturday {
+            background-color: #ffe6e6 !important;
+            /* 薄ピンク */
+            color: #d32f2f !important;
+            /* 赤文字 */
+        }
+
+        /* 20日の特別スタイル */
+        .mdc-calendar-day.day-20 {
+            position: relative;
+        }
+
+        .mdc-calendar-day.day-20::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 12px;
+            height: 12px;
+            background-color: #d32f2f;
+            /* 赤い丸 */
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* 14日の特別スタイル */
+        .mdc-calendar-day.day-14 {
+            position: relative;
+        }
+
+        .mdc-calendar-day.day-14::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 12px;
+            height: 12px;
+            background-color: #d32f2f;
+            /* 赤い丸 */
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        /* 店舗営業時間のトグルボタン */
+        .business-hours-toggle {
+            background: none;
+            border: none;
+            color: #6b7280;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 4px;
+            margin-left: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .business-hours-toggle:hover {
+            color: #1e90ff;
+        }
+
+        .business-hours-toggle.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* 時間・分のセレクトボックス */
+        .time-select-hour {
+            width: 70px !important;
+            display: inline-block;
+        }
+
+        .time-select-minute {
+            width: 70px !important;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources" class="active">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+            <!-- シフト管理セクション -->
+            <div class="main-section">
+                <div class="main-header">
+                    <h3 class="main-title">📋 シフト設定</h3>
+                    リソース名 : チェアA
+                </div>
+
+                <div class="main-content">
+
+                    <!-- MDCカレンダー -->
+                    <div class="mdc-calendar">
+                        <div class="mdc-calendar-header">
+                            <h3 class="mdc-calendar-title">シフトカレンダー</h3>
+                            <div class="date-controls">
+                                <button class="date-btn" onclick="previousMonth()">
+                                    <i class="material-icons">chevron_left</i>
+                                    前月
+                                </button>
+                                <button class="date-btn outlined" onclick="goToCurrentMonth()">
+                                    <i class="material-icons">today</i>
+                                    今月
+                                </button>
+                                <input type="text" class="date-input" id="currentMonth" value="2025年1月" readonly="">
+                                <button class="date-btn" onclick="nextMonth()">
+                                    次月
+                                    <i class="material-icons">chevron_right</i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mdc-calendar-grid" id="calendarGrid">
+                            <!-- カレンダーヘッダー -->
+                            <div class="mdc-calendar-day-header">日</div>
+                            <div class="mdc-calendar-day-header">月</div>
+                            <div class="mdc-calendar-day-header">火</div>
+                            <div class="mdc-calendar-day-header">水</div>
+                            <div class="mdc-calendar-day-header">木</div>
+                            <div class="mdc-calendar-day-header">金</div>
+                            <div class="mdc-calendar-day-header">土</div>
+
+                            <!-- カレンダー日付はJavaScriptで生成 -->
+                        </div>
+                        <!-- カレンダー使い方説明 -->
+                        <div style="margin-top: 15px; padding: 12px 16px; background-color: #f0f7ff; border-left: 4px solid #1e90ff; border-radius: 4px;">
+                            <p style="margin: 0; font-size: 14px; color: #374151; line-height: 1.6;">
+                                <span style="color: #1e90ff; font-weight: 600;">💡 使い方：</span>
+                                カレンダーの日付をクリックすると、その日限定のシフト設定ができます。<br>
+                                <span style="font-size: 13px; color: #6b7280;">※ 店舗・施設の定休日はクリックできません。</span>
+                            </p>
+                        </div>
+
+                        <div class="mdc-business-hours-header">
+                            <h3 class="mdc-calendar-title" style="display: flex; align-items: center; cursor: pointer;" onclick="toggleBusinessHoursTable(event)">
+                                営業時間・定休日<button class="business-hours-toggle" onclick="toggleBusinessHours(event)">▽</button>
+                            </h3>
+                        </div>
+                        <div class="search-form-row" id="businessHoursTable" style="display: none;">
+                            <div class="search-form-input">
+                                営業時間
+                                <table class="business-hours-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>定休日</th>
+                                            <th>営業時間</th>
+                                            <th>休憩時間</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="day-label">月</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_mon"
+                                                    name="holiday_mon" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_mon_hour" name="open_mon_hour" class="form-input time-select-hour" disabled></select>：<select id="open_mon_minute" name="open_mon_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_mon_hour" name="close_mon_hour" class="form-input time-select-hour" disabled></select>：<select id="close_mon_minute" name="close_mon_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_mon_hour" name="break_start_mon_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_mon_minute" name="break_start_mon_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_mon_hour" name="break_end_mon_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_mon_minute" name="break_end_mon_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">火</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_tue"
+                                                    name="holiday_tue" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_tue_hour" name="open_tue_hour" class="form-input time-select-hour" disabled></select>：<select id="open_tue_minute" name="open_tue_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_tue_hour" name="close_tue_hour" class="form-input time-select-hour" disabled></select>：<select id="close_tue_minute" name="close_tue_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_tue_hour" name="break_start_tue_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_tue_minute" name="break_start_tue_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_tue_hour" name="break_end_tue_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_tue_minute" name="break_end_tue_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">水</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_wed"
+                                                    name="holiday_wed" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_wed_hour" name="open_wed_hour" class="form-input time-select-hour" disabled></select>：<select id="open_wed_minute" name="open_wed_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_wed_hour" name="close_wed_hour" class="form-input time-select-hour" disabled></select>：<select id="close_wed_minute" name="close_wed_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_wed_hour" name="break_start_wed_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_wed_minute" name="break_start_wed_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_wed_hour" name="break_end_wed_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_wed_minute" name="break_end_wed_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">木</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_thu"
+                                                    name="holiday_thu" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_thu_hour" name="open_thu_hour" class="form-input time-select-hour" disabled></select>：<select id="open_thu_minute" name="open_thu_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_thu_hour" name="close_thu_hour" class="form-input time-select-hour" disabled></select>：<select id="close_thu_minute" name="close_thu_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_thu_hour" name="break_start_thu_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_thu_minute" name="break_start_thu_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_thu_hour" name="break_end_thu_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_thu_minute" name="break_end_thu_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">金</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_fri"
+                                                    name="holiday_fri" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_fri_hour" name="open_fri_hour" class="form-input time-select-hour" disabled></select>：<select id="open_fri_minute" name="open_fri_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_fri_hour" name="close_fri_hour" class="form-input time-select-hour" disabled></select>：<select id="close_fri_minute" name="close_fri_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_fri_hour" name="break_start_fri_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_fri_minute" name="break_start_fri_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_fri_hour" name="break_end_fri_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_fri_minute" name="break_end_fri_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">土</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_sat"
+                                                    name="holiday_sat" disabled onchange="toggleTimeInputs(this)"></td>
+                                            <td class="not-change">
+                                                <select id="open_sat_hour" name="open_sat_hour" class="form-input time-select-hour" disabled></select>：<select id="open_sat_minute" name="open_sat_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_sat_hour" name="close_sat_hour" class="form-input time-select-hour" disabled></select>：<select id="close_sat_minute" name="close_sat_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_sat_hour" name="break_start_sat_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_sat_minute" name="break_start_sat_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_sat_hour" name="break_end_sat_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_sat_minute" name="break_end_sat_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">日</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_sun"
+                                                    name="holiday_sun" disabled></td>
+                                            <td class="not-change">
+                                                <select id="open_sun_hour" name="open_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="open_sun_minute" name="open_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_sun_hour" name="close_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="close_sun_minute" name="close_sun_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_sun_hour" name="break_start_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_sun_minute" name="break_start_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_sun_hour" name="break_end_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_sun_minute" name="break_end_sun_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">祝</td>
+                                            <td class="not-change"><input type="checkbox" id="holiday_hol"
+                                                    name="holiday_hol" disabled></td>
+                                            <td class="not-change">
+                                                <select id="open_hol_hour" name="open_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="open_hol_minute" name="open_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_hol_hour" name="close_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="close_hol_minute" name="close_hol_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td class="not-change">
+                                                <select id="break_start_hol_hour" name="break_start_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_hol_minute" name="break_start_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_hol_hour" name="break_end_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_hol_minute" name="break_end_hol_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div style="margin:10px 0px;">
+                                特定の定休日
+                                </div>
+                                <div id="specificHolidaysList" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                    <div style="flex: 1; min-width: 200px; padding: 8px; background-color: white; border-radius: 4px; border-left: 3px solid #d32f2f;">
+                                        <span style="font-weight: 600; color: #d32f2f;">2025年1月1日（水）</span>
+                                    </div>
+                                    <div style="flex: 1; min-width: 200px; padding: 8px; background-color: white; border-radius: 4px; border-left: 3px solid #d32f2f;">
+                                        <span style="font-weight: 600; color: #d32f2f;">2025年1月13日（月）</span>
+                                    </div>
+                                    <div style="flex: 1; min-width: 200px; padding: 8px; background-color: white; border-radius: 4px; border-left: 3px solid #d32f2f;">
+                                        <span style="font-weight: 600; color: #d32f2f;">2025年1月14日（火）</span>
+                                    </div>
+                                    <div style="flex: 1; min-width: 200px; padding: 8px; background-color: white; border-radius: 4px; border-left: 3px solid #d32f2f;">
+                                        <span style="font-weight: 600; color: #d32f2f;">2025年12月31日（水）</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mdc-business-hours-header">
+                            <h3 class="mdc-calendar-title" style="display: flex; align-items: center; cursor: pointer;" onclick="toggleShiftHoursTable(event)">
+                                シフト時間<button class="business-hours-toggle" onclick="toggleShiftHours(event)">▽</button>
+                            </h3>
+                        </div>
+                        <div class="search-form-row" id="shiftHoursTable" style="display: none;">
+                            <div class="search-form-input">
+                                <table class="business-hours-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>定休日</th>
+                                            <th>営業時間</th>
+                                            <th>休憩時間</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="day-label">月</td>
+                                            <td><input type="checkbox" id="holiday_mon" name="holiday_mon"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_mon_hour" name="open_mon_hour" class="form-input time-select-hour"></select>：<select id="open_mon_minute" name="open_mon_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_mon_hour" name="close_mon_hour" class="form-input time-select-hour"></select>：<select id="close_mon_minute" name="close_mon_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_mon_hour" name="break_start_mon_hour" class="form-input time-select-hour"></select>：<select id="break_start_mon_minute" name="break_start_mon_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_mon_hour" name="break_end_mon_hour" class="form-input time-select-hour"></select>：<select id="break_end_mon_minute" name="break_end_mon_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">火</td>
+                                            <td><input type="checkbox" id="holiday_tue" name="holiday_tue"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_tue_hour" name="open_tue_hour" class="form-input time-select-hour"></select>：<select id="open_tue_minute" name="open_tue_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_tue_hour" name="close_tue_hour" class="form-input time-select-hour"></select>：<select id="close_tue_minute" name="close_tue_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_tue_hour" name="break_start_tue_hour" class="form-input time-select-hour"></select>：<select id="break_start_tue_minute" name="break_start_tue_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_tue_hour" name="break_end_tue_hour" class="form-input time-select-hour"></select>：<select id="break_end_tue_minute" name="break_end_tue_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">水</td>
+                                            <td><input type="checkbox" id="holiday_wed" name="holiday_wed"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_wed_hour" name="open_wed_hour" class="form-input time-select-hour"></select>：<select id="open_wed_minute" name="open_wed_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_wed_hour" name="close_wed_hour" class="form-input time-select-hour"></select>：<select id="close_wed_minute" name="close_wed_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_wed_hour" name="break_start_wed_hour" class="form-input time-select-hour"></select>：<select id="break_start_wed_minute" name="break_start_wed_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_wed_hour" name="break_end_wed_hour" class="form-input time-select-hour"></select>：<select id="break_end_wed_minute" name="break_end_wed_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">木</td>
+                                            <td><input type="checkbox" id="holiday_thu" name="holiday_thu"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_thu_hour" name="open_thu_hour" class="form-input time-select-hour"></select>：<select id="open_thu_minute" name="open_thu_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_thu_hour" name="close_thu_hour" class="form-input time-select-hour"></select>：<select id="close_thu_minute" name="close_thu_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_thu_hour" name="break_start_thu_hour" class="form-input time-select-hour"></select>：<select id="break_start_thu_minute" name="break_start_thu_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_thu_hour" name="break_end_thu_hour" class="form-input time-select-hour"></select>：<select id="break_end_thu_minute" name="break_end_thu_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">金</td>
+                                            <td><input type="checkbox" id="holiday_fri" name="holiday_fri"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_fri_hour" name="open_fri_hour" class="form-input time-select-hour"></select>：<select id="open_fri_minute" name="open_fri_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_fri_hour" name="close_fri_hour" class="form-input time-select-hour"></select>：<select id="close_fri_minute" name="close_fri_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_fri_hour" name="break_start_fri_hour" class="form-input time-select-hour"></select>：<select id="break_start_fri_minute" name="break_start_fri_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_fri_hour" name="break_end_fri_hour" class="form-input time-select-hour"></select>：<select id="break_end_fri_minute" name="break_end_fri_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">土</td>
+                                            <td><input type="checkbox" id="holiday_sat" name="holiday_sat"
+                                                    onchange="toggleTimeInputs(this)"></td>
+                                            <td>
+                                                <select id="open_sat_hour" name="open_sat_hour" class="form-input time-select-hour"></select>：<select id="open_sat_minute" name="open_sat_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="close_sat_hour" name="close_sat_hour" class="form-input time-select-hour"></select>：<select id="close_sat_minute" name="close_sat_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_sat_hour" name="break_start_sat_hour" class="form-input time-select-hour"></select>：<select id="break_start_sat_minute" name="break_start_sat_minute" class="form-input time-select-minute"></select>
+                                                ～
+                                                <select id="break_end_sat_hour" name="break_end_sat_hour" class="form-input time-select-hour"></select>：<select id="break_end_sat_minute" name="break_end_sat_minute" class="form-input time-select-minute"></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">日</td>
+                                            <td><input type="checkbox" id="holiday_sun"
+                                                    name="holiday_sun" checked disabled></td>
+                                            <td>
+                                                <select id="open_sun_hour" name="open_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="open_sun_minute" name="open_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_sun_hour" name="close_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="close_sun_minute" name="close_sun_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_sun_hour" name="break_start_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_sun_minute" name="break_start_sun_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_sun_hour" name="break_end_sun_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_sun_minute" name="break_end_sun_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="day-label">祝</td>
+                                            <td><input type="checkbox" id="holiday_hol"
+                                                    name="holiday_hol" checked disabled></td>
+                                            <td>
+                                                <select id="open_hol_hour" name="open_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="open_hol_minute" name="open_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="close_hol_hour" name="close_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="close_hol_minute" name="close_hol_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                            <td>
+                                                <select id="break_start_hol_hour" name="break_start_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_start_hol_minute" name="break_start_hol_minute" class="form-input time-select-minute" disabled></select>
+                                                ～
+                                                <select id="break_end_hol_hour" name="break_end_hol_hour" class="form-input time-select-hour" disabled></select>：<select id="break_end_hol_minute" name="break_end_hol_minute" class="form-input time-select-minute" disabled></select>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="search-form-actions">
+                            <button type="button" class="btn modal-btn-save" onclick="saveSettings();">保存</button>
+                            <button type="button" class="btn cancel-btn" onclick="window.location.href='admin_resources.html'">閉じる</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <div class="popup-overlay" id="editCalendarModal" style="display: none;">
+        <div class="normal-modal" id="editResourceModalContent">
+            <div class="modal-header">
+                <h3 class="modal-title"></h3>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="results-table-container" style="flex: 1; overflow-y: auto; min-height: 0;">
+            <table class="business-hours-table">
+                <thead>
+                    <tr>
+                        <th>定休日</th>
+                        <th>営業時間</th>
+                        <th>休憩時間</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="checkbox" id="holiday" name="holiday" onchange="toggleTimeInputs(this)"></td>
+                        <td>
+                            <select id="open_hour" name="open_hour" class="form-input time-select-hour"></select>：<select id="open_minute" name="open_minute" class="form-input time-select-minute"></select>
+                            ～
+                            <select id="close_hour" name="close_hour" class="form-input time-select-hour"></select>：<select id="close_minute" name="close_minute" class="form-input time-select-minute"></select>
+                        </td>
+                        <td>
+                            <select id="break_start_hour" name="break_start_hour" class="form-input time-select-hour"></select>：<select id="break_start_minute" name="break_start_minute" class="form-input time-select-minute"></select>
+                            ～
+                            <select id="break_end_hour" name="break_end_hour" class="form-input time-select-hour"></select>：<select id="break_end_minute" name="break_end_minute" class="form-input time-select-minute"></select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" onclick="saveEdit()">保存</button>
+                <button type="button" class="modal-btn modal-btn-delete" id="cancelBtn"  onclick="cancelEdit()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // カレンダー関連の変数
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let currentMonth = currentDate.getMonth();
+
+        // カレンダー生成
+        function generateCalendar() {
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthElement = document.getElementById('currentMonth');
+
+            // ヘッダーを除く既存の日付要素をクリア
+            const existingDays = calendarGrid.querySelectorAll('.mdc-calendar-day');
+            existingDays.forEach(day => day.remove());
+
+            // 月の表示を更新
+            currentMonthElement.value = `${currentYear}年${currentMonth + 1}月`;
+
+            // 月の最初の日と最後の日を取得
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const firstDayOfWeek = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+
+            // 前月の日付を表示
+            const prevMonth = new Date(currentYear, currentMonth - 1, 0);
+            const daysInPrevMonth = prevMonth.getDate();
+
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                const dayElement = createDayElement(daysInPrevMonth - i, true);
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // 今月の日付を表示
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = createDayElement(day, false);
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // 来月の日付を表示（6週間=42セルまで埋める）
+            const totalCells = 42; // 6週間×7日
+            const usedCells = firstDayOfWeek + daysInMonth;
+            const remainingCells = totalCells - usedCells;
+
+            // 来月の日付を表示
+            if (remainingCells > 0) {
+                for (let day = 1; day <= remainingCells; day++) {
+                    const dayElement = createDayElement(day, true);
+                    calendarGrid.appendChild(dayElement);
+                }
+            }
+        }
+
+        // 日付要素を作成
+        function createDayElement(day, isOtherMonth) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'mdc-calendar-day';
+            if (isOtherMonth) {
+                dayElement.classList.add('other-month');
+            }
+
+            // 今日の日付かチェック
+            const today = new Date();
+            if (!isOtherMonth &&
+                currentYear === today.getFullYear() &&
+                currentMonth === today.getMonth() &&
+                day === today.getDate()) {
+                dayElement.classList.add('today');
+            }
+
+            // 曜日を判定してクラスを追加
+            if (!isOtherMonth) {
+                const date = new Date(currentYear, currentMonth, day);
+                const dayOfWeek = date.getDay();
+
+                // 日曜日（0）の場合はsundayクラスを追加
+                if (dayOfWeek === 0) {
+                    dayElement.classList.add('sunday');
+                }
+                // 土曜日（6）の場合はsaturdayクラスを追加
+                else if (dayOfWeek === 6) {
+                    dayElement.classList.add('saturday');
+                }
+
+                // 13日の場合はday-13クラスを追加
+                if (day === 13) {
+                    dayElement.classList.add('day-13');
+                }
+
+                // 20日の場合はday-20クラスを追加
+                if (day === 20) {
+                    dayElement.classList.add('day-20');
+                }
+
+                // 14日の場合はday-14クラスを追加
+                if (day === 14) {
+                    dayElement.classList.add('day-14');
+                }
+            }
+
+            const shiftInfo = getShiftInfo(day, isOtherMonth);
+            dayElement.innerHTML = `
+            <div class="mdc-day-number">${day}</div>
+            ${shiftInfo ? `<div class="mdc-shift-info">${shiftInfo}</div>` : ''}
+        `;
+
+            // クリックイベント
+            dayElement.addEventListener('click', () => {
+                if (!isOtherMonth) {
+                    selectDate(day);
+                }
+            });
+
+            return dayElement;
+        }
+
+        // シフト情報を取得（サンプルデータ）
+        function getShiftInfo(day, isOtherMonth) {
+            if (isOtherMonth) return '';
+
+            // 日曜日と13日は「休」を表示
+            const date = new Date(currentYear, currentMonth, day);
+            const dayOfWeek = date.getDay();
+
+            // 日曜日（0）または13日の場合は「休」を表示
+            if (dayOfWeek === 0 || day === 13) {
+                return '休';
+            }
+
+            // 14日は「休」を表示
+            if (day === 14) {
+                return '休';
+            }
+
+            // 20日は特別な時間を表示
+            if (day === 20) {
+                return '13:00～17:00';
+            }
+
+            // 土曜日（6）は9:00～17:00を表示
+            if (dayOfWeek === 6) {
+                return '9:00～17:00<br>休憩 12:00～13:00';
+            }
+
+            // その他のすべての日は9:00～18:00を表示
+            return '9:00～18:00<br>休憩 12:00～13:00';
+        }
+
+        // 日付選択
+        function selectDate(day) {
+            const selectedDate = new Date(currentYear, currentMonth, day);
+            const dateString = selectedDate.toISOString().split('T')[0];
+            console.log('Selected date:', dateString);
+
+            // 日曜日（0）または13日はクリックを無効化
+            const dayOfWeek = selectedDate.getDay();
+            if (dayOfWeek === 0 || day === 13) {
+                console.log('この日付はクリックできません');
+                return; // モーダルを表示せずに処理を終了
+            }
+
+            // 選択された日付をハイライト
+            document.querySelectorAll('.mdc-calendar-day').forEach(dayEl => {
+                dayEl.classList.remove('selected');
+            });
+            event.target.closest('.mdc-calendar-day').classList.add('selected');
+
+            // カレンダー編集モーダルを表示
+            showEditCalendarModal(selectedDate);
+        }
+
+        // カレンダー編集モーダルを表示
+        function showEditCalendarModal(selectedDate) {
+            const modal = document.getElementById('editCalendarModal');
+            if (modal) {
+                // 選択された日付をモーダルに設定
+                const dateString = selectedDate.toISOString().split('T')[0];
+                const formattedDate = selectedDate.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+
+                // モーダルタイトルに日付を表示
+                const modalTitle = modal.querySelector('.modal-title');
+                if (modalTitle) {
+                    modalTitle.textContent = `📅 ${formattedDate} のシフト設定`;
+                }
+
+                // モーダル内の入力フィールドを取得
+                const holidayCheckbox = modal.querySelector('#holiday');
+                const openHourInput = modal.querySelector('#open_hour');
+                const openMinuteInput = modal.querySelector('#open_minute');
+                const closeHourInput = modal.querySelector('#close_hour');
+                const closeMinuteInput = modal.querySelector('#close_minute');
+                const breakStartHourInput = modal.querySelector('#break_start_hour');
+                const breakStartMinuteInput = modal.querySelector('#break_start_minute');
+                const breakEndHourInput = modal.querySelector('#break_end_hour');
+                const breakEndMinuteInput = modal.querySelector('#break_end_minute');
+
+
+                // 選択された日付に応じてモーダルの内容を設定
+                const selectedDay = selectedDate.getDate();
+
+                if (selectedDay === 20) {
+                    // 20日の場合：営業時間を13:00～17:00、休憩時間を未入力に設定
+                    holidayCheckbox.checked = false;
+                    holidayCheckbox.disabled = false;
+                    openHourInput.value = '13';
+                    openHourInput.disabled = false;
+                    openMinuteInput.value = '00';
+                    openMinuteInput.disabled = false;
+                    closeHourInput.value = '17';
+                    closeHourInput.disabled = false;
+                    closeMinuteInput.value = '00';
+                    closeMinuteInput.disabled = false;
+                    breakStartHourInput.value = '';
+                    breakStartHourInput.disabled = false;
+                    breakStartMinuteInput.value = '';
+                    breakStartMinuteInput.disabled = false;
+                    breakEndHourInput.value = '';
+                    breakEndHourInput.disabled = false;
+                    breakEndMinuteInput.value = '';
+                    breakEndMinuteInput.disabled = false;
+                } else if (selectedDay === 14) {
+                    // 14日の場合：休みにチェック、営業時間・休憩時間を未入力で非活性に設定、解除ボタンを表示
+                    holidayCheckbox.checked = true;
+                    holidayCheckbox.disabled = false;
+                    openHourInput.value = '';
+                    openHourInput.disabled = true;
+                    openMinuteInput.value = '';
+                    openMinuteInput.disabled = true;
+                    closeHourInput.value = '';
+                    closeHourInput.disabled = true;
+                    closeMinuteInput.value = '';
+                    closeMinuteInput.disabled = true;
+                    breakStartHourInput.value = '';
+                    breakStartHourInput.disabled = true;
+                    breakStartMinuteInput.value = '';
+                    breakStartMinuteInput.disabled = true;
+                    breakEndHourInput.value = '';
+                    breakEndHourInput.disabled = true;
+                    breakEndMinuteInput.value = '';
+                    breakEndMinuteInput.disabled = true;
+                } else {
+                    // その他の日：デフォルト値に設定
+                    holidayCheckbox.checked = false;
+                    holidayCheckbox.disabled = false;
+                    openHourInput.value = '09';
+                    openHourInput.disabled = false;
+                    openMinuteInput.value = '00';
+                    openMinuteInput.disabled = false;
+                    closeHourInput.value = '18';
+                    closeHourInput.disabled = false;
+                    closeMinuteInput.value = '00';
+                    closeMinuteInput.disabled = false;
+                    breakStartHourInput.value = '12';
+                    breakStartHourInput.disabled = false;
+                    breakStartMinuteInput.value = '00';
+                    breakStartMinuteInput.disabled = false;
+                    breakEndHourInput.value = '13';
+                    breakEndHourInput.disabled = false;
+                    breakEndMinuteInput.value = '00';
+                    breakEndMinuteInput.disabled = false;
+                }
+
+                // モーダルを表示
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+            }
+        }
+
+        // カレンダー編集モーダルを閉じる
+        function closeEditCalendarModal() {
+            const modal = document.getElementById('editCalendarModal');
+            if (modal) {
+                modal.style.display = 'none';
+                modal.classList.remove('show');
+            }
+        }
+
+        // モーダル外クリックで閉じる
+        document.addEventListener('DOMContentLoaded', function () {
+            const editCalendarModal = document.getElementById('editCalendarModal');
+            if (editCalendarModal) {
+                editCalendarModal.addEventListener('click', function (e) {
+                    if (e.target === this) {
+                        closeEditCalendarModal();
+                    }
+                });
+            }
+        });
+
+        // 前月
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            generateCalendar();
+        }
+
+        // 店舗営業時間の表示/非表示切り替え
+        function toggleBusinessHours(event) {
+            event.stopPropagation(); // イベントの伝播を止める
+            const businessHoursTable = document.getElementById('businessHoursTable');
+            const toggleButtons = document.querySelectorAll('.business-hours-toggle');
+            const toggleButton = toggleButtons[0]; // 1つ目のトグルボタン（営業時間）
+
+            if (businessHoursTable.style.display === 'none' || businessHoursTable.style.display === '') {
+                businessHoursTable.style.display = 'block';
+                toggleButton.classList.add('expanded');
+            } else {
+                businessHoursTable.style.display = 'none';
+                toggleButton.classList.remove('expanded');
+            }
+        }
+
+        // シフト時間の表示/非表示切り替え
+        function toggleShiftHours(event) {
+            event.stopPropagation(); // イベントの伝播を止める
+            const shiftHoursTable = document.getElementById('shiftHoursTable');
+            const toggleButtons = document.querySelectorAll('.business-hours-toggle');
+            const toggleButton = toggleButtons[1]; // 2つ目のトグルボタン（シフト時間）
+
+            if (shiftHoursTable.style.display === 'none' || shiftHoursTable.style.display === '') {
+                shiftHoursTable.style.display = 'block';
+                toggleButton.classList.add('expanded');
+            } else {
+                shiftHoursTable.style.display = 'none';
+                toggleButton.classList.remove('expanded');
+            }
+        }
+
+        // 次月
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            generateCalendar();
+        }
+
+        // 今月に戻る
+        function goToCurrentMonth() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            generateCalendar();
+        }
+
+        // シフト設定関数
+        function submitShiftSetting() {
+            const startDate = document.getElementById('termStartDate').value;
+            const endDate = document.getElementById('termEndDate').value;
+
+            if (startDate && endDate) {
+            } else {
+                alert('期間を指定してください。');
+            }
+        }
+
+        // シフトアイテム追加
+        function addShiftItem() {
+        }
+
+        // シフトアイテム移動
+        function moveShiftItem(element, direction) {
+        }
+
+        // シフトアイテム削除
+        function deleteShiftItem(element) {
+            if (confirm('このシフト設定を削除しますか？')) {
+            }
+        }
+
+        // 文字数カウント
+        function setTextCount(element, index) {
+            const count = element.value.length;
+            const countElement = element.parentNode.querySelector('.eventTextCount');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+        }
+
+        // 休日切り替え
+        function changeDayOff(element, index) {
+            const isDayOff = element.checked;
+            const timeSelects = document.querySelectorAll(`#startTimeHour${index}_1, #startTimeMinute${index}_1, #endTimeHour${index}_1, #endTimeMinute${index}_1`);
+            timeSelects.forEach(select => {
+                select.disabled = isDayOff;
+            });
+        }
+
+        // カラーピッカー表示
+        function showColorPicker(element) {
+        }
+
+        // 設定保存
+        function saveSettings() {
+        }
+
+        // 休みチェックボックスの状態変更処理
+        function toggleTimeInputs(checkbox) {
+            const row = checkbox.closest('tr');
+            // selectタグのみを取得（営業時間と休憩時間のプルダウン）
+            const timeSelects = row.querySelectorAll('select.time-select-hour, select.time-select-minute');
+
+            if (checkbox.checked) {
+                // チェックが入った場合：時間入力フィールドを非活性にする
+                timeSelects.forEach(select => {
+                    select.disabled = true;
+                });
+            } else {
+                // チェックが外れた場合：時間入力フィールドを活性にする
+                timeSelects.forEach(select => {
+                    select.disabled = false;
+                });
+            }
+        }
+
+        // ドラッグ&ドロップ機能の初期化
+        function initializeDragDrop() {
+            const shiftItems = document.getElementById('shiftItems');
+            if (shiftItems && typeof Sortable !== 'undefined') {
+                // SortableJSライブラリを使用してドラッグ&ドロップを初期化
+                const sortable = new Sortable(shiftItems, {
+                    animation: 150,
+                    ghostClass: 'ghost',
+                    chosenClass: 'chosen',
+                    dragClass: 'drag',
+                    handle: '.shift-item', // shift-itemクラスをハンドルとして指定
+                    onStart: function (evt) {
+                        console.log('ドラッグ開始: 位置', evt.oldIndex);
+                    },
+                    onEnd: function (evt) {
+                        console.log('ドロップ完了: 位置', evt.oldIndex, 'から', evt.newIndex, 'へ');
+                        updateShiftOrder();
+                    }
+                });
+
+                // Sortableが正常に初期化されたかチェック
+                if (sortable) {
+                    console.log('SortableJSが正常に初期化されました');
+                } else {
+                    console.log('SortableJSの初期化に失敗しました');
+                }
+            } else {
+                console.log('SortableJSライブラリが読み込まれていません');
+            }
+        }
+
+        // シフト順序の更新
+        function updateShiftOrder() {
+            const shiftItems = document.querySelectorAll('.shift-item');
+            const orderInfo = [];
+
+            shiftItems.forEach((item, index) => {
+                const dataId = item.getAttribute('data-id');
+                const shiftNameInput = item.querySelector('input[name="shiftName"]');
+                const shiftName = shiftNameInput ? shiftNameInput.value : `シフト${dataId}`;
+
+                orderInfo.push(`${index + 1}. ${shiftName}`);
+                console.log(`シフト${dataId} (${shiftName}) の順序: ${index + 1}`);
+            });
+
+            // 順序変更をスタッフに通知
+            if (orderInfo.length > 0) {
+                console.log('新しいシフト順序:', orderInfo.join('\n'));
+
+                // 簡単な通知を表示（オプション）
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--ok);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                box-shadow: var(--shadow);
+                z-index: 10000;
+                font-size: 0.8rem;
+                animation: slideIn 0.3s ease;
+            `;
+                notification.textContent = 'シフトの順序を変更しました';
+                document.body.appendChild(notification);
+
+                // 3秒後に通知を削除
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        }
+
+        // 時間セレクトボックスの初期化
+        function initializeTimeSelects() {
+            // 時間のオプションを生成（0〜23時）
+            const hourSelects = document.querySelectorAll('.time-select-hour');
+            hourSelects.forEach(select => {
+                for (let hour = 0; hour < 24; hour++) {
+                    const option = document.createElement('option');
+                    option.value = String(hour).padStart(2, '0');
+                    option.textContent = String(hour).padStart(2, '0');
+                    select.appendChild(option);
+                }
+            });
+
+            // 分のオプションを生成（00、15、30、45分）
+            const minuteSelects = document.querySelectorAll('.time-select-minute');
+            const minutes = ['00', '15', '30', '45'];
+            minuteSelects.forEach(select => {
+                minutes.forEach(minute => {
+                    const option = document.createElement('option');
+                    option.value = minute;
+                    option.textContent = minute;
+                    select.appendChild(option);
+                });
+            });
+
+            // デフォルト値を設定
+            const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'hol'];
+            days.forEach(day => {
+                // チェックボックスの設定（日曜日と祝日はチェック）
+                // 複数の要素がある場合は全て設定
+                const holidayCheckboxes = document.querySelectorAll(`input[name="holiday_${day}"]`);
+                holidayCheckboxes.forEach(checkbox => {
+                    if (day === 'sun' || day === 'hol') {
+                        checkbox.checked = true;
+                    }
+                });
+
+                // 営業開始時間: 09:00（全曜日）
+                const openHours = document.querySelectorAll(`select[name="open_${day}_hour"]`);
+                const openMinutes = document.querySelectorAll(`select[name="open_${day}_minute"]`);
+                openHours.forEach(select => {
+                    select.value = '09';
+                });
+                openMinutes.forEach(select => {
+                    select.value = '00';
+                });
+
+                // 営業終了時間: 月～金は18:00、土曜日は17:00
+                const closeHours = document.querySelectorAll(`select[name="close_${day}_hour"]`);
+                const closeMinutes = document.querySelectorAll(`select[name="close_${day}_minute"]`);
+                closeHours.forEach(select => {
+                    if (day === 'sat') {
+                        select.value = '17';
+                    } else {
+                        select.value = '18';
+                    }
+                });
+                closeMinutes.forEach(select => {
+                    select.value = '00';
+                });
+
+                // 休憩開始時間: 12:00（全曜日）
+                const breakStartHours = document.querySelectorAll(`select[name="break_start_${day}_hour"]`);
+                const breakStartMinutes = document.querySelectorAll(`select[name="break_start_${day}_minute"]`);
+                breakStartHours.forEach(select => {
+                    select.value = '12';
+                });
+                breakStartMinutes.forEach(select => {
+                    select.value = '00';
+                });
+
+                // 休憩終了時間: 13:00（全曜日）
+                const breakEndHours = document.querySelectorAll(`select[name="break_end_${day}_hour"]`);
+                const breakEndMinutes = document.querySelectorAll(`select[name="break_end_${day}_minute"]`);
+                breakEndHours.forEach(select => {
+                    select.value = '13';
+                });
+                breakEndMinutes.forEach(select => {
+                    select.value = '00';
+                });
+            });
+        }
+
+        // ページ読み込み時にカレンダーを生成
+        document.addEventListener('DOMContentLoaded', function () {
+            // 時間セレクトボックスを初期化
+            initializeTimeSelects();
+
+            generateCalendar();
+            // ドラッグ&ドロップ機能を初期化
+            setTimeout(initializeDragDrop, 100);
+        });
+        function saveEdit() {
+            closeEditModal();
+            // テーブルを更新（実際の実装では、更新されたデータを反映）
+            location.reload();
+        }
+        function closeEditModal() {
+            document.getElementById('editCalendarModal').style.display = 'none';
+            document.getElementById('editCalendarModal').classList.remove('show');
+        }
+
+        // 解除ボタンの処理
+        function cancelEdit() {
+            // 14日の時間表示を9:00～18:00に変更
+            const day14Element = document.querySelector('.day-14');
+            if (day14Element) {
+                const day14ShiftInfo = day14Element.querySelector('.mdc-shift-info');
+                if (day14ShiftInfo) {
+                    day14ShiftInfo.textContent = '9:00～18:00';
+                }
+            }
+
+            // モーダルを閉じる
+            closeEditModal();
+        }
+
+        // 利用規約・プライバシーポリシー設定の表示/非表示切り替え
+        function toggleBusinessHoursTable(event) {
+            if (event) {
+                event.stopPropagation(); // イベントの伝播を止める
+            }
+            const businessHoursTable = document.getElementById('businessHoursTable');
+            const toggleButtons = document.querySelectorAll('.business-hours-toggle');
+            const toggleButton = toggleButtons[0]; // 1つ目のトグルボタン（営業時間）
+
+            if (businessHoursTable.style.display === 'none' || businessHoursTable.style.display === '') {
+                businessHoursTable.style.display = 'block';
+                if (toggleButton) {
+                    toggleButton.classList.add('expanded');
+                }
+            } else {
+                businessHoursTable.style.display = 'none';
+                if (toggleButton) {
+                    toggleButton.classList.remove('expanded');
+                }
+            }
+        }
+
+        // シフト時間テーブルの表示/非表示切り替え
+        function toggleShiftHoursTable(event) {
+            if (event) {
+                event.stopPropagation(); // イベントの伝播を止める
+            }
+            const shiftHoursTable = document.getElementById('shiftHoursTable');
+            const toggleButtons = document.querySelectorAll('.business-hours-toggle');
+            const toggleButton = toggleButtons[1]; // 2つ目のトグルボタン（シフト時間）
+
+            if (shiftHoursTable.style.display === 'none' || shiftHoursTable.style.display === '') {
+                shiftHoursTable.style.display = 'block';
+                if (toggleButton) {
+                    toggleButton.classList.add('expanded');
+                }
+            } else {
+                shiftHoursTable.style.display = 'none';
+                if (toggleButton) {
+                    toggleButton.classList.remove('expanded');
+                }
+            }
+        }
+
+    </script>
+</body>
+
+</html>

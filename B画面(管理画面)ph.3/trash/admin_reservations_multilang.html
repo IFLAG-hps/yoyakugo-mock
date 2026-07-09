@@ -1,0 +1,4193 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>受付予約管理｜管理画面モック</title>
+
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <link href="./style.css" rel="stylesheet">
+
+    <style>
+        /* 顧客検索サジェストリスト */
+        .parts_suggest_list_area {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            overflow-y: auto;
+            position: fixed;
+        }
+
+        .parts_suggest_list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .parts_suggest_list_item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .parts_suggest_list_item:last-child {
+            border-bottom: none;
+        }
+
+        .parts_suggest_item_button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 0;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .parts_suggest_item_button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .parts_suggest_item_area {
+            padding: 12px 16px;
+        }
+
+        .parts_suggest_item_box {
+            margin-bottom: 8px;
+        }
+
+        .parts_suggest_item_box:last-child {
+            margin-bottom: 0;
+        }
+
+        .parts_suggest_text {
+            margin: 0;
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .parts_suggest_text_bold {
+            font-weight: 600;
+        }
+
+        .parts_suggest_text_large {
+            font-size: 16px;
+        }
+
+        .parts_suggest_text_nowrap {
+            white-space: nowrap;
+        }
+
+        .parts_suggest_text_ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .parts_suggest_text_sub_color {
+            color: #6b7280;
+        }
+
+        .parts_suggest_patient_info_box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* サジェストトグルスイッチ */
+        .suggest-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+
+        .suggest-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .suggest-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+
+        .suggest-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .suggest-toggle-switch input:checked + .suggest-toggle-slider {
+            background-color: #10b981;
+        }
+
+        .suggest-toggle-switch input:checked + .suggest-toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .suggest-toggle-switch input:not(:checked) + .suggest-toggle-slider {
+            background-color: #9ca3af;
+        }
+
+        .suggest-toggle-switch:hover .suggest-toggle-slider {
+            box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 顧客入力モードトグル（セグメントコントロール風） */
+        .customer-input-mode-toggle {
+            display: flex;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #10b981;
+            background: #fff;
+        }
+
+        .mode-toggle-btn {
+            flex: 1;
+            padding: 8px 16px;
+            border: none;
+            background: #fff;
+            color: #10b981;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            border-right: 1px solid #10b981;
+        }
+
+        .mode-toggle-btn:last-child {
+            border-right: none;
+        }
+
+        .mode-toggle-btn.active {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .mode-toggle-btn:hover:not(.active) {
+            background: #f0fffa;
+        }
+
+        .mode-toggle-btn:active {
+            transform: scale(0.98);
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations" class="active">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+            </nav>
+            <div class="foot">© 2025 IFLAG Co, Ltd.</div>
+        </aside>
+        <header class="topbar">
+            <div class="search">
+                <input type="search" placeholder="ID/顧客名/電話番号 を検索"
+                    onchange="showReservationListPopup(this.value)" />
+            </div>
+            <button class="btn normal-btn" onclick="printReservation()">受付情報印刷</button>
+            <button class="btn warn-btn" onclick="toggleOnlineReception()">ネット受付停止</button>
+        </header>
+        <!-- Main -->
+        <main class="main">
+            <!-- スケジュール表セクション -->
+            <div class="schedule-section">
+                <div class="schedule-header">
+                    <div class="schedule-title-section">
+                        <h2 class="schedule-title">📅 受付・予約画面</h2>
+
+                        <button class="date-btn" id="filterToggleBtn" onclick="toggleResourceFilter()">
+                            <i class="material-icons">filter_list</i>
+                            <span>フィルター</span>
+                        </button>
+                    </div>
+                    <div class="schedule-controls">
+                        <button class="calendar-icon" id="calendarIcon">
+                            <i class="material-icons">event</i>
+                        </button>
+
+                        <div class="view-toggle">
+                            <button class="view-toggle-button" id="view1Day">1日</button>
+                            <button class="view-toggle-button active" id="view1Week">1週間</button>
+                        </div>
+
+                        <div class="date-controls">
+                            <button class="date-btn" id="prevDay">
+                                <i class="material-icons">chevron_left</i>
+                                前日
+                            </button>
+
+                            <button class="date-btn outlined" id="todayBtn">
+                                <i class="material-icons">today</i>
+                                今日
+                            </button>
+
+                            <input type="text" class="date-input" id="dateInput" readonly>
+
+                            <button class="date-btn" id="nextDay">
+                                翌日
+                                <i class="material-icons">chevron_right</i>
+                            </button>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+                <!-- リソース絞り込みチェックボックス -->
+                <div class="resource-filter-section" id="resourceFilterSection" style="display: none;">
+                    <div class="resource-filter-container">
+                        <div class="filter-group">
+                            <span class="filter-label">担当者</span>
+                            <fieldset class="radio-3">
+                                <label>
+                                    <input type="checkbox" value="D" checked onchange="updateResourceFilter()">
+                                    テスト花子
+                                </label>
+                                <label>
+                                    <input type="checkbox" value="E" checked onchange="updateResourceFilter()">
+                                    山田太郎
+                                </label>
+                            </fieldset>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">設備・機器類</span>
+                        <fieldset class="radio-3">
+                            <label>
+                                <input type="checkbox" value="A" checked onchange="updateResourceFilter()">
+                                チェアA
+                            </label>
+                            <label>
+                                <input type="checkbox" value="B" checked onchange="updateResourceFilter()">
+                                チェアB
+                            </label>
+                            <label>
+                                <input type="checkbox" value="C" checked onchange="updateResourceFilter()">
+                                チェアC
+                            </label>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="calendar-container">
+                    <div class="schedule-container">
+                        <div class="schedule-grid" id="scheduleGrid">
+                            <!-- スケジュールグリッドはJavaScriptで動的に生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 受付・予約一覧ポップアップ -->
+    <div class="list-popup-overlay" id="reservationListPopupOverlay" style="display: none;">
+        <div class="normal-modal" id="reservationListModal">
+            <div class="modal-header">
+                <h3 class="modal-title">🔍 受付・予約一覧</h3>
+                <button class="modal-close" onclick="closeReservationListPopup()">×</button>
+            </div>
+
+            <div class="form-section" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                <div class="search-form-section" style="overflow-x: auto; min-width: 0;">
+                    <h3 class="search-form-title">検索条件</h3>
+                    <div class="form-row" style="min-width: max-content;">
+
+                        <div class="form-group">
+                            <label class="form-label" for="searchWord">ID/顧客名/電話番号</label>
+                            <input type="text" class="form-input" id="searchWord" placeholder="ID/顧客名/電話番号を入力" >
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="searchStatus">メニュー</label>
+                            <select class="form-input" id="searchStatus">
+                                <option value="">選択してください</option>
+                                <option value="menuA" selected="selected">カット</option>
+                                <option value="menuB">シャンプー</option>
+                                <option value="menuC">パーマ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="searchStatus">ステータス</label>
+                            <select class="form-input" id="searchStatus">
+                                <option value="">選択してください</option>
+                                <option value="statusA">受付待ち</option>
+                                <option value="statusB">受付完了</option>
+                                <option value="statusC">キャンセル</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="search-form-actions" style="margin-top: 20px; white-space: nowrap;">
+                            <button type="button" class="link-btn" onclick="searchReservations()">検索</button>
+                            <button type="button" class="clear-btn" onclick="clearSearchForm()">クリア</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="search-results-section" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+                    <div class="search-results-header">
+                        <div class="results-info">
+                            <span class="results-count">全<span id="recordCount">20</span>件</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <select id="pageSizeSelect" name="selPageSizeSelect" class="page-size-select">
+                                <option value="10" selected>10件</option>
+                                <option value="20">20件</option>
+                                <option value="50">50件</option>
+                                <option value="100">100件</option>
+                            </select>
+                            <div class="pagination">
+                                <button id="firstPage" class="page-btn">«</button>
+                                <button id="prePage" class="page-btn">‹</button>
+                                <span class="page-info">
+                                    <input id="curPage" type="text" value="1" class="page-input">
+                                    /<span id="totalPage">2</span>ページ
+                                </span>
+                                <button id="nextPage" class="page-btn">›</button>
+                                <button id="lastPage" class="page-btn">»</button>
+                            </div>
+                            <span class="page-range">
+                                (<span id="fromRecord">1</span>-<span id="toRecord">10</span>件/全<span
+                                    id="recordCount">20</span>件)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="results-table-container" style="flex: 1; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 4px; min-height: 0;">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th class="sortable">受付日時</th>
+                                    <th class="sortable">ID</th>
+                                    <th class="sortable">顧客名</th>
+                                    <th class="sortable">電話番号</th>
+                                    <th class="sortable">メニュー</th>
+                                    <th class="sortable">ステータス</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationListTableBody">
+                                <tr>
+                                    <td>2025-10-08 10:00～11:00</td>
+                                    <td>1</td>
+                                    <td>テスト 花子</td>
+                                    <td>090-1234-5678</td>
+                                    <td>カット</td>
+                                    <td class="status-cell status-temporary">受付待ち</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn"
+                                            onclick="showReservationDetail('1')">選択</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2025-10-08 10:00～11:00</td>
+                                    <td>5</td>
+                                    <td>テスト 花子</td>
+                                    <td>090-1234-5678</td>
+                                    <td>カット</td>
+                                    <td class="status-cell status-temporary">受付待ち</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn"
+                                            onclick="showReservationDetail('5')">選択</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>2025-10-08 10:00～11:00</td>
+                                    <td>6</td>
+                                    <td>テスト 太郎</td>
+                                    <td>090-9876-5432</td>
+                                    <td>カット</td>
+                                    <td class="status-cell status-reserved">受付完了</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn"
+                                            onclick="showReservationDetail('6')">選択</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-cancelled">
+                                    <td>2025-10-08 10:00～11:00</td>
+                                    <td>7</td>
+                                    <td>テスト 花子</td>
+                                    <td>090-1234-5678</td>
+                                    <td>カット</td>
+                                    <td class="status-cell status-temporary">キャンセル</td>
+                                    <td class="action-cell">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- カレンダーポップアップ -->
+    <div class="popup-overlay" id="popupOverlay" style="display: none;"></div>
+    <div class="calendar-popup" id="calendarPopup">
+        <div class="calendar-popup-header">
+            <h3 class="calendar-popup-title">日付を選択</h3>
+            <button class="calendar-popup-close" id="closePopup">×</button>
+        </div>
+        <div class="calendar-popup-content">
+            <div class="calendar-month-controls">
+                <button class="calendar-month-btn" id="prevMonthBtn">‹</button>
+                <div class="calendar-months-wrapper">
+                    <div class="calendar-month" id="currentMonth"></div>
+                    <div class="calendar-month" id="nextMonth"></div>
+                </div>
+                <button class="calendar-month-btn" id="nextMonthBtn">›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- キャンセル理由ポップアップ -->
+    <div class="reservation-popup" id="cancelReasonPopup">
+        <div class="popup-item">
+            <div class="popup-icon icon-chat"></div>
+            <div class="popup-content">
+                <div class="popup-label">キャンセル理由</div>
+                <div class="popup-text" id="cancelReasonText">-</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- カレンダーポップアップ -->
+    <div class="popup-overlay" id="dateCalendarOverlay" style="display: none; z-index: 10002;" onclick="closeDateCalendar()">
+        <div class="calendar-popup" id="dateCalendarModal" onclick="event.stopPropagation()">
+            <div class="calendar-popup-header">
+                <h3 class="calendar-popup-title">📅 日付を選択</h3>
+                <button class="calendar-popup-close" onclick="closeDateCalendar()">×</button>
+            </div>
+            <div class="calendar-popup-content" style="flex-direction: column;">
+                <div id="dateCalendarContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 受付詳細モーダル -->
+    <div class="reservation-detail-modal" id="reservationDetailModal" style="display: none;">
+        <div class="normal-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 受付・予約詳細（ID：112）</h3>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="chip" id="detailStatus" style="width: 70px; margin-bottom: 0;">-</div>
+                    <button class="modal-close" onclick="hideReservationDetailModal()">×</button>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="detail-section">
+                                        <div class="detail-grid">
+                        <div class="detail-item">
+                            <label class="detail-label">日時</label>
+                            <div class="detail-value" id="detailDateTime">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">メニュー</label>
+                            <div class="detail-value" id="detailService">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">顧客名</label>
+                            <div style="display: flex; gap: 8px;">
+                                <div class="detail-value" style="flex: 0 0 50%;">
+                                    <span id="detailLastName">-</span>
+                                </div>
+                                <div class="detail-value" style="flex: 0 0 50%;">
+                                    <span id="detailFirstName">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">担当者</label>
+                            <div class="detail-value" id="detailResource">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">顧客名【カナ】</label>
+                            <div style="display: flex; gap: 8px;">
+                                <div class="detail-value" style="flex: 0 0 50%;">
+                                    <span id="detailLastNameKana">-</span>
+                                </div>
+                                <div class="detail-value" style="flex: 0 0 50%;">
+                                    <span id="detailFirstNameKana">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">設備・機器類</label>
+                            <div class="detail-value" id="detailResource">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">電話番号</label>
+                            <div class="detail-value" id="detailPhone">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">施設メモ</label>
+                            <div class="detail-value" id="detailNotes">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">メールアドレス</label>
+                            <div class="detail-value" id="detailEmail">-</div>
+                        </div>
+                        <div class="detail-item">
+                            <label class="detail-label">コメント</label>
+                            <div class="detail-value" id="detailComments">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-primary"
+                    onclick="hideReservationDetailModal()">受付完了</button>
+                <button type="button" class="modal-btn modal-btn-primary"
+                    onclick="editReservationFromDetail()">編集</button>
+                <button type="button" class="modal-btn modal-btn-delete"
+                    onclick="cancelReservationFromDetail()">受付キャンセル</button>
+                <button type="button" class="modal-btn modal-btn-secondary"
+                    onclick="hideReservationDetailModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- キャンセル理由入力モーダル -->
+    <div class="reservation-detail-modal" id="cancelReasonModal" style="display: none;" onclick="hideCancelReasonModal()">
+        <div class="normal-modal" style="max-width: 500px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">❌ キャンセル理由入力</h3>
+                <button class="modal-close" onclick="hideCancelReasonModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-section">
+                    <div class="form-group form-group-full">
+                        <label class="form-label" for="cancelReason">キャンセル理由 <span class="required">*</span></label>
+                        <textarea class="form-textarea" id="cancelReason" rows="5" placeholder="キャンセル理由を入力してください" required></textarea>
+                        <small class="form-help">キャンセル理由を入力してください（必須）</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-delete" onclick="confirmCancelReservation()">キャンセル実行</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="hideCancelReasonModal()">閉じる</button>
+            </div>
+    </div>
+</div>
+
+<!-- 顧客情報変更確認モーダル -->
+<div class="reservation-detail-modal" id="customerChangeConfirmModal" style="display: none; z-index: 10003;" onclick="hideCustomerChangeConfirmModal()">
+<div class="normal-modal" style="max-width: 500px; position: relative; z-index: 10003;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+        <h3 class="modal-title">⚠️ 顧客情報の変更確認</h3>
+        <button class="modal-close" onclick="hideCustomerChangeConfirmModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-section">
+            <p style="margin-bottom: 16px;">顧客検索で選択した顧客情報が変更されています。このまま登録しますか？</p>
+            <div style="background: #f5f5f5; padding: 12px; border-radius: 4px; margin-bottom: 16px;">
+                <div style="margin-bottom: 8px;"><strong>変更前：</strong></div>
+                <div id="customerChangeBefore" style="color: #666; margin-bottom: 12px;"></div>
+                <div style="margin-bottom: 8px;"><strong>変更後：</strong></div>
+                <div id="customerChangeAfter" style="color: #333;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-actions">
+        <button type="button" class="modal-btn modal-btn-primary" onclick="confirmCustomerChange()">変更して登録</button>
+        <button type="button" class="modal-btn modal-btn-cancel" onclick="hideCustomerChangeConfirmModal()">キャンセル</button>
+    </div>
+</div>
+</div>
+
+<!-- 統合受付モーダル -->
+    <div class="reservation-modal" id="reservationModal" style="display: none;" onclick="hideReservationModal()">
+        <div class="normal-modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ 受付・予約登録</h3>
+            <button class="modal-close" id="closeReservationModal" onclick="event.stopPropagation()">×</button>
+        </div>
+
+            <!-- タブナビゲーション -->
+            <div class="modal-tabs">
+                <button class="tab-btn active" id="newReservationTab"
+                    onclick="switchTab('newReservation')">受付登録</button>
+                <button class="tab-btn" id="blockReservationTab" onclick="switchTab('blockReservation')">受付ブロック</button>
+            </div>
+
+            <!-- 新規受付タブコンテンツ -->
+            <form id="editMenuForm">
+            <div class="tab-content active" id="newReservationContent">
+                <div class="sections-container">
+                    <div class="reception-section">
+
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="reservationDate">日時 <span class="required">*</span></label>
+                                <div class="date-input-group">
+                                    <input type="text" class="form-input" id="reservationDate" value="2025/09/18"
+                                        readonly>
+                                    <button type="button" class="calendar-btn" onclick="openDateCalendar('reservationDate', 'startHour', 'startMinute')">📅</button>
+                                        <div class="time-range-group">
+                                            <select class="time-select" id="startHour">
+                                                <option value="09">09</option>
+                                                <option value="10">10</option>
+                                                <option value="11">11</option>
+                                                <option value="12">12</option>
+                                                <option value="13">13</option>
+                                                <option value="14">14</option>
+                                                <option value="15">15</option>
+                                                <option value="16">16</option>
+                                                <option value="17">17</option>
+                                                <option value="18">18</option>
+                                                <option value="19">19</option>
+                                            </select>
+                                            <span>:</span>
+                                            <select class="time-select" id="startMinute">
+                                                <option value="00">00</option>
+                                                <option value="15">15</option>
+                                                <option value="30" selected>30</option>
+                                                <option value="45">45</option>
+                                            </select>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">顧客検索（顧客名/顧客名【カナ】）</label>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="date-input-group" style="position: relative; flex: 1;">
+                                        <input type="text" class="form-input" id="editSuggestForm" placeholder="顧客名/顧客名【カナ】" style="flex: 1;" autocomplete="off">
+
+                                    <!-- サジェストリスト -->
+                                    <div id="customerSuggestList" class="parts_suggest_list_area parts_suggest_patient_search" style="display: none;"></div>
+                                </div>
+                                <div class="customer-input-mode-toggle">
+                                    <button type="button" class="mode-toggle-btn active" id="customerSearchModeBtn" data-mode="search">
+                                        顧客検索
+                                    </button>
+                                    <button type="button" class="mode-toggle-btn" id="directInputModeBtn" data-mode="direct">
+                                        直接入力
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">顧客名 <span class="required">*</span></label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" class="form-input" id="editLastName" placeholder="姓" style="flex: 1;">
+                                <input type="text" class="form-input" id="editFirstName" placeholder="名" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">顧客名【カナ】 <span class="required">*</span></label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" class="form-input" id="editLastNameKana" placeholder="姓【カナ】" style="flex: 1;">
+                                <input type="text" class="form-input" id="editFirstNameKana" placeholder="名【カナ】" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editPhoneNumber">電話番号 <span class="required">*</span></label>
+                            <input type="tel" class="form-input" id="editPhoneNumber" value="0312345678">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="editEmail">メールアドレス</label>
+                            <input type="email" class="form-input" id="editEmail" value="xxxxx@xxxx.xxxx">
+                        </div>
+
+                    </div>
+
+                    <div class="customer-section">
+
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="menu">メニュー <span class="required">*</span></label>
+                                <select class="form-input" id="menu" required>
+                                    <option value="">選択してください</option>
+                                    <option value="カット">カット(30分)</option>
+                                    <option value="シャンプー">シャンプー(30分)</option>
+                                    <option value="カット+シャンプー">カット+シャンプー(60分)</option>
+                                    <option value="フルコース">フルコース(120分)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="resource">担当者</label>
+                                <select class="form-input" id="resource">
+                                    <option value="" selected>指定なし</option>
+                                    <option value="userA">テストハナコ</option>
+                                    <option value="userB">山田太郎</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="resource">設備・機器類</label>
+                                <select class="form-input" id="resource">
+                                    <option value="" selected>指定なし</option>
+                                    <option value="チェアA">チェアA</option>
+                                    <option value="チェアB">チェアB</option>
+                                    <option value="チェアC">チェアC</option>
+                                    <option value="テスト花子">テスト花子</option>
+                                    <option value="山田太郎">山田太郎</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="facilityMemo">施設メモ</label>
+                                <input type="text" class="form-input" id="facilityMemo" placeholder="施設メモ">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 受付ブロックタブコンテンツ -->
+            <div class="tab-content" id="blockReservationContent">
+                <div class="sections-container">
+                    <div class="reception-section">
+                        <div class="form-group-with-icon">
+                            <div class="form-content">
+                                <label class="form-label" for="blockDate">日時 <span class="required">*</span></label>
+                                <div class="date-input-group-free">
+                                    <input type="date" class="form-input" id="blockDate" value="2025-09-18" style="width:50%">
+                                    <div class="time-range-group">
+                                        <select class="time-select" id="blockStartHour">
+                                            <option value="09">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                        </select>
+                                        <span>:</span>
+                                        <select class="time-select" id="blockStartMinute">
+                                            <option value="00">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30" selected="">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                        <span>~</span>
+                                        <select class="time-select" id="blockEndHour">
+                                            <option value="09">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16" selected="">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                        </select>
+                                        <span>:</span>
+                                        <select class="time-select" id="blockEndMinute">
+                                            <option value="00" selected="">00</option>
+                                            <option value="15">15</option>
+                                            <option value="30">30</option>
+                                            <option value="45">45</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" id="save" onclick="saveBlock()">登録</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="event.stopPropagation()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 編集モーダル -->
+
+    <div class="reservation-modal" id="editModal" style="display: none;" onclick="hideEditModal()">
+        <div class="normal-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">✏ 受付・予約編集（ID：112）</h3>
+                <button class="modal-close" id="closeEditModal" onclick="hideEditModal()">×</button>
+            </div>
+            <div class="sections-container">
+                <div class="reception-section">
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="reservationDate">日時 <span class="required">*</span></label>
+                            <div class="date-input-group">
+                                <input type="text" class="form-input" id="reservationDate" value="2025/09/18"
+                                    readonly>
+                                <button type="button" class="calendar-btn" onclick="openDateCalendar('reservationDate', 'startHour', 'startMinute')">📅</button>
+                                <div class="time-range-group">
+                                    <select class="time-select" id="startHour">
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                    </select>
+                                    <span>:</span>
+                                    <select class="time-select" id="startMinute">
+                                        <option value="00">00</option>
+                                        <option value="15">15</option>
+                                        <option value="30" selected>30</option>
+                                        <option value="45">45</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">顧客検索（顧客名/顧客名【カナ】）</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="date-input-group" style="position: relative; flex: 1;">
+                                    <input type="text" class="form-input" id="editSuggestFormEdit" placeholder="顧客名/顧客名【カナ】" style="flex: 1;" autocomplete="off">
+                                <!-- サジェストリスト -->
+                                <div id="customerSuggestListEdit" class="parts_suggest_list_area parts_suggest_patient_search" style="display: none;"></div>
+                            </div>
+                            <div class="customer-input-mode-toggle">
+                                <button type="button" class="mode-toggle-btn active" id="customerSearchModeBtnEdit" data-mode="search">
+                                    顧客検索
+                                </button>
+                                <button type="button" class="mode-toggle-btn" id="directInputModeBtnEdit" data-mode="direct">
+                                    直接入力
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">顧客名 <span class="required">*</span></label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-input" id="editLastNameEdit" placeholder="姓" style="flex: 1;" autocomplete="off">
+                            <input type="text" class="form-input" id="editFirstNameEdit" placeholder="名" style="flex: 1;" autocomplete="off">
+                </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">顧客名【カナ】 <span class="required">*</span></label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-input" id="editLastNameKanaEdit" placeholder="姓【カナ】" style="flex: 1;">
+                            <input type="text" class="form-input" id="editFirstNameKanaEdit" placeholder="名【カナ】" style="flex: 1;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="editPhoneNumber">電話番号 <span class="required">*</span></label>
+                        <input type="tel" class="form-input" id="editPhoneNumber" value="0312345678">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editEmail">メールアドレス</label>
+                        <input type="email" class="form-input" id="editEmail" value=xxxxx@xxxx.xxxx">
+                    </div>
+
+                </div>
+
+                <div class="customer-section">
+
+
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="editMenu">メニュー <span class="required">*</span></label>
+                            <select class="form-input" id="editMenu" required>
+                                <option value="">選択してください</option>
+                                <option value="カット" selected>カット(30分)</option>
+                                <option value="シャンプー">シャンプー(（)30分）</option>
+                                <option value="カット+シャンプー">カット+シャンプー(60分)</option>
+                                <option value="フルコース">フルコース(120分)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="editStaff">担当者</label>
+                            <select class="form-input" id="editStaff">
+                                <option value="" selected>指定なし</option>
+                                <option value="チェアA">テスト花子</option>
+                                <option value="チェアB">山田太郎</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="editResource">設備・機器類</label>
+                            <select class="form-input" id="editResource">
+                                <option value="" selected>指定なし</option>
+                                <option value="チェアA">チェアA</option>
+                                <option value="チェアB">チェアB</option>
+                                <option value="チェアC">チェアC</option>
+                                <option value="テスト花子">テスト花子</option>
+                                <option value="山田太郎">山田太郎</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="facilityMemo">施設メモ</label>
+                            <input type="text" class="form-input" id="facilityMemo" placeholder="施設メモ">
+                        </div>
+                    </div>
+                    <div class="form-group-with-icon">
+                        <div class="form-content">
+                            <label class="form-label" for="editComment">コメント</label>
+                            <textarea class="form-input" id="editComment" readonly="readonly" disabled style="height: 38px; resize: none; white-space: pre-wrap; word-wrap: break-word; background-color: #f5f5f5; cursor: not-allowed;">-</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="modal-actions-new">
+                <button type="button" class="modal-btn modal-btn-save" id="saveEdit">保存</button>
+                <button type="button" class="modal-btn modal-btn-cancel" id="cancelEdit">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 受付詳細モーダル -->
+    <div class="popup-overlay" id="detailModalOverlay" onclick="hideReservationDetailModal()">
+        <div class="reservation-modal" id="detailModal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title" id="detailModalTitle">受付詳細</h2>
+            </div>
+
+            <div class="normal-modal" id="detailModalContent">
+                <!-- 動的に内容が設定されます -->
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" onclick="editReservationFromDetail()">編集</button>
+                <button type="button" class="modal-btn modal-btn-delete"
+                    onclick="deleteReservationFromDetail()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel"
+                    onclick="hideReservationDetailModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="reservation-modal" id="printModalOverlay" style="display: none;" onclick="hidePrintModal()">
+        <div class="normal-modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">📄 受付情報印刷</h3>
+                <button class="modal-close" onclick="hidePrintModal()">×</button>
+            </div>
+            <form id="printForm">
+                <div class="form-group">
+                    <label class="form-label" for="printStartDate">開始日</label>
+                    <input type="date" class="form-input" id="printStartDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="printEndDate">終了日</label>
+                    <input type="date" class="form-input" id="printEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="printStaff">担当者</label>
+                    <select class="form-input" id="printStaff">
+                        <option value="">全て</option>
+                        <option value="テスト花子">テスト花子</option>
+                        <option value="テスト太郎">テスト太郎</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="printResource">設備・機器類</label>
+                    <select class="form-input" id="printResource">
+                        <option value="">全て</option>
+                        <option value="チェアA">チェアA</option>
+                        <option value="チェアB">チェアB</option>
+                        <option value="チェアC">チェアC</option>
+                        <option value="テスト花子">テスト花子</option>
+                        <option value="山田太郎">山田太郎</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" onclick="createPdf()">印刷</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="hidePrintModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ====== モーダル ======
+        function openNewReservation() {document.getElementById('newResv').showModal();}
+        function closeNewReservation() {document.getElementById('newResv').close();}
+        function openCustomer() {document.getElementById('customer').showModal();}
+
+        // ====== 簡易チャート描画（素のCanvas） ======
+        function drawBar(canvasId, values) {
+            const c = document.getElementById(canvasId); if (!c) return; const ctx = c.getContext('2d');
+            const w = c.width = c.clientWidth, h = c.height = c.clientHeight; const pad = 20; const max = Math.max(...values, 10);
+            const bw = (w - pad * 2) / values.length * 0.7; const step = (w - pad * 2) / values.length;
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#dbeafe';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#1e90ff';
+            values.forEach((v, i) => {
+                const x = pad + i * step + (step - bw) / 2; const barH = (h - pad * 2) * v / max; const y = h - pad - barH;
+                ctx.fillRect(x, y, bw, barH);
+            });
+        }
+        function drawLine(canvasId, values) {
+            const c = document.getElementById(canvasId); if (!c) return; const ctx = c.getContext('2d');
+            const w = c.width = c.clientWidth, h = c.height = c.clientHeight; const pad = 20; const max = Math.max(...values, 10);
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = '#1e90ff'; ctx.resourceWidth = 2; ctx.beginPath();
+            values.forEach((v, i) => {const x = pad + i * (w - 2 * pad) / (values.length - 1); const y = h - pad - (h - 2 * pad) * v / max; i ? ctx.resourceTo(x, y) : ctx.moveTo(x, y)});
+            ctx.stroke();
+        }
+
+        // ====== スケジュール表機能 ======
+        // チェア一覧
+        const resources = ['D', 'E', 'A', 'B', 'C']; // 担当者リソース(D, E)を左側、設備リソース(A, B, C)を右側に配置
+
+        // チェア名のマッピング
+        const resourceNames = {
+            'A': 'チェアA',
+            'B': 'チェアB',
+            'C': 'チェアC',
+            'D': 'テスト花子',
+            'E': '山田太郎'
+        };
+
+        // スケジュールデータ
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+        const dayAfterTomorrow = new Date(today);
+        dayAfterTomorrow.setDate(today.getDate() + 2);
+
+        const scheduleData = {
+            [formatDate(today)]: {
+                'A': {
+                    '10:00': {customer: 'テスト花子', customerKana: 'テストハナコ', service: 'パーマ(60分)', reservationId: '3', lastName:'テスト', firstName:'花子', lastNameKana:'テスト', firstNameKana:'ハナコ'},
+                    '10:15': {customer: '', customerKana: '', service: '', reservationId: '3', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:30': {customer: '', customerKana: '', service: '', reservationId: '3', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:45': {customer: '', customerKana: '', service: '', reservationId: '3', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '11:00': {customer: '', customerKana: '', service: '', reservationId: '3', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                },
+                'B': {},
+                'C': {},
+                'D': {},
+                'E': {}
+            },
+            [formatDate(tomorrow)]: {
+                'A': {},
+                'B': {
+                    '10:00': {customer: 'テスト花子', customerKana: 'テストハナコ', service: 'カット(30分)', reservationId: '1', lastName:'テスト', firstName:'テスト', lastNameKana:'テスト', firstNameKana:'テスト'},
+                    '10:15': {customer: '', customerKana: '', service: '', reservationId: '1', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:30': {customer: '', customerKana: '', service: '', reservationId: '1', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:45': {customer: '', customerKana: '', service: '', reservationId: '1', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                },
+                'C': {},
+                'D': {
+                    '14:00': {customer: '田中太郎', customerKana: 'タナカタロウ', service: 'シャンプー(30分)', reservationId: '2', lastName:'田中', firstName:'太郎', lastNameKana:'田中', firstNameKana:'太郎'},
+                    '14:15': {customer: '', customerKana: '', service: '', reservationId: '2', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                },
+                'E': {}
+            },
+            [formatDate(dayAfterTomorrow)]: {
+                'A': {},
+                'B': {},
+                'C': {},
+                'D': {},
+                'E': {}
+            },
+            '2025-10-12': {
+                'A': {},
+                'B': {
+                    '10:00': {customer: 'テスト花子', customerKana: 'テストハナコ', service: 'カット(30分)', reservationId: '4', lastName:'テスト', firstName:'テスト', lastNameKana:'テスト', firstNameKana:'テスト'},
+                    '10:15': {customer: '', customerKana: '', service: '', reservationId: '4', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:30': {customer: '', customerKana: '', service: '', reservationId: '4', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                    '10:45': {customer: '', customerKana: '', service: '', reservationId: '4', lastName:'', firstName:'', lastNameKana:'', firstNameKana:''},
+                },
+                'C': {},
+                'D': {},
+                'E': {}
+            }
+        };
+
+        // 動的にスケジュールデータを生成する関数
+        function generateScheduleDataForDate(date) {
+            const dateStr = formatDate(date);
+
+            // 既存の受付データがある場合はそれを返す
+            if (scheduleData[dateStr]) {
+                return scheduleData[dateStr];
+            }
+
+            // 既存の受付データがない場合は空のデータを作成
+            scheduleData[dateStr] = {};
+            resources.forEach(resource => {
+                scheduleData[dateStr][resource] = {};
+            });
+
+            return scheduleData[dateStr];
+        }
+
+        // 現在の日付を取得（今日の日付を使用）
+        let currentDate = new Date();
+        let selectedResource = 'all';
+        let viewMode = '1week'; // '1day' または '1week'
+
+        // 時間スロットを生成（15分間隔）
+        const timeSlots = [];
+        for (let hour = 9; hour <= 19; hour++) {
+            for (let minute = 0; minute < 60; minute += 15) {
+                const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                timeSlots.push(time);
+            }
+        }
+
+        // 日付をフォーマット
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // 日付を日本語フォーマット
+        function formatDateJapanese(date) {
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const dayOfWeek = days[date.getDay()];
+            return `${month}/${day}(${dayOfWeek})`;
+        }
+
+        // ブロック状態をチェックする関数
+        function isSlotBlocked(date, time, resource) {
+            const dateStr = date.toISOString().split('T')[0];
+            const timeStr = time;
+
+
+            if (blockedSlots.length === 0) {
+                return false;
+            }
+
+            const isBlocked = blockedSlots.some(block => {
+                // 日付の比較をより厳密に
+                const dateMatch = block.date === dateStr;
+                // リソースのマッチング: '全リソース'の場合はすべてのリソースに適用
+                const resourceMatch = block.resource === resource || block.resource === '全リソース';
+                const timeMatch = timeStr >= block.startTime && timeStr < block.endTime;
+
+                return dateMatch && resourceMatch && timeMatch;
+            });
+
+            return isBlocked;
+        }
+
+        // スケジュールグリッドを生成
+        function generateScheduleGrid() {
+            const grid = document.getElementById('scheduleGrid');
+            grid.innerHTML = '';
+
+            // mainの幅を取得
+            const mainElement = document.querySelector('.main');
+            const mainWidth = mainElement.offsetWidth;
+
+            // スケジュールセクションの利用可能幅を計算
+            // メインのパディング(22px * 2) + スケジュールセクションのパディング(18px * 2) + ボーダー(2px)
+            const availableWidth = mainWidth - 44 - 36 - 2;
+
+            // 動的にグリッド設定を計算
+            const timeColumnWidth = 80; // 時間列の幅
+            const daysCount = viewMode === '1day' ? 1 : 7; // 表示日数
+
+            // チェックボックスの選択状態を取得
+            const checkboxes = document.querySelectorAll('.radio-3 input[type="checkbox"]');
+            const checkedValues = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+
+            // resources配列の順序に従って、チェックされたリソースのみをフィルタリング
+            const selectedResources = resources.filter(resource => checkedValues.includes(resource));
+
+            const visibleResources = selectedResources.length > 0 ? selectedResources : resources;
+            const totalColumns = visibleResources.length * daysCount;
+
+            // 利用可能な幅から時間列を除いた幅を計算
+            const availableCellWidth = availableWidth - timeColumnWidth;
+
+            // セル1つあたりの幅を計算（グリッドのギャップも考慮）
+            const cellWidth = Math.floor(availableCellWidth / totalColumns) - 1; // 1pxはギャップ分
+
+            // 最小幅を確保（80px未満にならないように）
+            const finalCellWidth = Math.max(cellWidth, 80);
+
+            // グリッドのクラスとスタイルを設定
+            grid.className = 'schedule-grid';
+
+            // グリッドテンプレート列を動的に設定
+            const gridTemplateColumns = `${timeColumnWidth}px repeat(${totalColumns}, ${finalCellWidth}px)`;
+            grid.style.gridTemplateColumns = gridTemplateColumns;
+
+            // グリッドの幅を設定
+            const totalWidth = timeColumnWidth + (totalColumns * finalCellWidth);
+            grid.style.width = `${totalWidth}px`;
+
+            // ヘッダー行（2段構成）
+            // 第1段：時間ヘッダー + 日付ヘッダー（各日付で1つずつ）
+            const timeHeader = document.createElement('div');
+            timeHeader.className = 'time-header';
+            timeHeader.textContent = '';
+            grid.appendChild(timeHeader);
+
+            // 日付ヘッダー（第1段）- 各日付で1つずつ
+            for (let i = 0; i < daysCount; i++) {
+                const date = new Date(currentDate);
+                date.setDate(currentDate.getDate() + i);
+                const dateStr = formatDate(date);
+
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'date-header';
+                dateHeader.style.gridColumn = `span ${visibleResources.length}`;
+
+                // 日付の間に線を追加（2日目以降）
+                if (i > 0) {
+                    dateHeader.style.borderLeft = '2px solid #0d9366';
+                }
+
+                const dateLabel = document.createElement('div');
+                dateLabel.className = 'date-label';
+                dateLabel.textContent = formatDateJapanese(date);
+
+                dateHeader.appendChild(dateLabel);
+                grid.appendChild(dateHeader);
+            }
+
+            // 第2段：チェアヘッダー（時間ヘッダーは2段にまたがるため、第2段の時間セルは不要）
+            // チェアヘッダー（第2段）
+            for (let i = 0; i < daysCount; i++) {
+                for (let j = 0; j < visibleResources.length; j++) {
+                    const resource = visibleResources[j];
+                    const resourceHeader = document.createElement('div');
+                    resourceHeader.className = 'resource-header';
+
+                    // 日付の間に線を追加（2日目以降の最初のリソース）
+                    if (i > 0 && j === 0) {
+                        resourceHeader.style.borderLeft = '2px solid #10b981';
+                    }
+
+                    // 担当者リソース（D, E）と設備リソース（A, B, C）の境界に濃い線を追加
+                    // Eの次（つまりAの位置）に濃い左ボーダーを追加
+                    if (resource === 'A') {
+                        resourceHeader.style.borderLeft = '2px solid #cdcdcd';
+                    }
+
+                    // チェアBの場合は特別なクラスを追加
+                    if (resource === 'B') {
+                        resourceHeader.classList.add('chair-b');
+                    }
+
+                    const resourceLabel = document.createElement('div');
+                    resourceLabel.className = 'resource-label';
+                    resourceLabel.textContent = resourceNames[resource] || `チェア${resource}`;
+
+                    resourceHeader.appendChild(resourceLabel);
+                    grid.appendChild(resourceHeader);
+                }
+            }
+
+            // 時間スロット行
+            timeSlots.forEach(time => {
+                // 時間セル
+                const timeCell = document.createElement('div');
+                timeCell.className = 'time-slot';
+                timeCell.textContent = time;
+                grid.appendChild(timeCell);
+
+                // スケジュールセル
+                for (let i = 0; i < daysCount; i++) {
+                    const date = new Date(currentDate);
+                    date.setDate(currentDate.getDate() + i);
+                    const dateStr = formatDate(date);
+
+                    // スケジュールデータを動的に生成
+                    const dayScheduleData = generateScheduleDataForDate(date);
+
+                    for (let j = 0; j < visibleResources.length; j++) {
+                        const resource = visibleResources[j];
+                        const cell = document.createElement('div');
+                        cell.className = 'schedule-cell';
+
+                        // 日付の間に線を追加（2日目以降の最初のリソース）
+                        if (i > 0 && j === 0) {
+                            cell.style.borderLeft = '2px solid #10b981';
+                        }
+
+                        // 担当者リソース（D, E）と設備リソース（A, B, C）の境界に濃い線を追加
+                        if (resource === 'A') {
+                            cell.style.borderLeft = '2px solid #cdcdcd';
+                        }
+
+                        // ブロック状態をチェック
+                        const isBlocked = isSlotBlocked(date, time, `チェア${resource}`);
+
+                        // 受付データをチェック
+                        const hasReservation = dayScheduleData[resource] && dayScheduleData[resource][time];
+
+                        // reservationIdをdata属性として追加
+                        if (hasReservation && dayScheduleData[resource][time].reservationId) {
+                            cell.setAttribute('data-reservation-id', dayScheduleData[resource][time].reservationId);
+                        }
+
+                        if (isBlocked) {
+                            cell.className += ' blocked';
+
+                            // ブロックデータからブロックIDを取得
+                            const blockData = blockedSlots.find(block => {
+                                const dateStr = date.toISOString().split('T')[0];
+                                const dateMatch = block.date === dateStr;
+                                const resourceMatch = block.resource === `チェア${resource}` || block.resource === '全リソース';
+                                const timeMatch = time >= block.startTime && time < block.endTime;
+                                return dateMatch && resourceMatch && timeMatch;
+                            });
+
+                            // ブロックIDをdata属性に保存（blockDataのインデックスをIDとして使用）
+                            if (blockData) {
+                                const blockIndex = blockedSlots.indexOf(blockData);
+                                cell.setAttribute('data-block-id', blockIndex);
+                                cell.setAttribute('data-block-date', date.toISOString().split('T')[0]);
+                                cell.setAttribute('data-block-time', time);
+                                cell.setAttribute('data-block-resource', resource);
+                            }
+
+                            // ブロックされた時間帯のクリックイベント（ブロック解除確認）
+                            cell.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                if (blockData) {
+                                    const blockIndex = blockedSlots.indexOf(blockData);
+                                    showBlockDeleteConfirmModal(blockIndex, date.toISOString().split('T')[0], time, resource, cell);
+                                } else {
+                                    alert('ブロックデータが取得できませんでした。');
+                                }
+                            });
+
+                            // クリック可能にする
+                            cell.style.cursor = 'pointer';
+
+                            grid.appendChild(cell);
+                            continue;
+                        }
+
+                        // 10月10日のチェアAの10:00～11:00の背景色を水色に設定（受付の有無に関わらず）
+                        const currentDateStr = date.toISOString().split('T')[0];
+                        const dateMonth = date.getMonth() + 1; // 1-12
+                        const dateDay = date.getDate(); // 1-31
+                        const dateYear = date.getFullYear();
+
+                        // 10月10日の判定（タイムゾーンを考慮） - 2024年または2025年の10月10日
+                        // テスト用: 現在表示されている最初の日付でもテストできるようにする
+                        const isOct10 = currentDateStr === formatDate(today); // テスト用: 表示されている最初の10月の日付
+
+                        if (isOct10 && resource === 'A' && time >= '10:00' && time <= '11:00') {
+                            cell.style.backgroundColor = '#C5DCF3';
+                            cell.style.border = '1px solid #C5DCF3';
+                        }
+
+                        if (hasReservation) {
+                            const reservation = dayScheduleData[resource][time];
+                            cell.className += ' reserved';
+
+                            // 受付情報を表示（一番上にのみ）
+                            const reservationInfo = document.createElement('div');
+                            reservationInfo.innerHTML = `
+                            ${reservation.service}
+                        `;
+
+                            // ポップアップを作成
+                            const popup = document.createElement('div');
+                            popup.className = 'reservation-popup';
+                            popup.innerHTML = `
+                            <div class="popup-item">
+                                <div class="popup-icon icon-user"></div>
+                                <div class="popup-content">
+                                    <div class="popup-label">顧客名</div>
+                                    <div class="popup-text">テスト花子（テストハナコ）</div>
+                                </div>
+                            </div>
+                            <div class="popup-item">
+                                <div class="popup-icon icon-chat"></div>
+                                <div class="popup-content">
+                                    <div class="popup-label">コメント</div>
+                                    <div class="popup-text">${reservation.comments || '－'}</div>
+                                </div>
+                            </div>
+                            <div class="popup-item">
+                                <div class="popup-icon icon-notes"></div>
+                                <div class="popup-content">
+                                    <div class="popup-label">施設メモ</div>
+                                    <div class="popup-text">${reservation.notes || '－'}</div>
+                                </div>
+                            </div>
+                        `;
+
+                            // ポップアップをbodyに追加
+                            document.body.appendChild(popup);
+
+                            // マウスイベントを追加
+                            reservationInfo.addEventListener('mouseenter', (e) => {
+                                showReservationPopup(e, popup);
+                            });
+
+                            reservationInfo.addEventListener('mouseleave', () => {
+                                hideReservationPopup(popup);
+                            });
+
+                            // クリックイベントを追加（詳細画面モーダルを表示）
+                            reservationInfo.addEventListener('click', (e) => {
+                                e.stopPropagation(); // 親要素へのイベント伝播を防ぐ
+                                showReservationDetailModal(reservation, dateStr, resource, time);
+                            });
+
+                            cell.appendChild(reservationInfo);
+                        }
+
+                        // クリックイベント
+                        cell.addEventListener('click', () => {
+                            if (!cell.classList.contains('reserved') && !cell.classList.contains('blocked')) {
+                                // 受付追加の処理 - 新規受付モーダルを表示
+                                // クリックされたセルの日時とリソースを保存（ブロック登録時に使用）
+                                window.selectedDateForBlock = dateStr;
+                                window.selectedTimeForBlock = time;
+                                window.selectedResourceForBlock = resource;
+                                showReservationModalWithDateTime(dateStr, time);
+                            } else if (cell.classList.contains('reserved')) {
+                                // 受付編集の処理
+                                const reservation = dayScheduleData[resource][time];
+                                showEditModal(reservation, dateStr, resource, time);
+                            }
+                            // blockedの場合は上記のブロック削除イベントが処理される
+                        });
+
+                        grid.appendChild(cell);
+                    }
+                }
+            });
+        }
+
+        // 日付入力フィールドを更新
+        function updateDateInput() {
+            const dateInput = document.getElementById('dateInput');
+            dateInput.value = formatDateJapanese(currentDate);
+        }
+
+        // カレンダーポップアップを生成
+        function generateCalendarHTML(year, month, startDate) {
+            // 月が0-11の範囲であることを確認
+            const normalizedMonth = month % 12;
+            const normalizedYear = year + Math.floor(month / 12);
+
+            const firstDay = new Date(normalizedYear, normalizedMonth, 1);
+            const lastDay = new Date(normalizedYear, normalizedMonth + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDay = firstDay.getDay();
+
+            let html = `
+            <div class="calendar-month-title">${normalizedYear}年${normalizedMonth + 1}月</div>
+            <div class="calendar-grid">
+                <div class="calendar-day-header">日</div>
+                <div class="calendar-day-header">月</div>
+                <div class="calendar-day-header">火</div>
+                <div class="calendar-day-header">水</div>
+                <div class="calendar-day-header">木</div>
+                <div class="calendar-day-header">金</div>
+                <div class="calendar-day-header">土</div>
+        `;
+
+            // 前月の日付を表示
+            const prevMonth = new Date(normalizedYear, normalizedMonth - 1, 0);
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = prevMonth.getDate() - i;
+                html += `<div class="calendar-day other-month">${day}</div>`;
+            }
+
+            // 今月の日付を表示
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateToCheck = new Date(normalizedYear, normalizedMonth, day);
+                const today = new Date();
+                const isToday = dateToCheck.toDateString() === today.toDateString();
+                const isSelected = dateToCheck.toDateString() === startDate.toDateString();
+                const isGrayed = isRandomGrayed(day, normalizedMonth, normalizedYear);
+                const isFull = isRandomGrayed(day, normalizedMonth, normalizedYear);
+
+                let classes = 'calendar-day';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                if (day == 8) {
+                    classes += ' full';
+                } else {
+                    if (isGrayed) classes += ' holiday';
+                }
+
+                const dateStr = `${normalizedYear}-${String(normalizedMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                html += `<div class="${classes}" data-date="${dateStr}">${day}</div>`;
+            }
+
+            // 来月の日付を表示（常に6週分=42セルで固定）
+            const totalCells = startDay + daysInMonth;
+            const totalCellsNeeded = 42; // 6週分固定
+            const remainingCells = totalCellsNeeded - totalCells;
+
+            // 常に6週分表示するため、残りのセルを来月の日付で埋める
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="calendar-day other-month">${day}</div>`;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // ランダムでグレー背景にする日付を判定
+        function isRandomGrayed(day, month, year) {
+            // 日付をシードとして使用してランダム性を確保
+            const seed = day + month * 31 + year * 365;
+            const random = (seed * 9301 + 49297) % 233280 / 233280;
+
+            // 30%の確率でグレー背景にする
+            return random < 0.3;
+        }
+
+        // カレンダーポップアップの表示月を管理する変数
+        let calendarPopupMonth = new Date();
+
+        // カレンダーポップアップを表示
+        function showCalendarPopup() {
+            const overlay = document.getElementById('popupOverlay');
+            const popup = document.getElementById('calendarPopup');
+
+            overlay.classList.add('show');
+            popup.classList.add('show');
+
+            // 現在の日付から開始
+            const now = new Date();
+            calendarPopupMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+            updateCalendarPopup();
+        }
+
+        // カレンダーポップアップを更新
+        function updateCalendarPopup() {
+            const currentMonth = document.getElementById('currentMonth');
+            const nextMonth = document.getElementById('nextMonth');
+
+            const year = calendarPopupMonth.getFullYear();
+            const month = calendarPopupMonth.getMonth();
+
+            // 次の月の年と月を正しく計算
+            let nextYear = year;
+            let nextMonthIndex = month + 1;
+            if (nextMonthIndex > 11) {
+                nextYear = year + 1;
+                nextMonthIndex = 0;
+            }
+
+            currentMonth.innerHTML = generateCalendarHTML(year, month, currentDate);
+            nextMonth.innerHTML = generateCalendarHTML(nextYear, nextMonthIndex, currentDate);
+
+            // 日付クリックイベントを再設定
+            const popup = document.getElementById('calendarPopup');
+            const calendarDays = popup.querySelectorAll('.calendar-day:not(.other-month)');
+            calendarDays.forEach(day => {
+                // 既存のイベントリスナーを削除
+                day.replaceWith(day.cloneNode(true));
+            });
+
+            // 新しいイベントリスナーを追加
+            const newCalendarDays = popup.querySelectorAll('.calendar-day:not(.other-month)');
+            newCalendarDays.forEach(day => {
+                day.addEventListener('click', () => {
+                    const dateStr = day.getAttribute('data-date');
+                    selectDate(dateStr);
+                });
+            });
+        }
+
+        // カレンダーポップアップの月を進める
+        function changeCalendarPopupMonth(direction) {
+            if (direction > 0) {
+                // 翌月以降に進む
+                calendarPopupMonth.setMonth(calendarPopupMonth.getMonth() + 1);
+            } else {
+                // 前月に戻る（現在の月より前には戻せない）
+                const now = new Date();
+                const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const newMonth = new Date(calendarPopupMonth.getFullYear(), calendarPopupMonth.getMonth() - 1, 1);
+
+                if (newMonth >= currentMonth) {
+                    calendarPopupMonth.setMonth(calendarPopupMonth.getMonth() - 1);
+                }
+            }
+            updateCalendarPopup();
+        }
+
+        // カレンダーポップアップを非表示
+        function hideCalendarPopup() {
+            const overlay = document.getElementById('popupOverlay');
+            const popup = document.getElementById('calendarPopup');
+
+            overlay.classList.remove('show');
+            popup.classList.remove('show');
+        }
+
+        // 日付を選択
+        function selectDate(dateStr) {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            currentDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+
+            updateDateInput();
+            generateScheduleGrid();
+            hideCalendarPopup();
+        }
+
+        // 新規受付モーダル機能
+        function showReservationModal() {
+            const modal = document.getElementById('reservationModal');
+
+            modal.style.display = 'flex';
+
+            // 現在の日時をデフォルト値として設定
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+
+            document.getElementById('reservationDate').value = `${year}-${month}-${day}`;
+        }
+
+        // 指定された日時で新規受付モーダルを表示
+        function showReservationModalWithDateTime(dateStr, timeStr) {
+            const modal = document.getElementById('reservationModal');
+            switchTab('newReservation'); // 新規受付タブを活性化
+            modal.style.display = 'flex';
+
+            // 顧客入力モードをリセット（顧客検索モードに戻す）
+            switchCustomerInputMode('search');
+            // 選択された顧客情報をクリア
+            selectedCustomerData = null;
+
+            // 指定された日時をデフォルト値として設定
+            const [year, month, day] = dateStr.split('-');
+            const [hours, minutes] = timeStr.split(':');
+
+            // YYYY/MM/DD形式にフォーマット
+            const formattedMonth = month.padStart(2, '0');
+            const formattedDay = day.padStart(2, '0');
+            document.getElementById('reservationDate').value = `${year}/${formattedMonth}/${formattedDay}`;
+
+            // 時間を設定
+            const startHourSelect = document.getElementById('startHour');
+            const startMinuteSelect = document.getElementById('startMinute');
+            if (startHourSelect) {
+                startHourSelect.value = hours || '09';
+            }
+            if (startMinuteSelect) {
+                startMinuteSelect.value = minutes || '00';
+            }
+
+            // ブロック予約タブの日時も設定（押下したセルの日時を使用）
+            const blockDateInput = document.getElementById('blockDate');
+            const blockStartHourSelect = document.getElementById('blockStartHour');
+            const blockStartMinuteSelect = document.getElementById('blockStartMinute');
+            const blockEndHourSelect = document.getElementById('blockEndHour');
+            const blockEndMinuteSelect = document.getElementById('blockEndMinute');
+
+            if (blockDateInput) {
+                // date型のinputはYYYY-MM-DD形式
+                blockDateInput.value = dateStr;
+            }
+
+            if (blockStartHourSelect) {
+                blockStartHourSelect.value = hours || '09';
+            }
+            if (blockStartMinuteSelect) {
+                blockStartMinuteSelect.value = minutes || '00';
+            }
+
+            // 終了時間は開始時間の15分後をデフォルトとする
+            const startHourInt = parseInt(hours || '09');
+            const startMinuteInt = parseInt(minutes || '00');
+            let endMinuteInt = startMinuteInt + 15;
+            let endHourInt = startHourInt;
+
+            // 60分を超えた場合は時間を繰り上げ
+            if (endMinuteInt >= 60) {
+                endMinuteInt = endMinuteInt - 60;
+                endHourInt = endHourInt + 1;
+            }
+
+            const endHourStr = endHourInt.toString().padStart(2, '0');
+            const endMinuteStr = endMinuteInt.toString().padStart(2, '0');
+
+            if (blockEndHourSelect) {
+                blockEndHourSelect.value = endHourStr;
+            }
+            if (blockEndMinuteSelect) {
+                blockEndMinuteSelect.value = endMinuteStr;
+            }
+
+            // 初期状態：顧客情報は入力可能
+            const customerNameField = document.getElementById('editCustomerName');
+            const customerKanaField = document.getElementById('editCustomerNameKana');
+            const phoneField = document.getElementById('editPhoneNumber');
+            const emailField = document.getElementById('editEmail');
+            const directInputBtn = document.getElementById('directInputBtn');
+
+            if (customerNameField) {
+                customerNameField.value = '';
+                customerNameField.disabled = false;
+            }
+            if (customerKanaField) {
+                customerKanaField.value = '';
+                customerKanaField.disabled = false;
+            }
+            if (phoneField) {
+                phoneField.value = '';
+                phoneField.disabled = false;
+            }
+            if (emailField) {
+                emailField.value = '';
+                emailField.disabled = false;
+            }
+            if (directInputBtn) directInputBtn.style.display = 'none';
+        }
+
+        function hideReservationModal() {
+            const modal = document.getElementById('reservationModal');
+
+            modal.style.display = 'none';
+
+            // フォームをリセット
+            document.getElementById('reservationDate').value = '2025/09/18';
+            document.getElementById('startHour').value = '15';
+            document.getElementById('startMinute').value = '30';
+            document.getElementById('endHour').value = '16';
+            document.getElementById('endMinute').value = '00';
+            document.getElementById('resource').value = 'チェアA';
+            document.getElementById('menu').value = 'カット（30分）';
+            document.getElementById('facilityMemo').value = '';
+            document.getElementById('comment').value = 'ロングです';
+            document.getElementById('customerSearch').value = '';
+        }
+
+        // ブロックデータを管理する配列
+        let blockedSlots = [];
+
+        // タブ切り替え機能
+        function switchTab(tabName) {
+            // すべてのタブボタンからactiveクラスを削除
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            // すべてのタブコンテンツからactiveクラスを削除
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabName === 'newReservation') {
+                document.getElementById('newReservationTab').classList.add('active');
+                document.getElementById('newReservationContent').classList.add('active');
+            } else if (tabName === 'blockReservation') {
+                document.getElementById('blockReservationTab').classList.add('active');
+                document.getElementById('blockReservationContent').classList.add('active');
+            }
+        }
+
+        // 統合モーダル表示機能（新規受付用）
+        function showReservationModal() {
+            const modal = document.getElementById('reservationModal');
+            switchTab('newReservation'); // 新規受付タブを活性化
+            modal.style.display = 'flex';
+
+            // 顧客入力モードをリセット（顧客検索モードに戻す）
+            switchCustomerInputMode('search');
+            // 選択された顧客情報をクリア
+            selectedCustomerData = null;
+
+            // 初期状態：顧客情報は入力可能
+            const customerNameField = document.getElementById('editCustomerName');
+            const customerKanaField = document.getElementById('editCustomerNameKana');
+            const phoneField = document.getElementById('editPhoneNumber');
+            const emailField = document.getElementById('editEmail');
+            const directInputBtn = document.getElementById('directInputBtn');
+
+            if (customerNameField) {
+                customerNameField.value = '';
+                customerNameField.disabled = false;
+            }
+            if (customerKanaField) {
+                customerKanaField.value = '';
+                customerKanaField.disabled = false;
+            }
+            if (phoneField) {
+                phoneField.value = '';
+                phoneField.disabled = false;
+            }
+            if (emailField) {
+                emailField.value = '';
+                emailField.disabled = false;
+            }
+            if (directInputBtn) directInputBtn.style.display = 'none';
+        }
+
+        // 統合モーダル非表示機能（受付ブロック用）
+        function hideBlockModal() {
+            const modal = document.getElementById('reservationModal');
+            modal.style.display = 'none';
+        }
+
+        function hideReservationModal() {
+            const modal = document.getElementById('reservationModal');
+            modal.style.display = 'none';
+        }
+
+        // 印刷モーダル機能
+        function printReservation() {
+            const modal = document.getElementById('printModalOverlay');
+
+            if (!modal) {
+                return;
+            }
+
+            // モーダルを表示
+            modal.style.display = 'flex';
+
+            // 今日の日付をデフォルト値として設定
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            const startDateInput = document.getElementById('printStartDate');
+            const endDateInput = document.getElementById('printEndDate');
+
+            if (startDateInput) {
+                startDateInput.value = todayStr;
+            } else {
+            }
+
+            if (endDateInput) {
+                endDateInput.value = todayStr;
+            } else {
+            }
+        }
+
+        function hidePrintModal() {
+            const modal = document.getElementById('printModalOverlay');
+            modal.style.display = 'none';
+        }
+
+        // PDF作成と印刷機能
+        function createPdf() {
+
+            const startDateElement = document.getElementById('printStartDate');
+            const endDateElement = document.getElementById('printEndDate');
+            const resourceElement = document.getElementById('printResource');
+
+
+            if (!startDateElement || !endDateElement) {
+                alert('印刷フォームの要素が見つかりません。');
+                return;
+            }
+
+            const startDate = startDateElement.value;
+            const endDate = endDateElement.value;
+            const resource = resourceElement ? resourceElement.value : '';
+
+
+            if (!startDate || !endDate) {
+                alert('開始日と終了日を入力してください。');
+                return;
+            }
+
+            // 受付情報を収集
+            const reservations = collectReservations(startDate, endDate, resource);
+
+
+
+            // 印刷用HTMLを生成
+            const printContent = generatePrintContent(reservations, startDate, endDate, resource);
+
+            // 新しいウィンドウで印刷画面を開く
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+
+            // 印刷ダイアログを表示
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+
+            // モーダルを閉じる
+            hidePrintModal();
+        }
+
+        // 指定期間の受付情報を収集
+        function collectReservations(startDate, endDate, resource) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const reservations = [];
+
+            // 日付の範囲をループ
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                const scheduleData = generateScheduleDataForDate(d);
+
+                // 各リソースの受付をチェック
+                for (const res in scheduleData) {
+                    // リソースフィルター
+                    if (resource && `チェア${res}` !== resource) {
+                        continue;
+                    }
+
+                    for (const time in scheduleData[res]) {
+                        const reservation = scheduleData[res][time];
+                        reservations.push({
+                            date: dateStr,
+                            time: time,
+                            resource: `チェア${res}`,
+                            customer: reservation.customer,
+                            service: reservation.service,
+                            phone: reservation.phone || '',
+                            comments: reservation.comments || '',
+                            notes: reservation.notes || ''
+                        });
+                    }
+                }
+            }
+
+            return reservations;
+        }
+
+        // 印刷用HTMLを生成
+        function generatePrintContent(reservations, startDate, endDate, resource) {
+            const resourceText = resource || '全て';
+
+            let tableRows = '';
+            reservations.forEach((res, index) => {
+                tableRows += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${res.date}</td>
+                    <td>${res.time}</td>
+                    <td>${res.resource}</td>
+                    <td>${res.customer}</td>
+                    <td>${res.service}</td>
+                    <td>${res.phone}</td>
+                    <td>${res.notes}</td>
+                </tr>
+            `;
+            });
+
+            return `
+            <!DOCTYPE html>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <title>受付情報印刷</title>
+                <style>
+                    body {
+                        font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+                        margin: 20px;
+                    }
+                    .print-header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    .print-info {
+                        margin-bottom: 20px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #333;
+                        padding: 8px;
+                        text-align: left;
+                        font-size: 12px;
+                    }
+                    th {
+                        background-color: #f0f0f0;
+                        font-weight: bold;
+                    }
+                    @media print {
+                        @page {
+                            size: A4 landscape;
+                            margin: 10mm;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="print-header">
+                    <h1>受付情報一覧</h1>
+                </div>
+                <div class="print-info">
+                    <p><strong>期間:</strong> ${startDate} 〜 ${endDate}</p>
+                    <p><strong>リソース:</strong> ${resourceText}</p>
+                    <p><strong>印刷日時:</strong> ${new Date().toLocaleString('ja-JP')}</p>
+                    <p><strong>件数:</strong> ${reservations.length}件</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>日付</th>
+                            <th>時刻</th>
+                            <th>リソース</th>
+                            <th>顧客名</th>
+                            <th>メニュー</th>
+                            <th>電話番号</th>
+                            <th>備考</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+        }
+
+        // ブロック登録機能
+        function saveBlock() {
+            // 新規受付側が表示されている場合は顧客情報変更チェックを実行
+            const newReservationTab = document.getElementById('newReservationTab');
+            if (newReservationTab && newReservationTab.classList.contains('active')) {
+                // 顧客情報の変更をチェック
+                checkCustomerInfoChange(function() {
+                    // 変更がない、または確認済みの場合は通常の登録処理を実行
+                    executeReservationSave();
+                });
+                return;
+            }
+
+            // ブロックモーダルのフィールドから値を取得
+            const blockDateElement = document.getElementById('blockDate');
+            const blockStartHourElement = document.getElementById('blockStartHour');
+            const blockStartMinuteElement = document.getElementById('blockStartMinute');
+            const blockEndHourElement = document.getElementById('blockEndHour');
+            const blockEndMinuteElement = document.getElementById('blockEndMinute');
+
+            if (!blockDateElement || !blockStartHourElement || !blockStartMinuteElement ||
+                !blockEndHourElement || !blockEndMinuteElement) {
+                alert('ブロック情報の入力に不備があります。');
+                return;
+            }
+
+            const blockDate = blockDateElement.value;
+            const startHour = blockStartHourElement.value;
+            const startMinute = blockStartMinuteElement.value;
+            const endHour = blockEndHourElement.value;
+            const endMinute = blockEndMinuteElement.value;
+
+            // ブロックデータを作成
+            const startTime = `${startHour.padStart(2, '0')}:${startMinute.padStart(2, '0')}`;
+            const endTime = `${endHour.padStart(2, '0')}:${endMinute.padStart(2, '0')}`;
+
+            // ブロックIDを生成（タイムスタンプベース）
+            const blockId = 'block_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            // 押下したセルのリソースを使用（全リソースではなく、特定のリソースのみ）
+            const selectedResource = window.selectedResourceForBlock || null;
+            const resourceName = selectedResource ? `チェア${selectedResource}` : '全リソース';
+
+            const blockData = {
+                id: blockId,
+                date: blockDate,
+                resource: resourceName, // 押下したセルのリソースに適用
+                startTime: startTime,
+                endTime: endTime
+            };
+
+
+            // ブロックデータに追加
+            blockedSlots.push(blockData);
+
+            hideBlockModal();
+
+            // スケジュールグリッドを再描画
+            generateScheduleGrid();
+        }
+
+        // ネット受付状態管理
+        let isOnlineReceptionActive = true; // ネット受付の状態（true: 受付中, false: 停止中）
+
+        // ネット受付の停止/再開を切り替える関数
+        function toggleOnlineReception() {
+            if (isOnlineReceptionActive) {
+                // ネット受付停止の確認
+                if (confirm('ネット受付を停止してもよろしいですか？')) {
+                    stopOnlineReception();
+                }
+            } else {
+                // ネット受付再開の確認
+                if (confirm('ネット受付を再開してもよろしいですか？')) {
+                    startOnlineReception();
+                }
+            }
+        }
+
+        // ネット受付を停止する関数
+        function stopOnlineReception() {
+            isOnlineReceptionActive = false;
+            const button = document.querySelector('.btn.warn-btn, .btn.link-btn');
+            if (button) {
+                button.className = 'btn ';
+                button.textContent = 'ネット受付再開';
+            }
+            // ここで実際のネット受付停止処理を実行
+        }
+
+        // ネット受付を再開する関数
+        function startOnlineReception() {
+            isOnlineReceptionActive = true;
+            const button = document.querySelector('.btn.warn-btn, .btn.link-btn');
+            if (button) {
+                button.className = 'btn warn-btn';
+                button.textContent = 'ネット受付停止';
+            }
+            // ここで実際のネット受付再開処理を実行
+        }
+
+        // 受付詳細モーダル機能
+        let currentDetailData = null; // 現在表示中の受付データ
+
+        function showReservationDetailModal(reservation, dateStr, resource, time) {
+
+            // パラメータの検証
+            if (!reservation || !dateStr || !resource || !time) {
+                alert('エラー: 受付データが不完全です。');
+                return;
+            }
+
+            currentDetailData = {
+                reservation: reservation,
+                dateStr: dateStr,
+                resource: resource,
+                time: time
+            };
+
+            // 詳細情報を設定
+            document.getElementById('detailDateTime').textContent = `${dateStr} ${time}`;
+            document.getElementById('detailResource').textContent = resourceNames[resource] || `チェア${resource}`;
+            document.getElementById('detailService').textContent = reservation.service;
+            document.getElementById('detailStatus').textContent = '受付済み';
+
+            // 顧客名（姓・名）を登録／編集モーダルと同様に個別フィールド優先で表示
+            const lastName = reservation.lastName || reservation.customerLastName;
+            const firstName = reservation.firstName || reservation.customerFirstName;
+            if (lastName || firstName) {
+                document.getElementById('detailLastName').textContent = lastName || '-';
+                document.getElementById('detailFirstName').textContent = firstName || '-';
+            } else {
+                // 個別フィールドが無い場合のみ、従来通りまとめている文字列から分割
+                const customerNameParts = (reservation.customer || '').split(/\s+/);
+                const detailLastName = customerNameParts[0] || '-';
+                const detailFirstName = customerNameParts.slice(1).join(' ') || '-';
+                document.getElementById('detailLastName').textContent = detailLastName;
+                document.getElementById('detailFirstName').textContent = detailFirstName;
+            }
+
+            // 顧客名【カナ】（姓・名）も個別フィールド優先で表示
+            const lastNameKana = reservation.lastNameKana || reservation.customerLastNameKana;
+            const firstNameKana = reservation.firstNameKana || reservation.customerFirstNameKana;
+            if (lastNameKana || firstNameKana) {
+                document.getElementById('detailLastNameKana').textContent = lastNameKana || '-';
+                document.getElementById('detailFirstNameKana').textContent = firstNameKana || '-';
+            } else {
+                const customerKanaParts = (reservation.customerKana || '').split(/\s+/);
+                const detailLastNameKana = customerKanaParts[0] || '-';
+                const detailFirstNameKana = customerKanaParts.slice(1).join(' ') || '-';
+                document.getElementById('detailLastNameKana').textContent = detailLastNameKana;
+                document.getElementById('detailFirstNameKana').textContent = detailFirstNameKana;
+            }
+
+            document.getElementById('detailPhone').textContent = reservation.phone || '未設定';
+            document.getElementById('detailEmail').textContent = reservation.email || '未設定';
+            document.getElementById('detailComments').textContent = reservation.comments || '　';
+            document.getElementById('detailNotes').textContent = reservation.notes || '　';
+
+            // モーダルを表示
+            document.getElementById('reservationDetailModal').style.display = 'flex';
+        }
+
+        function hideReservationDetailModal() {
+            document.getElementById('reservationDetailModal').style.display = 'none';
+            // currentDetailDataは編集モーダルが閉じられるまで保持する
+        }
+
+        // キャンセル理由入力モーダルを表示
+        function cancelReservationFromDetail() {
+            const modal = document.getElementById('cancelReasonModal');
+            const textarea = document.getElementById('cancelReason');
+
+            // テキストエリアをクリア
+            textarea.value = '';
+
+            // モーダルを表示
+            modal.style.display = 'flex';
+        }
+
+        // キャンセル理由入力モーダルを非表示
+        function hideCancelReasonModal() {
+            const modal = document.getElementById('cancelReasonModal');
+            modal.style.display = 'none';
+        }
+
+        // キャンセルを実行
+        function confirmCancelReservation() {
+            const cancelReason = document.getElementById('cancelReason').value.trim();
+
+            // キャンセル理由が入力されているかチェック
+            if (!cancelReason) {
+                alert('キャンセル理由を入力してください。');
+                return;
+            }
+
+            // キャンセル処理を実行
+            // モーダルを閉じる
+            hideCancelReasonModal();
+            hideReservationDetailModal();
+
+            // スケジュールグリッドを再描画
+            generateScheduleGrid();
+        }
+
+        // 編集モーダル機能
+        let currentEditData = null; // 現在編集中の受付データ
+
+        function showEditModal(reservation, dateStr, resource, time) {
+
+            const overlay = document.getElementById('popupOverlay');
+            const modal = document.getElementById('editModal');
+
+
+            if (!overlay || !modal) {
+                return;
+            }
+
+            // モーダルを表示
+            modal.style.display = 'flex';
+
+            // 現在編集中のデータを保存
+            currentEditData = {
+                reservation: reservation,
+                dateStr: dateStr,
+                resource: resource,
+                time: time
+            };
+
+            // フォームにデータを設定（顧客名は姓・名それぞれに反映）
+            const lastNameField = document.getElementById('editLastNameEdit') || document.getElementById('editLastName');
+            const firstNameField = document.getElementById('editFirstNameEdit') || document.getElementById('editFirstName');
+            const lastNameKanaField = document.getElementById('editLastNameKanaEdit') || document.getElementById('editLastNameKana');
+            const firstNameKanaField = document.getElementById('editFirstNameKanaEdit') || document.getElementById('editFirstNameKana');
+
+            // 姓名（通常）
+            let lastName = reservation.lastName || reservation.customerLastName || '';
+            let firstName = reservation.firstName || reservation.customerFirstName || '';
+            if (!lastName && !firstName && reservation.customer) {
+                const nameParts = reservation.customer.split(/\s+/);
+                lastName = nameParts[0] || '';
+                firstName = nameParts.slice(1).join(' ') || '';
+            }
+            if (lastNameField)  lastNameField.value  = lastName;
+            if (firstNameField) firstNameField.value = firstName;
+
+            // 姓名【カナ】
+            let lastNameKana = reservation.lastNameKana || reservation.customerLastNameKana || '';
+            let firstNameKana = reservation.firstNameKana || reservation.customerFirstNameKana || '';
+            if (!lastNameKana && !firstNameKana && reservation.customerKana) {
+                const kanaParts = reservation.customerKana.split(/\s+/);
+                lastNameKana = kanaParts[0] || '';
+                firstNameKana = kanaParts.slice(1).join(' ') || '';
+            }
+            if (lastNameKanaField)  lastNameKanaField.value  = lastNameKana;
+            if (firstNameKanaField) firstNameKanaField.value = firstNameKana;
+
+            // 連絡先・メニューなど
+            const phoneFieldBase = document.getElementById('editPhoneNumber');
+            const emailFieldBase = document.getElementById('editEmail');
+            const menuField = document.getElementById('editMenu');
+            const resourceField = document.getElementById('editResource');
+            const facilityMemoField = document.getElementById('facilityMemo');
+
+            if (phoneFieldBase)     phoneFieldBase.value = reservation.phone || '';
+            if (emailFieldBase)     emailFieldBase.value = reservation.email || '';
+            if (menuField)          menuField.value = reservation.service || '';
+            if (resourceField)      resourceField.value = resource || '';
+            if (facilityMemoField)  facilityMemoField.value = reservation.facilityMemo || '';
+
+            // コメントを設定（表示のみ）
+            const editCommentField = document.getElementById('editComment');
+            if (editCommentField) {
+                editCommentField.value = reservation.comments || '　';
+                editCommentField.setAttribute('readonly', 'readonly');
+                editCommentField.setAttribute('disabled', 'disabled');
+                editCommentField.readOnly = true;
+                editCommentField.disabled = true;
+            }
+
+            // 初期状態：顧客情報は入力可能
+            const phoneField = document.getElementById('editPhoneNumber');
+            const emailField = document.getElementById('editEmail');
+            const directInputBtnEdit = document.getElementById('directInputBtnEdit');
+
+            if (lastNameField)      lastNameField.disabled = false;
+            if (firstNameField)     firstNameField.disabled = false;
+            if (lastNameKanaField)  lastNameKanaField.disabled = false;
+            if (firstNameKanaField) firstNameKanaField.disabled = false;
+            if (phoneField) phoneField.disabled = false;
+            if (emailField) emailField.disabled = false;
+            if (directInputBtnEdit) directInputBtnEdit.style.display = 'none';
+
+            // 日時を設定
+            const [year, month, day] = dateStr.split('-');
+            const [hours, minutes] = time.split(':');
+            // YYYY/MM/DD形式にフォーマット（月と日を2桁に）
+            const formattedMonth = month.padStart(2, '0');
+            const formattedDay = day.padStart(2, '0');
+            document.getElementById('reservationDate').value = `${year}/${formattedMonth}/${formattedDay}`;
+
+            // 時間を設定
+            const startHourSelect = document.getElementById('startHour');
+            const startMinuteSelect = document.getElementById('startMinute');
+            if (startHourSelect) {
+                startHourSelect.value = hours || '15';
+            }
+            if (startMinuteSelect) {
+                startMinuteSelect.value = minutes || '00';
+            }
+
+            // コメント欄を確実に変更不可にする（モーダル表示後にも設定）
+            setTimeout(() => {
+                const editCommentField = document.getElementById('editComment');
+                if (editCommentField) {
+                    editCommentField.setAttribute('readonly', 'readonly');
+                    editCommentField.setAttribute('disabled', 'disabled');
+                    editCommentField.readOnly = true;
+                    editCommentField.disabled = true;
+                }
+            }, 0);
+        }
+
+        function hideEditModal() {
+            const modal = document.getElementById('editModal');
+
+            if (modal) {
+                modal.style.display = 'none';
+            }
+
+            // フォームをリセット
+            const editForm = document.getElementById('editForm');
+            if (editForm) {
+                editForm.reset();
+            }
+            currentEditData = null;
+        }
+
+        function saveEdit() {
+            if (!currentEditData) return;
+
+            const reservation = {
+                customer: document.getElementById('editCustomerName').value,
+                customerKana: document.getElementById('editCustomerNameKana').value,
+                phone: document.getElementById('editPhoneNumber').value,
+                email: document.getElementById('editEmail').value,
+                service: document.getElementById('editMenu').value,
+                resource: document.getElementById('editResource').value,
+                comments: document.getElementById('comment').value,
+                notes: document.getElementById('facilityMemo').value
+            };
+
+
+            // ここで実際の保存処理を行う
+            // 例: APIに送信、ローカルストレージに保存など
+            hideEditModal();
+            generateScheduleGrid(); // グリッドを再描画
+        }
+
+
+        // URLパラメータをチェックして受付詳細を表示
+        function checkUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.has('appointmentDate')) {
+                const appointmentDate = urlParams.get('appointmentDate');
+                const customerName = urlParams.get('customerName');
+                const customerNameKana = urlParams.get('customerNameKana');
+                const resource = urlParams.get('resource');
+                const menu = urlParams.get('menu');
+                const registrationDate = urlParams.get('registrationDate');
+
+                // 受付日を開始日に設定
+                if (appointmentDate) {
+                    const date = new Date(appointmentDate);
+                    currentDate = date;
+                    updateDateInput();
+                    generateScheduleGrid();
+                }
+
+                // 受付詳細モーダルを表示
+                showReservationDetailModal({
+                    appointmentDate: appointmentDate,
+                    customerName: customerName,
+                    customerNameKana: customerNameKana,
+                    resource: resource,
+                    menu: menu,
+                    registrationDate: registrationDate
+                });
+
+                // URLパラメータをクリア
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+
+        // 詳細モーダルから編集モーダルを開く
+        function editReservationFromDetail() {
+
+            if (!currentDetailData) {
+                alert('エラー: 詳細モーダルが正しく開かれていません。受付情報をクリックしてから編集ボタンを押してください。');
+                return;
+            }
+
+            // currentDetailDataの各プロパティが存在するかチェック
+            if (!currentDetailData.reservation || !currentDetailData.dateStr || !currentDetailData.resource || !currentDetailData.time) {
+                alert('エラー: 受付データが不完全です。受付情報をクリックしてから編集ボタンを押してください。');
+                return;
+            }
+
+            // 編集モーダルを開く（currentDetailDataを使用してから）
+            showEditModal(
+                currentDetailData.reservation,
+                currentDetailData.dateStr,
+                currentDetailData.resource,
+                currentDetailData.time
+            );
+
+            // 詳細モーダルを閉じる（編集モーダルを開いた後）
+            hideReservationDetailModal();
+        }
+
+
+        // 詳細モーダルから削除を実行
+        function deleteReservationFromDetail() {
+            if (confirm('この受付を削除しますか？')) {
+                hideReservationDetailModal();
+                generateScheduleGrid();
+            }
+        }
+
+        // キャンセル理由ポップアップ機能
+        function showCancelReasonPopup(event, cancelReason) {
+            const popup = document.getElementById('cancelReasonPopup');
+            const cancelReasonText = document.getElementById('cancelReasonText');
+
+            // キャンセル理由を設定
+            cancelReasonText.textContent = cancelReason || 'キャンセル理由が登録されていません';
+
+            // ポップアップを表示
+            popup.classList.add('show');
+
+            // マウス位置にポップアップを配置
+            const mouseX = event.clientX;
+            const mouseY = event.clientY;
+
+            // ポップアップのサイズを取得
+            const popupRect = popup.getBoundingClientRect();
+
+            // 画面右端を超えないように調整
+            let left = mouseX + 15;
+            if (left + popupRect.width > window.innerWidth) {
+                left = mouseX - popupRect.width - 15;
+            }
+
+            // 画面下端を超えないように調整
+            let top = mouseY + 15;
+            if (top + popupRect.height > window.innerHeight) {
+                top = mouseY - popupRect.height - 15;
+            }
+
+            popup.style.left = left + 'px';
+            popup.style.top = top + 'px';
+        }
+
+        function hideCancelReasonPopup() {
+            const popup = document.getElementById('cancelReasonPopup');
+            popup.classList.remove('show');
+        }
+
+        // Material Design Components初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            // MDCコンポーネントを初期化
+            mdc.autoInit();
+            // 日付コントロール
+            document.getElementById('prevDay').addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() - 1);
+                updateDateInput();
+                generateScheduleGrid();
+            });
+
+            document.getElementById('nextDay').addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() + 1);
+                updateDateInput();
+                generateScheduleGrid();
+            });
+
+            document.getElementById('todayBtn').addEventListener('click', () => {
+                currentDate = new Date();
+                updateDateInput();
+                generateScheduleGrid();
+            });
+
+            // カレンダーアイコン
+            document.getElementById('calendarIcon').addEventListener('click', showCalendarPopup);
+
+            // カレンダーポップアップ
+            document.getElementById('closePopup').addEventListener('click', hideCalendarPopup);
+            document.getElementById('popupOverlay').addEventListener('click', hideCalendarPopup);
+
+            // カレンダーポップアップの月移動ボタン
+            document.getElementById('prevMonthBtn').addEventListener('click', () => changeCalendarPopupMonth(-1));
+            document.getElementById('nextMonthBtn').addEventListener('click', () => changeCalendarPopupMonth(1));
+
+            // ビューモード切り替え
+            document.getElementById('view1Day').addEventListener('click', () => {
+                viewMode = '1day';
+                document.getElementById('view1Day').classList.add('active');
+                document.getElementById('view1Week').classList.remove('active');
+                generateScheduleGrid();
+            });
+
+            document.getElementById('view1Week').addEventListener('click', () => {
+                viewMode = '1week';
+                document.getElementById('view1Week').classList.add('active');
+                document.getElementById('view1Day').classList.remove('active');
+                generateScheduleGrid();
+            });
+
+            // 新規受付ボタン
+            document.getElementById('closeReservationModal').addEventListener('click', hideReservationModal);
+
+            // 編集モーダル
+            document.getElementById('closeEditModal').addEventListener('click', hideEditModal);
+            document.getElementById('cancelEdit').addEventListener('click', hideEditModal);
+            document.getElementById('saveEdit').addEventListener('click', saveEdit);
+
+            // 初期化
+            updateDateInput();
+            generateScheduleGrid();
+
+            // URLパラメータをチェックして受付詳細を表示（少し遅延させて実行）
+            setTimeout(() => {
+                checkUrlParameters();
+            }, 100);
+
+            // ウィンドウリサイズイベント
+            window.addEventListener('resize', () => {
+                generateScheduleGrid();
+            });
+        });
+
+        // リソースフィルターセクションの開閉
+        function toggleResourceFilter() {
+            const filterSection = document.getElementById('resourceFilterSection');
+            const toggleBtn = document.getElementById('filterToggleBtn');
+            const icon = toggleBtn.querySelector('.material-icons');
+
+            if (filterSection.style.display === 'none') {
+                // フィルターセクションを表示
+                filterSection.style.display = 'block';
+                icon.textContent = 'filter_list_off';
+                toggleBtn.querySelector('span').textContent = 'フィルター';
+            } else {
+                // フィルターセクションを非表示
+                filterSection.style.display = 'none';
+                icon.textContent = 'filter_list';
+                toggleBtn.querySelector('span').textContent = 'フィルター';
+            }
+        }
+
+        // リソース絞り込みチェックボックス更新
+        function updateResourceFilter() {
+            const checkboxes = document.querySelectorAll('.radio-3 input[type="checkbox"]');
+            const selectedResources = Array.from(checkboxes)
+                .filter(checkbox => checkbox.checked)
+                .map(checkbox => checkbox.value);
+
+            // セレクトボックスも同期
+            const resourceSelector = document.getElementById('resourceSelector');
+            if (resourceSelector) {
+                if (selectedResources.length === 0) {
+                    resourceSelector.value = 'all';
+                } else if (selectedResources.length === 1) {
+                    resourceSelector.value = selectedResources[0];
+                } else {
+                    resourceSelector.value = 'all';
+                }
+            }
+
+            // チェックボックスの親要素にクラスを追加/削除
+            checkboxes.forEach(checkbox => {
+                const parentLabel = checkbox.closest('label');
+                if (checkbox.checked) {
+                    parentLabel.classList.add('checked');
+                } else {
+                    parentLabel.classList.remove('checked');
+                }
+            });
+
+            generateScheduleGrid();
+        }
+
+        // チェア絞り込み機能
+        function filterByResource(resource) {
+            selectedResource = resource;
+
+            // セレクタの値を更新
+            const resourceSelector = document.getElementById('resourceSelector');
+            if (resourceSelector) {
+                resourceSelector.value = resource;
+            }
+
+            // チェックボックスも同期
+            const checkboxes = document.querySelectorAll('.resource-filter-item input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (resource === 'all') {
+                    checkbox.checked = true;
+                    checkbox.closest('.resource-filter-item').classList.add('checked');
+                } else {
+                    checkbox.checked = checkbox.value === resource;
+                    const parentItem = checkbox.closest('.resource-filter-item');
+                    if (checkbox.checked) {
+                        parentItem.classList.add('checked');
+                    } else {
+                        parentItem.classList.remove('checked');
+                    }
+                }
+            });
+
+            // スケジュールグリッドを再生成
+            generateScheduleGrid();
+        }
+
+        // 受付詳細ポップアップ表示
+        function showReservationPopup(event, popup) {
+            const rect = event.target.getBoundingClientRect();
+
+            // ポップアップを表示
+            popup.classList.add('show');
+
+            // ポップアップの位置を計算
+            let top = rect.bottom + 5;
+            let left = rect.left;
+
+            // 画面右端からはみ出る場合は左に調整
+            if (left + 320 > window.innerWidth) {
+                left = window.innerWidth - 320 - 10;
+            }
+
+            // 画面下端からはみ出る場合は上に表示
+            if (top + 200 > window.innerHeight) {
+                top = rect.top - 200 - 5;
+            }
+
+            popup.style.top = top + 'px';
+            popup.style.left = left + 'px';
+
+        }
+
+        // 受付詳細ポップアップ非表示
+        function hideReservationPopup(popup) {
+            popup.classList.remove('show');
+        }
+
+
+        // カレンダー関連の変数
+        let currentCalendarDate = new Date();
+        let calendarDateFieldId = '';
+        let calendarHourFieldId = '';
+        let calendarMinuteFieldId = '';
+
+        // カレンダーを開く
+        function openDateCalendar(dateFieldId, hourFieldId, minuteFieldId) {
+            calendarDateFieldId = dateFieldId;
+            calendarHourFieldId = hourFieldId;
+            calendarMinuteFieldId = minuteFieldId;
+
+            const overlay = document.getElementById('dateCalendarOverlay');
+            const container = document.getElementById('dateCalendarContainer');
+
+            // どちらのモーダルが開いているかを判定
+            const reservationModal = document.getElementById('reservationModal');
+            const editModal = document.getElementById('editModal');
+            const isReservationModalOpen = reservationModal &&
+                (reservationModal.style.display === 'flex' ||
+                 window.getComputedStyle(reservationModal).display !== 'none');
+            const isEditModalOpen = editModal &&
+                (editModal.style.display === 'flex' ||
+                 window.getComputedStyle(editModal).display !== 'none');
+
+            // 現在の日付を取得
+            let dateField = null;
+            if (isReservationModalOpen) {
+                dateField = document.getElementById(dateFieldId);
+            } else if (isEditModalOpen) {
+                // 編集モーダル内の要素を取得
+                const editModalContent = editModal.querySelector('.normal-modal');
+                dateField = editModalContent ? editModalContent.querySelector('#' + dateFieldId) : null;
+            } else {
+                dateField = document.getElementById(dateFieldId);
+            }
+
+            if (dateField && dateField.value) {
+                const dateParts = dateField.value.split('/');
+                if (dateParts.length === 3) {
+                    currentCalendarDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+                }
+            }
+
+            // カレンダーを生成
+            generateCalendar();
+
+            overlay.style.display = 'flex';
+            const modal = document.getElementById('dateCalendarModal');
+            if (modal) {
+                modal.classList.add('show');
+            }
+        }
+
+        // カレンダーを閉じる
+        function closeDateCalendar() {
+            const overlay = document.getElementById('dateCalendarOverlay');
+            overlay.style.display = 'none';
+            const modal = document.getElementById('dateCalendarModal');
+            if (modal) {
+                modal.classList.remove('show');
+            }
+        }
+
+        // カレンダーを生成
+        function generateCalendar() {
+            const container = document.getElementById('dateCalendarContainer');
+            if (!container) return;
+
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+
+            // カレンダーのHTMLを生成
+            let html = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button type="button" onclick="changeCalendarMonth(-1)" style="background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px 10px;">‹</button>
+                    <span style="font-size: 16px; font-weight: 600; margin: 0 20px;">${year}年${month + 1}月</span>
+                    <button type="button" onclick="changeCalendarMonth(1)" style="background: none; border: none; cursor: pointer; font-size: 18px; padding: 5px 10px;">›</button>
+                </div>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">日</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">月</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">火</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">水</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">木</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">金</th>
+                            <th style="padding: 8px; text-align: center; background: #f5f5f5; border: 1px solid #ddd;">土</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // 月の最初の日と最後の日を取得
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const firstDayOfWeek = firstDay.getDay();
+            const daysInMonth = lastDay.getDate();
+
+            // 前月の日付を表示
+            const prevMonth = new Date(year, month - 1, 0);
+            const daysInPrevMonth = prevMonth.getDate();
+
+            let dayCount = 0;
+            for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+                if (dayCount % 7 === 0) html += '<tr>';
+                const day = daysInPrevMonth - i;
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #ccc; cursor: not-allowed;">${day}</td>`;
+                dayCount++;
+            }
+
+            // 今月の日付を表示
+            for (let day = 1; day <= daysInMonth; day++) {
+                if (dayCount % 7 === 0) html += '<tr>';
+                const date = new Date(year, month, day);
+                const isToday = date.toDateString() === new Date().toDateString();
+                const todayClass = isToday ? 'background: #e3f2fd; font-weight: bold;' : '';
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #ddd; cursor: pointer; ${todayClass}" onclick="selectCalendarDate(${year}, ${month + 1}, ${day})">${day}</td>`;
+                dayCount++;
+            }
+
+            // 来月の日付を表示
+            const remainingDays = 42 - dayCount;
+            for (let day = 1; day <= remainingDays; day++) {
+                if (dayCount % 7 === 0) html += '<tr>';
+                html += `<td style="padding: 8px; text-align: center; border: 1px solid #ddd; color: #ccc; cursor: not-allowed;">${day}</td>`;
+                dayCount++;
+            }
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // カレンダーの月を変更
+        function changeCalendarMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            generateCalendar();
+        }
+
+        // カレンダーの日付を選択
+        function selectCalendarDate(year, month, day) {
+            const formattedDate = `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+
+            // どちらのモーダルが開いているかを判定
+            const reservationModal = document.getElementById('reservationModal');
+            const editModal = document.getElementById('editModal');
+            const isReservationModalOpen = reservationModal &&
+                (reservationModal.style.display === 'flex' ||
+                 window.getComputedStyle(reservationModal).display !== 'none');
+            const isEditModalOpen = editModal &&
+                (editModal.style.display === 'flex' ||
+                 window.getComputedStyle(editModal).display !== 'none');
+
+            // 受付・予約登録モーダルが開いている場合
+            if (isReservationModalOpen) {
+                const dateField = document.getElementById(calendarDateFieldId);
+                if (dateField) {
+                    dateField.value = formattedDate;
+                }
+            }
+
+            // 編集モーダルが開いている場合
+            if (isEditModalOpen) {
+                // 編集モーダル内の要素を取得
+                const editModalContent = editModal.querySelector('.normal-modal');
+                const dateField = editModalContent ? editModalContent.querySelector('#' + calendarDateFieldId) : null;
+                if (dateField) {
+                    dateField.value = formattedDate;
+                }
+            }
+
+            // どちらのモーダルも開いていない場合は、通常の方法で更新
+            if (!isReservationModalOpen && !isEditModalOpen) {
+                const dateField = document.getElementById(calendarDateFieldId);
+                if (dateField) {
+                    dateField.value = formattedDate;
+                }
+            }
+
+            // カレンダーを閉じる
+            closeDateCalendar();
+        }
+
+        // 直接入力ボタンの機能（受付・予約登録画面用）
+        function enableDirectInput() {
+            // 顧客情報をクリア
+            const customerNameField = document.getElementById('editCustomerName');
+            const customerKanaField = document.getElementById('editCustomerNameKana');
+            const phoneField = document.getElementById('editPhoneNumber');
+            const emailField = document.getElementById('editEmail');
+
+            if (customerNameField) {
+                customerNameField.value = '';
+                customerNameField.disabled = false;
+            }
+            if (customerKanaField) {
+                customerKanaField.value = '';
+                customerKanaField.disabled = false;
+            }
+            if (phoneField) {
+                phoneField.value = '';
+                phoneField.disabled = false;
+            }
+            if (emailField) {
+                emailField.value = '';
+                emailField.disabled = false;
+            }
+
+            // 直接入力ボタンを非表示
+            const directInputBtn = document.getElementById('directInputBtn');
+            if (directInputBtn) {
+                directInputBtn.style.display = 'none';
+            }
+        }
+
+        // 直接入力ボタンの機能（編集画面用）
+        function enableDirectInputEdit() {
+            // 編集モーダル内の要素を取得
+            const editModal = document.getElementById('editModal');
+            const editModalContent = editModal ? editModal.querySelector('.normal-modal') : null;
+
+            // 編集モーダル内の顧客情報フィールドを取得
+            const customerNameField = editModalContent ? editModalContent.querySelector('#editCustomerName') : null;
+            const customerKanaField = editModalContent ? editModalContent.querySelector('#editCustomerNameKana') : null;
+            const phoneField = editModalContent ? editModalContent.querySelector('#editPhoneNumber') : null;
+            const emailField = editModalContent ? editModalContent.querySelector('#editEmail') : null;
+
+            if (customerNameField) {
+                customerNameField.value = '';
+                customerNameField.disabled = false;
+            }
+            if (customerKanaField) {
+                customerKanaField.value = '';
+                customerKanaField.disabled = false;
+            }
+            if (phoneField) {
+                phoneField.value = '';
+                phoneField.disabled = false;
+            }
+            if (emailField) {
+                emailField.value = '';
+                emailField.disabled = false;
+            }
+
+            // 直接入力ボタンを非表示
+            const directInputBtnEdit = document.getElementById('directInputBtnEdit');
+            if (directInputBtnEdit) {
+                directInputBtnEdit.style.display = 'none';
+            }
+        }
+
+
+
+        // ダイアログから顧客を選択
+        function selectCustomerFromDialog(id, name, phone, email) {
+            // 顧客名を姓名に分割して設定
+            const nameParts = (name || '').split(/\s+/);
+            const lastName = nameParts[0] || '';
+            const firstName = nameParts.slice(1).join(' ') || '';
+
+            // 新規登録フォームまたは編集フォームの姓・名フィールドに設定
+            const lastNameField = document.getElementById('editLastName') || document.getElementById('editLastNameEdit');
+            const firstNameField = document.getElementById('editFirstName') || document.getElementById('editFirstNameEdit');
+
+            if (lastNameField) {
+                lastNameField.value = lastName;
+            }
+            if (firstNameField) {
+                firstNameField.value = firstName;
+            }
+
+            // 検索結果を非表示
+            document.getElementById('customerSearchDialogResults').style.display = 'none';
+
+            // ダイアログを閉じる
+            hideCustomerSearchDialog();
+
+            console.log('ダイアログから選択された顧客:', { id, name, phone, email });
+        }
+
+
+        // 顧客を選択
+        function selectCustomer(id, name, phone, email) {
+            // 検索欄に選択した顧客名を設定
+            document.getElementById('customerSearch').value = name;
+
+            // 検索結果を非表示
+            document.getElementById('customerSearchResults').style.display = 'none';
+
+            // 他のフォームフィールドに情報を反映（必要に応じて）
+            console.log('選択された顧客:', { id, name, phone, email });
+
+            // 実際の実装では、この情報を使って予約フォームに自動入力するなど
+        }
+
+        function showCustomerSearchDialog() {
+
+            const overlay = document.getElementById('customerSearchOverlay');
+            const modal = document.querySelector('.customer-search-modal');
+
+
+            if (overlay) {
+                overlay.classList.add('show');
+                overlay.style.setProperty('display', 'block', 'important');
+            }
+
+            if (modal) {
+                modal.style.setProperty('display', 'flex', 'important');
+                modal.style.setProperty('background', 'white', 'important');
+                modal.style.setProperty('visibility', 'visible', 'important');
+                modal.style.setProperty('opacity', '1', 'important');
+                modal.style.setProperty('z-index', '10003', 'important');
+            }
+
+            // キーパッドのイベントリスナーを追加
+            addKeypadEventListeners();
+        }
+
+        // 顧客検索ダイアログ非表示
+        function hideCustomerSearchDialog() {
+
+            const overlay = document.getElementById('customerSearchOverlay');
+            const modal = document.querySelector('.customer-search-modal');
+
+            if (overlay) {
+                overlay.classList.remove('show');
+                overlay.style.setProperty('display', 'none', 'important');
+            }
+
+            if (modal) {
+                modal.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        // キーパッドのイベントリスナーを追加
+        function addKeypadEventListeners() {
+            // キーパッドボタンのイベントリスナー
+            const keypadButtons = document.querySelectorAll('.js-select-keypad-character-in-client-search-dialog');
+            keypadButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const character = this.getAttribute('data-character');
+                    const searchField = document.querySelector('.js-target-client-search-text-field-in-client-search-dialog');
+
+                    if (searchField) {
+                        searchField.value += character;
+                        searchField.focus();
+                    }
+                });
+            });
+
+            // 一字消すボタンのイベントリスナー
+            const deleteButtons = document.querySelectorAll('.js-delete-one-character-in-client-search-dialog');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const searchField = document.querySelector('.js-target-client-search-text-field-in-client-search-dialog');
+
+                    if (searchField && searchField.value.length > 0) {
+                        searchField.value = searchField.value.slice(0, -1);
+                        searchField.focus();
+                    }
+                });
+            });
+
+            // 検索フィールドのイベントリスナー
+            const searchField = document.querySelector('.js-target-client-search-text-field-in-client-search-dialog');
+            if (searchField) {
+                searchField.addEventListener('input', function () {
+                    const searchText = this.value;
+
+                    // ここで実際の検索処理を実装
+                    // 現在はコンソールに出力するだけ
+                });
+            }
+
+            // 検索結果アイテムのクリックイベント
+            const resultItems = document.querySelectorAll('.js-target-client-search-result-list-item-in-client-search-dialog');
+            resultItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    const nameElement = this.querySelector('.js-target-client-search-result-list-item-name-in-client-search-dialog');
+                    const phoneElement = this.querySelector('.js-target-client-search-result-list-item-phone-in-client-search-dialog');
+                    const cardElement = this.querySelector('.js-target-client-search-result-list-item-card-in-client-search-dialog');
+
+                    if (nameElement) {
+                        const customerName = nameElement.textContent;
+                        const phone = phoneElement ? phoneElement.textContent : '';
+                        const card = cardElement ? cardElement.textContent : '';
+
+
+                        // 顧客検索フィールドに選択された顧客名を設定
+                        const customerSearchField = document.getElementById('customerSearch');
+                        if (customerSearchField) {
+                            customerSearchField.value = customerName;
+                        }
+
+                        // ダイアログを閉じる
+                        hideCustomerSearchDialog();
+                    }
+                });
+            });
+        }
+
+        // ====== 受付・予約一覧ポップアップ ======
+        function showReservationListPopup(searchValue) {
+            if (searchValue && searchValue.trim() !== '') {
+                // 検索値をポップアップの検索フィールドに設定
+                const wordElement = document.getElementById('searchWord');
+                if (wordElement) wordElement.value = searchValue;
+
+                // ポップアップを表示
+                document.getElementById('reservationListPopupOverlay').style.display = 'flex';
+
+                // 検索を実行
+                searchReservations();
+            }
+        }
+
+        function closeReservationListPopup() {
+            document.getElementById('reservationListPopupOverlay').style.display = 'none';
+            // 検索フォームをクリア
+            clearSearchForm();
+        }
+
+        function searchReservations() {
+            const wordElement = document.getElementById('searchWord');
+
+            const name = wordElement ? wordElement.value : '';
+
+
+            // 実際の実装では、ここでサーバーに検索リクエストを送信
+            // 現在はモックデータを表示
+            updateReservationList();
+        }
+
+        function clearSearchForm() {
+            const wordElement = document.getElementById('searchWord');
+
+            if (wordElement) wordElement.value = '';
+        }
+
+        function updateReservationList() {
+            // 検索結果を更新（実際の実装では、サーバーからのデータを使用）
+            const tbody = document.getElementById('reservationListTableBody');
+            // ここで検索結果に基づいてテーブルを更新
+        }
+
+        function showReservationDetail(reservationId) {
+
+            // 検索モーダルを閉じる
+            closeReservationListPopup();
+
+            // テスト花子の予約枠を強調表示（10月12日 10:00～10:45 チェアB）
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            const targetDate = formatDate(tomorrow);
+            const targetResource = 'B';
+            const targetStartTime = '10:00';
+            const targetEndTime = '10:45';
+            const targetCustomer = 'テスト花子';
+
+            // 10月12日に日付を変更
+            changeScheduleDate(targetDate);
+
+            // スケジュールグリッドが生成された後に枠線を赤にする
+            setTimeout(() => {
+                highlightReservationCells(targetDate, targetResource, targetStartTime, targetEndTime);
+            }, 100);
+
+            // 選択された受付の日付を取得（テーブルから）
+            const selectedRow = event.target.closest('tr');
+            if (selectedRow) {
+                //const dateCell = selectedRow.cells[3]; // 受付日時の列
+                //const dateText = dateCell.textContent.trim();
+
+                // 日付を抽出（例: "2025-10-08 10:00" から "2025-10-08" を抽出）
+                //const dateMatch = dateText.match(/(\d{4}-\d{2}-\d{2})/);
+                ////if (dateMatch) {
+                //const selectedDate = dateMatch[1];
+
+                // スケジュールの開始日を変更
+                changeScheduleDate(targetDate);
+                //}
+            }
+        }
+
+        // 指定された予約枠の枠線を赤にする関数
+        function highlightReservationCells(targetDate, targetResource, startTime, endTime) {
+
+            // スケジュールグリッド内のすべてのセルを取得
+            const allCells = document.querySelectorAll('.schedule-cell');
+
+            allCells.forEach(cell => {
+                // data-reservation-id属性をチェック
+                const reservationId = cell.getAttribute('data-reservation-id');
+
+                if (reservationId) {
+                    console.log('セルのreservationId:', reservationId);
+                }
+                // data-reservation-id="4"のセルかチェック
+                if (reservationId == '1') {
+                    console.log('reservationId="1"のセルを発見');
+                    // セルの枠線を赤にする
+                    cell.style.background = '#f44336';
+                    cell.style.border = '1px solid #f44336';
+                    cell.style.color = '#FFFFFF';
+                }
+            });
+        }
+
+        // スケジュールの日付を変更する関数
+        function changeScheduleDate(newDate) {
+            // 日付文字列をDateオブジェクトに変換
+            const [year, month, day] = newDate.split('-').map(Number);
+            currentDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+
+            // 日付入力フィールドを更新
+            const dateInput = document.getElementById('dateInput');
+            if (dateInput) {
+                dateInput.value = formatDateJapanese(currentDate);
+            }
+
+            // スケジュールグリッドを再生成
+            generateScheduleGrid();
+
+        }
+
+        // ポップアップ外クリックで閉じる
+        document.getElementById('reservationListPopupOverlay').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeReservationListPopup();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            drawBar('chart1', [22, 18, 25, 30, 28, 35, 42, 44, 38, 27, 24, 35]);
+            drawLine('chart2', [6, 8, 7, 9, 7, 6, 8, 7, 6, 7, 7, 7]);
+            drawBar('chart3', [54, 21, 17, 8]);
+
+            // チェアセレクタの初期値を設定
+            const resourceSelector = document.getElementById('resourceSelector');
+            if (resourceSelector) {
+                resourceSelector.value = selectedResource;
+            }
+
+            // チェックボックスの初期値を設定
+            const checkboxes = document.querySelectorAll('.resource-filter-item input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true; // 初期状態ですべて選択
+                checkbox.closest('.resource-filter-item').classList.add('checked');
+            });
+
+            // キャンセル行のマウスイベント設定
+            setupCancelRowEvents();
+        });
+
+        // キャンセル行にマウスイベントを設定する関数
+        function setupCancelRowEvents() {
+            const cancelRows = document.querySelectorAll('.table-row-cancelled');
+
+            cancelRows.forEach(row => {
+                // マウスオーバー時
+                row.addEventListener('mouseenter', function(event) {
+                    // サンプルのキャンセル理由（実際にはデータから取得）
+                    const cancelReason = '顧客都合により予約をキャンセルしました。';
+                    showCancelReasonPopup(event, cancelReason);
+                });
+
+                // マウスアウト時
+                row.addEventListener('mouseleave', function() {
+                    hideCancelReasonPopup();
+                });
+
+                // マウス移動時（ポップアップの位置を更新）
+                row.addEventListener('mousemove', function(event) {
+                    const popup = document.getElementById('cancelReasonPopup');
+                    if (popup.classList.contains('show')) {
+                        const mouseX = event.clientX;
+                        const mouseY = event.clientY;
+                        const popupRect = popup.getBoundingClientRect();
+
+                        let left = mouseX + 15;
+                        if (left + popupRect.width > window.innerWidth) {
+                            left = mouseX - popupRect.width - 15;
+                        }
+
+                        let top = mouseY + 15;
+                        if (top + popupRect.height > window.innerHeight) {
+                            top = mouseY - popupRect.height - 15;
+                        }
+
+                        popup.style.left = left + 'px';
+                        popup.style.top = top + 'px';
+                    }
+                });
+            });
+        }
+
+        // ============================================
+        // 顧客名サジェスト機能
+        // ============================================
+
+        // サンプルの顧客データ（実際にはAPIから取得）
+        const allCustomersForSuggest = [
+            { id: 1, name: '山田 太郎', kana: 'ヤマダ タロウ', phone: '090-1234-5678', email: 'yamada@example.com' },
+            { id: 2, name: '山田 花子', kana: 'ヤマダ ハナコ', phone: '090-2345-6789', email: 'yamada.hanako@example.com' },
+            { id: 3, name: '山田 次郎', kana: 'ヤマダ ジロウ', phone: '090-3456-7890', email: 'yamada.jiro@example.com' },
+            { id: 4, name: '佐藤 花子', kana: 'サトウ ハナコ', phone: '090-4567-8901', email: 'sato@example.com' },
+            { id: 5, name: '鈴木 一郎', kana: 'スズキ イチロウ', phone: '090-5678-9012', email: 'suzuki@example.com' },
+            { id: 6, name: '高橋 美咲', kana: 'タカハシ ミサキ', phone: '090-6789-0123', email: 'takahashi@example.com' },
+            { id: 7, name: '田中 健太', kana: 'タナカ ケンタ', phone: '090-7890-1234', email: 'tanaka@example.com' }
+        ];
+
+        // 顧客検索タイマー（デバウンス用）
+        var customerSearchTimeout = null;
+        var customerSearchTimer = null;
+        var customerSuggestCount = 0;
+        var currentCustomerSuggestList = null;
+        // 顧客情報の変更追跡用
+        var selectedCustomerData = null; // サジェストから選択した顧客情報
+        var currentInputMode = 'search'; // 'search' または 'direct'
+        var pendingSaveCallback = null; // 登録ボタン押下時のコールバック
+
+        // サジェスト機能の初期化
+        window.addEventListener('load', function() {
+            // 新規登録フォームの姓フィールドにサジェスト機能を設定
+            setupCustomerSuggestInput('editSuggestForm', 'customerSuggestList', 'customerSearchModeBtn');
+            // 編集フォームの姓フィールドにサジェスト機能を設定
+            setupCustomerSuggestInput('editSuggestFormEdit', 'customerSuggestListEdit', 'customerSearchModeBtnEdit');
+            setupCustomerInputModeToggle();
+            setupCustomerInfoChangeTracking();
+        });
+
+        /**
+         * 顧客名入力フィールドにサジェスト機能を設定
+         */
+        function setupCustomerSuggestInput(inputId, suggestListId, toggleId) {
+            var input_element = document.getElementById(inputId);
+            if (!input_element) {
+                return;
+            }
+
+            // inputイベント
+            input_element.addEventListener('input', function(event) {
+                var inputValue = this.value;
+
+                // 検索語が空の場合はサジェストを非表示
+                if (inputValue.trim() == '' || inputValue.trim() == null) {
+                    hideCustomerSuggest(suggestListId);
+                    var suggestList = document.getElementById(suggestListId);
+                    if (suggestList) {
+                        suggestList.innerHTML = '';
+                    }
+                    customerSuggestCount = 0;
+                    return;
+                }
+            });
+
+            // 入力開始（日本語入力モード）
+            input_element.addEventListener('compositionstart', function(e) {
+                return;
+            });
+
+            // 入力更新（日本語入力モード）
+            input_element.addEventListener('compositionupdate', function(e) {
+                if (customerSearchTimer) {
+                    clearTimeout(customerSearchTimer);
+                }
+                return;
+            });
+
+            // 入力終了（日本語入力モードの変換確定時だけ発火する）
+            input_element.addEventListener('compositionend', function(e) {
+                if (customerSuggestCount == 0) {
+                    customerSuggestCount = 1;
+                    customerInputEnd(inputId, suggestListId, toggleId);
+                }
+                return;
+            });
+
+            // キー押下（日本語入力モードでは発火しない）
+            input_element.addEventListener('keypress', function(e) {
+                // リアルタイムだと負荷が掛かるので入力完了を1.0秒待つ
+                if (customerSearchTimer) {
+                    clearTimeout(customerSearchTimer);
+                }
+                customerSearchTimer = setTimeout(function() {
+                    customerInputEnd(inputId, suggestListId, toggleId);
+                }, 1000);
+                return;
+            });
+
+            // キーダウン（全て発火する）
+            input_element.addEventListener('keydown', function(e) {
+                // Backspaceキーの場合は検索処理を行う
+                if (!e.isComposing && (e.key == "Backspace" || e.code == "Backspace" || e.keyCode == "8")) {
+                    // 1文字目ではない
+                    if (this.value.length != 1) {
+                        // リアルタイムだと負荷が掛かるので入力完了を1.0秒待つ
+                        if (customerSearchTimer) {
+                            clearTimeout(customerSearchTimer);
+                        }
+                        customerSearchTimer = setTimeout(function() {
+                            customerInputEnd(inputId, suggestListId, toggleId);
+                        }, 1000);
+                    }
+                }
+                return;
+            });
+
+            // キーアップ（全て発火する）
+            input_element.addEventListener('keyup', function(e) {
+                // サジェストリスト非表示で入力が1文字目であれば検索処理を行う（全角入力変換前も含む）
+                var suggestList = document.getElementById(suggestListId);
+                var isHidden = !suggestList || suggestList.style.display === 'none' || suggestList.classList.contains('hidden');
+                if (isHidden && this.value.length == 1) {
+                    // リアルタイムだと負荷が掛かるので入力完了を1.0秒待つ
+                    if (customerSearchTimer) {
+                        clearTimeout(customerSearchTimer);
+                    }
+                    customerSearchTimer = setTimeout(function() {
+                        customerInputEnd(inputId, suggestListId, toggleId);
+                    }, 1000);
+                }
+                // 0文字であればサジェストリストを非表示
+                if (this.value.length == 0) {
+                    hideCustomerSuggest(suggestListId);
+                    customerSuggestCount = 0;
+                }
+                return;
+            });
+        }
+
+        /**
+         * 顧客検索入力終了処理
+         */
+        function customerInputEnd(inputId, suggestListId, toggleId) {
+            // 直接入力モードの場合は処理をスキップ
+            if (currentInputMode === 'direct') {
+                hideCustomerSuggest(suggestListId);
+                return;
+            }
+
+            var inputElement = document.getElementById(inputId);
+            if (!inputElement) {
+                return;
+            }
+
+            var inputValue = inputElement.value;
+
+            if (inputValue == '' || inputValue == null) {
+                hideCustomerSuggest(suggestListId);
+                var suggestList = document.getElementById(suggestListId);
+                if (suggestList) {
+                    suggestList.innerHTML = '';
+                }
+                customerSuggestCount = 0;
+            } else {
+                if (inputValue.trim() == '' || inputValue.trim() == null) {
+                    hideCustomerSuggest(suggestListId);
+                    var suggestList = document.getElementById(suggestListId);
+                    if (suggestList) {
+                        suggestList.innerHTML = '';
+                    }
+                    customerSuggestCount = 0;
+                } else {
+                    // 入力文字をもとに検索を実行
+                    getSearchSuggest(inputValue.trim(), suggestListId, toggleId, inputId);
+                }
+            }
+        }
+
+        /**
+         * 顧客検索を実行（サンプルデータから検索）
+         */
+        function getSearchSuggest(searchTerm, suggestListId, toggleId, inputId) {
+            // 直接入力モードの場合は処理をスキップ
+            if (currentInputMode === 'direct') {
+                hideCustomerSuggest(suggestListId);
+                return;
+            }
+
+            if (!searchTerm || searchTerm.trim() === '') {
+                hideCustomerSuggest(suggestListId);
+                return;
+            }
+
+            // サンプルデータから検索
+            const filteredCustomers = allCustomersForSuggest.filter(customer =>
+                customer.name.includes(searchTerm) ||
+                customer.kana.includes(searchTerm)
+            );
+
+            // 検索結果を表示
+            if (filteredCustomers.length > 0) {
+                displayCustomerSuggest(filteredCustomers, suggestListId, inputId);
+            } else {
+                hideCustomerSuggest(suggestListId);
+            }
+
+            customerSuggestCount = 0;
+        }
+
+        /**
+         * DB検索結果をもとに要素を生成
+         */
+        function displayCustomerSuggest(customers, suggestListId, inputId) {
+            const suggestList = document.getElementById(suggestListId);
+            const customerNameInput = document.getElementById(inputId);
+            if (!suggestList || !customerNameInput) {
+                return;
+            }
+
+            // 配列でない場合は配列に変換
+            if (!Array.isArray(customers)) {
+                if (customers && typeof customers === 'object') {
+                    customers = [customers];
+                } else {
+                    suggestList.style.display = 'none';
+                    return;
+                }
+            }
+
+            if (!customers || customers.length === 0) {
+                suggestList.style.display = 'none';
+                return;
+            }
+
+            // サジェストリストを生成
+            let html = '<ul id="parts_suggest_list" class="parts_suggest_list">';
+            customers.forEach(function(customer) {
+                if (!customer || typeof customer !== 'object') {
+                    return;
+                }
+
+                const name = customer.name || '';
+                const telNo = customer.phone || '';
+                const customerId = String(customer.id || '');
+
+                html += '<li class="parts_suggest_list_item parts_suggest_column2">';
+                html += '<button type="button" class="parts_suggest_item_button parts_suggest_item_area" data-customer-id="' + escapeHtml(customerId) + '">';
+
+                // 顧客ID
+                html += '<div class="parts_suggest_item_box parts_suggest_patient_info_box">';
+                html += '<p class="parts_suggest_text">';
+                html += '<span class="parts_suggest_text parts_suggest_text_bold">ID: ' + escapeHtml(customerId) + '</span>';
+                html += '</p>';
+                html += '</div>';
+
+                // 顧客名
+                if (name) {
+                    html += '<div class="parts_suggest_item_box parts_suggest_patient_info_box">';
+                    html += '<p class="parts_suggest_text parts_suggest_text_bold parts_suggest_text_large parts_suggest_text_nowrap parts_suggest_text_ellipsis">';
+                    html += escapeHtml(name);
+                    html += '</p>';
+                    html += '</div>';
+                }
+
+                // 電話番号
+                if (telNo) {
+                    html += '<div class="parts_suggest_item_box parts_suggest_patient_info_box">';
+                    html += '<p class="parts_suggest_text parts_suggest_text_nowrap">';
+                    html += '<span class="parts_suggest_text parts_suggest_text_sub_color">電話番号: ' + escapeHtml(telNo) + '</span>';
+                    html += '</p>';
+                    html += '</div>';
+                }
+
+                html += '</button>';
+                html += '</li>';
+            });
+            html += '</ul>';
+
+            suggestList.innerHTML = html;
+
+            // 各ボタンにイベントリスナーを設定
+            const buttons = suggestList.querySelectorAll('.parts_suggest_item_button');
+            buttons.forEach(function(button, index) {
+                button.addEventListener('click', function() {
+                    const customer = customers[index];
+                    if (customer) {
+                        selectCustomer(customer, inputId);
+                    }
+                });
+            });
+
+            // 位置を設定
+            const dateInputGroup = customerNameInput.closest('.date-input-group');
+            if (dateInputGroup) {
+                const groupRect = dateInputGroup.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+                suggestList.style.position = 'fixed';
+                suggestList.style.top = (groupRect.bottom + scrollTop) + 'px';
+                suggestList.style.left = (groupRect.left + scrollLeft) + 'px';
+                suggestList.style.width = groupRect.width + 'px';
+                suggestList.style.maxHeight = 'calc(-' + (groupRect.bottom) + 'px + 100vh)';
+            }
+            suggestList.style.display = 'block';
+
+            currentCustomerSuggestList = customers;
+        }
+
+        /**
+         * 顧客サジェストを非表示
+         */
+        function hideCustomerSuggest(suggestListId) {
+            const suggestList = document.getElementById(suggestListId);
+            if (suggestList) {
+                suggestList.style.display = 'none';
+                suggestList.classList.add('hidden');
+            }
+        }
+
+        /**
+         * 顧客を選択
+         */
+        function selectCustomer(customer, inputId) {
+            if (!customer) {
+                return;
+            }
+
+            // どのモーダルが開いているかを判定
+            const reservationModal = document.getElementById('reservationModal');
+            const editModal = document.getElementById('editModal');
+            const isReservationModalOpen = reservationModal &&
+                (reservationModal.style.display === 'flex' ||
+                 window.getComputedStyle(reservationModal).display !== 'none');
+            const isEditModalOpen = editModal &&
+                (editModal.style.display === 'flex' ||
+                 window.getComputedStyle(editModal).display !== 'none');
+
+            // 入力フィールドを取得（モーダルに応じて）
+            let lastNameInput, firstNameInput, lastNameKanaInput, firstNameKanaInput, phoneInput, emailInput;
+
+            if (isReservationModalOpen) {
+                lastNameInput = document.getElementById('editLastName');
+                firstNameInput = document.getElementById('editFirstName');
+                lastNameKanaInput = document.getElementById('editLastNameKana');
+                firstNameKanaInput = document.getElementById('editFirstNameKana');
+                phoneInput = document.getElementById('editPhoneNumber');
+                emailInput = document.getElementById('editEmail');
+            } else if (isEditModalOpen) {
+                lastNameInput = document.getElementById('editLastNameEdit');
+                firstNameInput = document.getElementById('editFirstNameEdit');
+                lastNameKanaInput = document.getElementById('editLastNameKanaEdit');
+                firstNameKanaInput = document.getElementById('editFirstNameKanaEdit');
+                phoneInput = document.getElementById('editPhoneNumber');
+                emailInput = document.getElementById('editEmail');
+            } else {
+                // 直接指定されたinputIdを使用（後方互換性のため）
+                const customerNameInput = document.getElementById(inputId);
+                if (customerNameInput) {
+                    const formGroup = customerNameInput.closest('.form-group');
+                    if (formGroup) {
+                        lastNameInput = formGroup.querySelector('#editLastName') || formGroup.querySelector('#editLastNameEdit');
+                        firstNameInput = formGroup.querySelector('#editFirstName') || formGroup.querySelector('#editFirstNameEdit');
+                        const nextFormGroup = formGroup.nextElementSibling;
+                        if (nextFormGroup) {
+                            lastNameKanaInput = nextFormGroup.querySelector('#editLastNameKana') || nextFormGroup.querySelector('#editLastNameKanaEdit');
+                            firstNameKanaInput = nextFormGroup.querySelector('#editFirstNameKana') || nextFormGroup.querySelector('#editFirstNameKanaEdit');
+                        }
+                        phoneInput = formGroup.parentElement.querySelector('#editPhoneNumber');
+                        emailInput = formGroup.parentElement.querySelector('#editEmail');
+                    }
+                }
+            }
+
+            // 顧客名を姓名に分割して設定
+            const nameParts = (customer.name || '').split(/\s+/);
+            const lastName = nameParts[0] || '';
+            const firstName = nameParts.slice(1).join(' ') || '';
+
+            if (lastNameInput) {
+                lastNameInput.value = lastName;
+            }
+            if (firstNameInput) {
+                firstNameInput.value = firstName;
+            }
+
+            // 顧客名【カナ】を姓名に分割して設定
+            const kanaParts = (customer.kana || '').split(/\s+/);
+            const lastNameKana = kanaParts[0] || '';
+            const firstNameKana = kanaParts.slice(1).join(' ') || '';
+
+            if (lastNameKanaInput) {
+                lastNameKanaInput.value = lastNameKana;
+            }
+            if (firstNameKanaInput) {
+                firstNameKanaInput.value = firstNameKana;
+            }
+
+            // 電話番号を設定
+            if (phoneInput) {
+                phoneInput.value = customer.phone || '';
+            }
+
+            // メールアドレスを設定
+            if (emailInput) {
+                emailInput.value = customer.email || '';
+            }
+
+            // 選択された顧客情報を保存
+            selectedCustomerData = {
+                id: customer.id || '',
+                name: customer.name || '',
+                kana: customer.kana || '',
+                phone: customer.phone || '',
+                email: customer.email || ''
+            };
+
+            // サジェストを非表示
+            hideCustomerSuggest('customerSuggestList');
+            hideCustomerSuggest('customerSuggestListEdit');
+        }
+
+        /**
+         * HTMLエスケープ
+         */
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /**
+         * 顧客入力モードトグルボタンのイベントリスナーを設定
+         */
+        function setupCustomerInputModeToggle() {
+            const searchModeBtn = document.getElementById('customerSearchModeBtn');
+            const directInputModeBtn = document.getElementById('directInputModeBtn');
+            const searchModeBtnEdit = document.getElementById('customerSearchModeBtnEdit');
+            const directInputModeBtnEdit = document.getElementById('directInputModeBtnEdit');
+
+            // 受付登録モーダル用
+            if (searchModeBtn && directInputModeBtn) {
+                searchModeBtn.addEventListener('click', function() {
+                    if (currentInputMode === 'search') {
+                        return;
+                    }
+                    switchCustomerInputMode('search');
+                });
+
+                directInputModeBtn.addEventListener('click', function() {
+                    if (currentInputMode === 'direct') {
+                        return;
+                    }
+                    clearCustomerInfo();
+                    switchCustomerInputMode('direct');
+                });
+            }
+
+            // 編集モーダル用
+            if (searchModeBtnEdit && directInputModeBtnEdit) {
+                searchModeBtnEdit.addEventListener('click', function() {
+                    if (currentInputMode === 'search') {
+                        return;
+                    }
+                    switchCustomerInputMode('search');
+                });
+
+                directInputModeBtnEdit.addEventListener('click', function() {
+                    if (currentInputMode === 'direct') {
+                        return;
+                    }
+                    clearCustomerInfo();
+                    switchCustomerInputMode('direct');
+                });
+            }
+        }
+
+        /**
+         * 顧客入力モードを切り替え
+         */
+        function switchCustomerInputMode(mode) {
+            currentInputMode = mode;
+            const searchModeBtn = document.getElementById('customerSearchModeBtn');
+            const directInputModeBtn = document.getElementById('directInputModeBtn');
+            const searchModeBtnEdit = document.getElementById('customerSearchModeBtnEdit');
+            const directInputModeBtnEdit = document.getElementById('directInputModeBtnEdit');
+            const suggestInput = document.getElementById('editSuggestForm');
+            const suggestInputEdit = document.getElementById('editSuggestFormEdit');
+
+            if (mode === 'search') {
+                if (searchModeBtn) searchModeBtn.classList.add('active');
+                if (directInputModeBtn) directInputModeBtn.classList.remove('active');
+                if (searchModeBtnEdit) searchModeBtnEdit.classList.add('active');
+                if (directInputModeBtnEdit) directInputModeBtnEdit.classList.remove('active');
+
+                // 顧客検索モード：検索入力欄を再度入力可能にする
+                if (suggestInput) {
+                    suggestInput.disabled = false;
+                }
+                if (suggestInputEdit) {
+                    suggestInputEdit.disabled = false;
+                }
+            } else {
+                if (searchModeBtn) searchModeBtn.classList.remove('active');
+                if (directInputModeBtn) directInputModeBtn.classList.add('active');
+                if (searchModeBtnEdit) searchModeBtnEdit.classList.remove('active');
+                if (directInputModeBtnEdit) directInputModeBtnEdit.classList.add('active');
+
+                // 直接入力モード：検索入力欄をクリアして入力不可にする
+                if (suggestInput) {
+                    suggestInput.value = '';
+                    suggestInput.disabled = true;
+                }
+                if (suggestInputEdit) {
+                    suggestInputEdit.value = '';
+                    suggestInputEdit.disabled = true;
+                }
+                // 直接入力モードの場合はサジェストを非表示
+                hideCustomerSuggest('customerSuggestList');
+                hideCustomerSuggest('customerSuggestListEdit');
+                const suggestList = document.getElementById('customerSuggestList');
+                const suggestListEdit = document.getElementById('customerSuggestListEdit');
+                if (suggestList) {
+                    suggestList.innerHTML = '';
+                }
+                if (suggestListEdit) {
+                    suggestListEdit.innerHTML = '';
+                }
+                customerSuggestCount = 0;
+            }
+        }
+
+        /**
+         * 顧客情報をクリア
+         */
+        function clearCustomerInfo() {
+            const customerNameInput = document.getElementById('editCustomerName');
+            const customerNameKanaInput = document.getElementById('editCustomerNameKana');
+            const phoneInput = document.getElementById('editPhoneNumber');
+            const emailInput = document.getElementById('editEmail');
+
+            if (customerNameInput) customerNameInput.value = '';
+            if (customerNameKanaInput) customerNameKanaInput.value = '';
+            if (phoneInput) phoneInput.value = '';
+            if (emailInput) emailInput.value = '';
+
+            // 選択された顧客情報もクリア
+            selectedCustomerData = null;
+        }
+
+        /**
+         * サジェストトグルスイッチのイベントリスナーを設定（後方互換性のため残す）
+         */
+        function setupCustomerSuggestCheckbox(toggleId) {
+            // 新しいトグルボタンを使用するため、この関数は空にする
+        }
+
+        // サジェストリストの外側をクリックしたら閉じる
+        document.addEventListener('click', function(e) {
+            const suggestList = document.getElementById('customerSuggestList');
+            const suggestListEdit = document.getElementById('customerSuggestListEdit');
+            const customerNameInput = document.getElementById('editCustomerName');
+
+            if (suggestList && customerNameInput) {
+                // サジェストリスト内の要素をクリックした場合は閉じない
+                if (suggestList.contains(e.target)) {
+                    return;
+                }
+                // 入力フィールドをクリックした場合は閉じない
+                if (customerNameInput.contains(e.target)) {
+                    return;
+                }
+                // それ以外の場合は閉じる
+                hideCustomerSuggest('customerSuggestList');
+            }
+
+            if (suggestListEdit && customerNameInput) {
+                // サジェストリスト内の要素をクリックした場合は閉じない
+                if (suggestListEdit.contains(e.target)) {
+                    return;
+                }
+                // 入力フィールドをクリックした場合は閉じない
+                if (customerNameInput.contains(e.target)) {
+                    return;
+                }
+                // それ以外の場合は閉じる
+                hideCustomerSuggest('customerSuggestListEdit');
+            }
+        });
+
+        /**
+         * 顧客情報フィールドの変更を監視
+         */
+        function setupCustomerInfoChangeTracking() {
+            const customerNameInput = document.getElementById('editCustomerName');
+            const customerNameKanaInput = document.getElementById('editCustomerNameKana');
+            const phoneInput = document.getElementById('editPhoneNumber');
+            const emailInput = document.getElementById('editEmail');
+
+            // 手動で入力された場合は選択された顧客情報をクリア
+            if (customerNameInput) {
+                customerNameInput.addEventListener('input', function() {
+                    if (currentInputMode === 'direct') {
+                        selectedCustomerData = null;
+                    }
+                });
+            }
+
+            if (customerNameKanaInput) {
+                customerNameKanaInput.addEventListener('input', function() {
+                    if (currentInputMode === 'direct') {
+                        selectedCustomerData = null;
+                    }
+                });
+            }
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', function() {
+                    if (currentInputMode === 'direct') {
+                        selectedCustomerData = null;
+                    }
+                });
+            }
+
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    if (currentInputMode === 'direct') {
+                        selectedCustomerData = null;
+                    }
+                });
+            }
+        }
+
+        /**
+         * 顧客情報の変更をチェック
+         * @param {Function} callback 変更がない、または確認済みの場合に実行するコールバック
+         */
+        function checkCustomerInfoChange(callback) {
+            // サジェストから選択した顧客情報がない場合は変更チェック不要
+            if (!selectedCustomerData) {
+                if (callback) callback();
+                return;
+            }
+
+            // 現在の入力値を取得
+            const customerNameInput = document.getElementById('editCustomerName');
+            const customerNameKanaInput = document.getElementById('editCustomerNameKana');
+            const phoneInput = document.getElementById('editPhoneNumber');
+            const emailInput = document.getElementById('editEmail');
+
+            if (!customerNameInput || !customerNameKanaInput || !phoneInput || !emailInput) {
+                if (callback) callback();
+                return;
+            }
+
+            const currentName = customerNameInput.value.trim();
+            const currentNameKana = customerNameKanaInput.value.trim();
+            const currentPhone = phoneInput.value.trim();
+            const currentEmail = emailInput.value.trim();
+
+            // 選択された顧客情報と比較
+            const selectedName = (selectedCustomerData.name || '').trim();
+            const selectedNameKana = (selectedCustomerData.kana || '').trim();
+            const selectedPhone = (selectedCustomerData.phone || '').trim();
+            const selectedEmail = (selectedCustomerData.email || '').trim();
+
+            // 変更があるかチェック
+            const hasChange = currentName !== selectedName ||
+                             currentNameKana !== selectedNameKana ||
+                             currentPhone !== selectedPhone ||
+                             currentEmail !== selectedEmail;
+
+            if (hasChange) {
+                // 変更がある場合は確認モーダルを表示
+                pendingSaveCallback = callback;
+                showCustomerChangeConfirmModal(selectedCustomerData, {
+                    name: currentName,
+                    kana: currentNameKana,
+                    phone: currentPhone,
+                    email: currentEmail
+                });
+            } else {
+                // 変更がない場合はそのままコールバックを実行
+                if (callback) callback();
+            }
+        }
+
+        /**
+         * 顧客情報変更確認モーダルを表示
+         */
+        function showCustomerChangeConfirmModal(beforeData, afterData) {
+            const modal = document.getElementById('customerChangeConfirmModal');
+            if (!modal) {
+                // モーダルがない場合はそのままコールバックを実行
+                if (pendingSaveCallback) {
+                    pendingSaveCallback();
+                    pendingSaveCallback = null;
+                }
+                return;
+            }
+
+            // 変更前の情報を表示
+            const beforeDiv = document.getElementById('customerChangeBefore');
+            if (beforeDiv) {
+                beforeDiv.innerHTML = `
+                    <div>顧客名: ${escapeHtml(beforeData.name || '')}</div>
+                    <div>顧客名【カナ】: ${escapeHtml(beforeData.kana || '')}</div>
+                    <div>電話番号: ${escapeHtml(beforeData.phone || '')}</div>
+                    <div>メールアドレス: ${escapeHtml(beforeData.email || '')}</div>
+                `;
+            }
+
+            // 変更後の情報を表示
+            const afterDiv = document.getElementById('customerChangeAfter');
+            if (afterDiv) {
+                afterDiv.innerHTML = `
+                    <div>顧客名: ${escapeHtml(afterData.name)}</div>
+                    <div>顧客名【カナ】: ${escapeHtml(afterData.kana)}</div>
+                    <div>電話番号: ${escapeHtml(afterData.phone)}</div>
+                    <div>メールアドレス: ${escapeHtml(afterData.email)}</div>
+                `;
+            }
+
+            modal.style.display = 'flex';
+            modal.style.setProperty('z-index', '10003', 'important');
+
+            // モーダル内の要素にもz-indexを設定
+            const modalContent = modal.querySelector('.normal-modal');
+            if (modalContent) {
+                modalContent.style.setProperty('z-index', '10003', 'important');
+            }
+        }
+
+        /**
+         * 顧客情報変更確認モーダルを非表示
+         */
+        function hideCustomerChangeConfirmModal() {
+            const modal = document.getElementById('customerChangeConfirmModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            pendingSaveCallback = null;
+        }
+
+        /**
+         * 顧客情報変更を確認して登録を実行
+         */
+        function confirmCustomerChange() {
+            hideCustomerChangeConfirmModal();
+
+            // 選択された顧客情報をクリア（変更済みとして扱う）
+            selectedCustomerData = null;
+
+            // 登録処理を実行
+            if (pendingSaveCallback) {
+                pendingSaveCallback();
+                pendingSaveCallback = null;
+            }
+        }
+
+        /**
+         * 受付登録を実行
+         */
+        function executeReservationSave() {
+            // ここに実際の受付登録処理を実装
+            // 現在はアラートで代用
+            hideReservationModal();
+
+            // スケジュールグリッドを再描画
+            if (typeof generateScheduleGrid === 'function') {
+                generateScheduleGrid();
+            }
+        }
+
+        // saveBlock関数を修正して顧客情報変更チェックを追加
+        const originalSaveBlock = window.saveBlock;
+        if (originalSaveBlock) {
+            window.saveBlock = function() {
+                // 新規受付側が表示されている場合は顧客情報変更チェックを実行
+                const newReservationTab = document.getElementById('newReservationTab');
+                if (newReservationTab && newReservationTab.classList.contains('active')) {
+                    // 顧客情報の変更をチェック
+                    checkCustomerInfoChange(function() {
+                        // 変更がない、または確認済みの場合は通常の登録処理を実行
+                        executeReservationSave();
+                    });
+                    return;
+                }
+                // ブロック登録の場合は元の処理を実行
+                originalSaveBlock();
+            };
+        }
+
+        /**
+         * ブロック削除確認モーダルを表示
+         */
+        function showBlockDeleteConfirmModal(blockIndex, dateStr, timeStr, resource, cell) {
+            // 確認メッセージを表示
+            if (confirm('ブロックを解除してもよろしいですか？')) {
+                // 「はい」が選択された場合、ブロックを削除
+                deleteBlock(blockIndex, dateStr, timeStr, resource, cell);
+            }
+            // 「いいえ」が選択された場合は何もしない
+        }
+
+        /**
+         * ブロックを削除
+         */
+        function deleteBlock(blockIndex, dateStr, timeStr, resource, cell) {
+            // ブロックデータから該当ブロックを削除
+            if (blockIndex >= 0 && blockIndex < blockedSlots.length) {
+                blockedSlots.splice(blockIndex, 1);
+
+                // スケジュール表を再生成（ブロック枠が予約可能枠に変更される）
+                generateScheduleGrid();
+            } else {
+                alert('ブロックの削除に失敗しました: ブロックIDが無効です');
+            }
+        }
+
+    </script>
+</body>
+
+</html>

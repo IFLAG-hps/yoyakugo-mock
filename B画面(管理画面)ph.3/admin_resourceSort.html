@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>リソース並び変え｜管理画面モック</title>
+
+    <!-- Material Design Components CSS -->
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Material Design Components JavaScript -->
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+
+    <link href="./style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+                <div>
+                <span style="font-size:12px;color:#9fb6ff">受付・予約管理システム</span><br />
+                <strong>管理者太郎</strong>
+                </div>
+            </div>
+            <nav class="nav" id="nav">
+                <a href="./admin_index.html" data-target="dashboard">📊 ダッシュボード</a>
+                <a href="./admin_reservations.html" data-target="reservations">📅 受付・予約管理</a>
+                <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+                <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+                <a href="./admin_resources.html" data-target="resources" class="active">💺 リソース管理</a>
+                <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+                <a href="./admin_setting.html" data-target="settings">⚙ 基本設定</a>
+                <a href="./admin_usage.html" data-target="usage">💰 利用料金の情報</a>
+                <a href="./admin_operation_log.html">📜 操作履歴</a>
+                <a href="./admin_multilang_manage.html" data-target="multilang">🌐 多言語管理</a>
+                <a href="./admin_google_feed.html" data-target="google-feed">🔗 Googleで予約<span class="nav-indicator-dot">⚠️</span></a>
+            </nav>
+            <div class="foot">© Clinic Co.</div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main">
+            <!-- リソース並び替えセクション -->
+            <div class="resource-sort-section">
+                <div class="main-header">
+                    <h3 class="main-title">💺 リソース並び替え</h3>
+                    <button type="button" class="back-btn" onclick="goBack()">← 戻る</button>
+                </div>
+
+                <div class="sort-container">
+                    <div class="sort-info">
+                        <p>リソースをドラッグ&ドロップで並び替えることができます。</p>
+                    </div>
+
+                    <div class="resource-list" id="resourceList">
+                        <!-- リソースアイテムがここに動的に追加されます -->
+                    </div>
+
+                    <div class="sort-actions">
+                        <button type="button" class="form-btn modal-btn-save"
+                            onclick="saveSortOrder()">並び替えを保存</button>
+                        <button type="button" class="form-btn form-btn-cancel" onclick="goBack()">閉じる</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // サンプルリソースデータ
+        const sampleLines = [
+            {id: 1, name: 'チェアA', description: 'チェアAのリソース', webReception: 'ON', updateDate: '2025-01-15'},
+            {id: 2, name: 'チェアB', description: 'チェアBのリソース', webReception: 'ON', updateDate: '2025-01-14'},
+            {id: 3, name: 'チェアC', description: 'チェアCのリソース', webReception: 'OFF', updateDate: '2025-01-13'},
+            {id: 4, name: 'チェアD', description: 'チェアDのリソース', webReception: 'ON', updateDate: '2025-01-12'},
+            {id: 5, name: 'チェアE', description: 'チェアEのリソース', webReception: 'ON', updateDate: '2025-01-11'}
+        ];
+
+        let draggedElement = null;
+
+        // ページ読み込み時にリソースリストを初期化
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeLineList();
+        });
+
+        // リソースリストを初期化
+        function initializeLineList() {
+            const resourceList = document.getElementById('resourceList');
+            resourceList.innerHTML = '';
+
+            sampleLines.forEach((resource, index) => {
+                const resourceItem = createLineItem(resource, index + 1);
+                resourceList.appendChild(resourceItem);
+            });
+        }
+
+        // リソースアイテムを作成
+        function createLineItem(resource, order) {
+            const resourceItem = document.createElement('div');
+            resourceItem.className = 'drag-item';
+            resourceItem.draggable = true;
+            resourceItem.dataset.resourceId = resource.id;
+
+            resourceItem.innerHTML = `
+            <div class="drag-handle">⋮⋮</div>
+            <div class="drag-info">
+                <div class="drag-name">${resource.name}</div>
+                <div class="drag-details">${resource.description} | WEB受付: ${resource.webReception} | 更新日: ${resource.updateDate}</div>
+            </div>
+            <div class="drag-order">${order}</div>
+        `;
+
+            // ドラッグイベントを追加
+            resourceItem.addEventListener('dragstart', handleDragStart);
+            resourceItem.addEventListener('dragend', handleDragEnd);
+            resourceItem.addEventListener('dragover', handleDragOver);
+            resourceItem.addEventListener('drop', handleDrop);
+
+            return resourceItem;
+        }
+
+        // ドラッグ開始
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+
+        // ドラッグ終了
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            draggedElement = null;
+
+            // すべてのdrag-overクラスを削除
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        // ドラッグオーバー
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+
+            return false;
+        }
+
+        // ドロップ
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                const resourceList = document.getElementById('resourceList');
+                const draggedIndex = Array.from(resourceList.children).indexOf(draggedElement);
+                const targetIndex = Array.from(resourceList.children).indexOf(this);
+
+                if (draggedIndex < targetIndex) {
+                    resourceList.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    resourceList.insertBefore(draggedElement, this);
+                }
+
+                // 順序番号を更新
+                updateOrderNumbers();
+            }
+
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        // 順序番号を更新
+        function updateOrderNumbers() {
+            const resourceItems = document.querySelectorAll('.resource-item');
+            resourceItems.forEach((item, index) => {
+                const orderElement = item.querySelector('.resource-order');
+                orderElement.textContent = index + 1;
+            });
+        }
+
+        // 並び替えを保存
+        function saveSortOrder() {
+            const resourceItems = document.querySelectorAll('.resource-item');
+            const newOrder = Array.from(resourceItems).map(item => ({
+                id: parseInt(item.dataset.resourceId),
+                order: Array.from(resourceItems).indexOf(item) + 1
+            }));
+
+            // ここで実際の保存処理を行う
+            // 例: APIに送信、ローカルストレージに保存など
+
+            // リソース管理画面に戻る
+            window.location.href = './admin_resources.html';
+        }
+
+        // 戻るボタンの処理
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+
+</html>

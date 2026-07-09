@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>接続元IP制限の解除完了｜汎用予約受付管理</title>
+  <link href="./style.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .iprestrict-release-success-container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .iprestrict-release-success-card {
+      background: #ffffff;
+      width: 100%;
+      height: 100%;
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .iprestrict-release-success-content {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .iprestrict-release-success-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .iprestrict-release-success-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .iprestrict-release-success-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981 0%, #00774E 100%);
+      color: #ffffff;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 64px;
+      text-align: center;
+    }
+
+    .iprestrict-release-success-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 16px 0;
+    }
+
+    .iprestrict-release-success-message {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+      line-height: 1.7;
+      text-align: left;
+    }
+
+    .iprestrict-release-success-login {
+      text-align: left;
+      margin-top: 30px;
+      margin-bottom: 300px;
+    }
+
+    .iprestrict-release-success-login-link {
+      font-size: 14px;
+      color: #1e90ff;
+      text-decoration: none;
+      transition: color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .iprestrict-release-success-login-link:hover {
+      color: #1565c0;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .iprestrict-release-success-card {
+        padding: 40px 20px;
+      }
+    }
+
+    .iprestrict-release-success-footer {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .iprestrict-release-success-footer-text {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="iprestrict-release-success-container">
+    <div class="iprestrict-release-success-card">
+      <div class="iprestrict-release-success-content">
+        <div class="iprestrict-release-success-header">
+          <div class="iprestrict-release-success-logo">
+            <img src="./logo-green.jpg" alt="TryServ" style="width: 150px; height: auto;">
+          </div>
+          
+          <h1 class="iprestrict-release-success-title">接続元IP制限の解除完了</h1>
+          <p class="iprestrict-release-success-message">
+            接続元IPの制限を解除しました。<br>
+            ログイン画面から再度ログインしてください。
+          </p>
+        </div>
+
+        <div class="iprestrict-release-success-login">
+          <a href="./admin_login.html" class="iprestrict-release-success-login-link">ログイン画面へ</a>
+        </div>
+
+        <div class="iprestrict-release-success-footer">
+          <p class="iprestrict-release-success-footer-text">© 2025 IFLAG Co, Ltd.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

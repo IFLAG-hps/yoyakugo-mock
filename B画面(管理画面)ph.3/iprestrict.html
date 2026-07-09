@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IP制限</title>
+  <link href="./style.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #ffffff;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .iprestrict-message {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .iprestrict-message img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .iprestrict-release-link {
+      margin-top: 24px;
+      font-size: 14px;
+      color: #1e90ff;
+      text-decoration: underline;
+      transition: color 0.2s;
+    }
+
+    .iprestrict-release-link:hover {
+      color: #187bcd;
+    }
+
+    .iprestrict-release-note {
+      margin-top: 20px;
+      max-width: 520px;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.7;
+      text-align: left;
+    }
+
+    .iprestrict-release-note p {
+      margin: 0 0 0px 0;
+    }
+
+    .iprestrict-release-note p:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="iprestrict-message">
+    <img src="./error_iprestrict.png" alt="IP制限 ERROR - 許可されていないIPアドレスからのアクセスです。" width="520" height="120">
+    <a href="./admin_iprestrict_release.html" class="iprestrict-release-link">接続元IPの制限を解除する</a>
+    <div class="iprestrict-release-note">
+      <p>契約時に発行されたアカウントのログインIDとパスワードの入力が必要になります。</p>
+      <p>IP制限ERROR画面が表示されてから10分間のみ有効です。</p>
+      <p>※有効期限が切れた場合は、もう一度ERROR画面を表示させるところからやり直してください</p>
+    </div>
+  </div>
+</body>
+</html>

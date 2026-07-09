@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>お問い合わせ｜管理画面モック</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;            /* 背景 */
+      --panel:#ffffff;         /* パネル */
+      --text:#1f2937;          /* 文字 */
+      --muted:#6b7280;         /* サブ文字 */
+      --line:#e5e7eb;          /* 罫線 */
+      --primary:#1e90ff;       /* アクセント(ブルー) */
+      --primary-weak:#e6f2ff;  /* アクセント薄 */
+      --ok:#10b981;            /* 成功 */
+      --warn:#f59e0b;          /* 警告 */
+      --danger:#ef4444;        /* 重要 */
+      --shadow:0 8px 24px rgba(0,0,0,.06);
+      --radius:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui, -apple-system,"Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"}
+    a{color:inherit;text-decoration:none}
+    .app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr;min-height:100vh}
+
+    /* Sidebar */
+    .sidebar{grid-row:1/3;background:#0b1f3a;color:#e5efff;display:flex;flex-direction:column;padding:18px 14px;gap:14px}
+    .logo{display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:6px}
+    .logo-badge{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#20b2aa,#1e90ff)}
+    .nav{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+    .nav a{padding:12px 14px;border-radius:10px;color:#c9d6ff;display:flex;align-items:center;gap:10px}
+    .nav a.active{background:#12345a;color:#fff}
+    .nav a:hover{background:#102c4d;color:#fff}
+    .foot{margin-top:auto;font-size:12px;color:#93a4c6}
+
+    /* Topbar */
+    .topbar{grid-column:2/3;position:sticky;top:0;z-index:100;background:var(--panel);box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;padding:12px 18px}
+    .search{flex:1;display:flex;gap:10px}
+    .search input{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:12px;outline:none}
+    .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.04)}
+    .btn.ghost{background:#eef2ff;color:#1e3a8a}
+    .btn.warn{background:var(--warn)}
+    .btn.ok{background:var(--ok)}
+
+    /* Main */
+    .main{grid-column:2/3;padding:22px;display:flex;flex-direction:column;gap:18px;height:100%}
+    .section{display:none}
+    .section.active{display:block}
+    
+    /* 問い合わせフォーム */
+    .inquiry-section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+    
+    .inquiry-header {
+        background: #f8fafc;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--line);
+    }
+    
+    .inquiry-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    
+    .form-container {
+        padding: 20px;
+    }
+    
+    .inquiry-description {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .inquiry-description p {
+        margin: 0 0 8px 0;
+        font-size: 0.9rem;
+        color: #0369a1;
+    }
+    
+    .inquiry-description p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .required {
+        color: var(--danger);
+        font-weight: 600;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text);
+    }
+    
+    .form-input, .form-textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: white;
+        box-sizing: border-box;
+    }
+    
+    .form-input:focus, .form-textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(30, 144, 255, 0.2);
+    }
+    
+    .form-input[readonly] {
+        background: #f9fafb;
+        color: var(--muted);
+    }
+    
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    
+    .form-help {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: var(--muted);
+    }
+    
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: var(--text);
+    }
+    
+    .radio-label input[type="radio"] {
+        margin: 0;
+        cursor: pointer;
+    }
+    
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+    }
+    
+    .form-btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .form-btn-cancel {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .form-btn-cancel:hover {
+        background: #4b5563;
+    }
+    
+    .form-btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .form-btn-primary:hover {
+        background: #1565c0;
+    }
+
+    /* Cards/Grid */
+    .grid{display:grid;gap:16px}
+    .grid.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:1100px){.grid.cols-3{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+    .card h3{margin:0 0 8px 0;font-size:16px}
+    .kpi{display:flex;align-items:baseresource;gap:10px}
+    .kpi .num{font-size:28px;font-weight:800}
+    .muted{color:var(--muted)}
+
+    /* Timeresource */
+    .timeresource{display:flex;flex-direction:column;gap:10px}
+    .slot{display:grid;grid-template-columns:80px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:12px}
+    .tag{font-size:12px;padding:4px 8px;border-radius:9999px;background:var(--primary-weak);color:#0b4a8b;font-weight:600}
+
+    /* Calendar */
+    .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .seg{display:inresource-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+    .seg button{border:0;background:#fff;padding:8px 12px;cursor:pointer}
+    .seg button.active{background:var(--primary);color:#fff}
+    .calendar{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+    .cal-header{display:grid;grid-template-columns:repeat(7,1fr);background:#f1f5f9;border-bottom:1px solid var(--line)}
+    .cal-header div{padding:10px 8px;font-weight:700;text-align:center}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+    .day{min-height:110px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;position:relative}
+    .day:nth-child(7n){border-right:none}
+    .badge{position:absolute;left:8px;bottom:8px;background:var(--primary-weak);padding:4px 6px;border-radius:8px;font-size:12px}
+    .busy{background:#fff0f0}
+
+    /* Tables */
+    table{width:100%;border-collapse:separate;border-spacing:0}
+    thead th{background:#f8fafc;text-align:left;padding:10px;border-bottom:1px solid var(--line)}
+    tbody td{padding:10px;border-bottom:1px solid var(--line)}
+
+    /* Chips */
+    .chip{display:inresource-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:9999px;background:#eef2ff;color:#1e3a8a;font-size:12px}
+
+    /* Modal */
+    dialog{border:0;border-radius:16px;box-shadow:var(--shadow);padding:0;max-width:560px;width:90%}
+    dialog::backdrop{background:rgba(0,20,60,.35)}
+    .modal{padding:18px}
+    .modal h3{margin:0 0 14px 0}
+    .row{display:grid;grid-template-columns:140px 1fr;gap:10px;margin:8px 0}
+    .row input,.row textarea,.row select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="./logo.png" alt="TryServ" style="width: 150px; height: auto;">
+        <div>
+          <strong>Admin</strong><br/>
+          <span style="font-size:12px;color:#9fb6ff">予約管理システム</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a href="#" data-target="dashboard">📊 ダッシュボード</a>
+        <a href="./admin_reservations.html" data-target="reservations">📅 受付管理</a>
+        <a href="./admin_reservationList.html" data-target="reservations">🔍 受付一覧</a>
+        <a href="./admin_customers.html" data-target="customers">👥 顧客管理</a>
+        <a href="./admin_resources.html" data-target="resources">💺 リソース管理</a>
+        <a href="./admin_menus.html" data-target="menus">🛠 メニュー管理</a>
+        <a href="./admin_users.html" data-target="users">👫 スタッフ管理</a>
+        <a href="./admin_inquiry.html" data-target="inquiry" class="active">✉ 問い合わせ</a>
+        <a href="./admin_reports.html" data-target="reports">📈 レポート</a>
+        <a href="./admin_operation_log.html">📜 操作履歴</a>
+      </nav>
+      <div class="foot">© Clinic Co.</div>
+    </aside>
+    <!-- Main -->
+    <main class="main">
+        <!-- 問い合わせセクション -->
+        <div class="inquiry-section">
+            <div class="inquiry-header">
+                <h2 class="inquiry-title">✉ 問い合わせ</h2>
+            </div>
+            
+            <div class="form-container">
+                <div class="inquiry-description">
+                    <p>こちらからお問い合わせいただいた場合、３～５営業日以内にご回答させていただきます。</p>
+                    <p>お急ぎの場合は、弊社コールセンターまでご連絡ください。</p>
+                    <p><span class="required">(*)</span>の欄は必ず入力してください。</p>
+                </div>
+                
+                <form id="inquiryForm" onsubmit="submitInquiry(event)">
+                    <div class="form-group">
+                        <label for="inquiryType" class="form-label">お問い合わせ内容 <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="inquiryType" value="1" checked>
+                                <span>システムの操作方法に関するお問い合わせ</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="inquiryType" value="2">
+                                <span>その他ご相談</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="companyName" class="form-label">会社名</label>
+                        <input type="text" id="companyName" name="companyName" class="form-input" value="株式会社みほん" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="userName" class="form-label">お名前 <span class="required">*</span></label>
+                        <input type="text" id="userName" name="userName" class="form-input" value="テストテスト" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">メールアドレス <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" class="form-input" value="test@iflag.co.jp" required>
+                        <small class="form-help">例）****@****.com ※半角英数字、記号で入力してください。</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tel" class="form-label">電話番号 <span class="required">*</span></label>
+                        <input type="tel" id="tel" name="tel" class="form-input" value="00-0000-0000" required>
+                        <small class="form-help">例）03-1234-**** ※ハイフンを入れ、半角数字のみで入力してください。</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="content" class="form-label">問い合わせ内容 <span class="required">*</span></label>
+                        <textarea id="content" name="content" class="form-textarea" rows="10" required></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="form-btn form-btn-cancel" onclick="cancelInquiry()">キャンセル</button>
+                        <button type="submit" class="form-btn form-btn-primary">確認画面へ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+  </div>
+
+  <!-- Reservation Modal -->
+  <dialog id="newResv">
+    <div class="modal">
+      <h3>新規予約</h3>
+      <div class="row"><label>氏名</label><input placeholder="例：山田太郎"></div>
+      <div class="row"><label>連絡先</label><input placeholder="電話番号またはメール"></div>
+      <div class="row"><label>メニュー</label>
+        <select><option>整体 60分（¥5,000）</option><option>鍼灸 30分（¥4,000）</option><option>美容整体 60分（¥6,500）</option></select>
+      </div>
+      <div class="row"><label>日時</label><input type="datetime-local"></div>
+      <div class="row"><label>備考</label><textarea rows="3" placeholder="症状・要望など"></textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button class="btn ghost" onclick="closeNewReservation()">閉じる</button>
+        <button class="btn ok" onclick="alert('ダミー保存：予約を作成しました'); closeNewReservation()">保存</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Customer Modal -->
+  <dialog id="customer">
+    <div class="modal">
+      <h3>顧客情報</h3>
+      <div class="row"><label>氏名</label><input value="山田太郎"></div>
+      <div class="row"><label>連絡先</label><input value="090-1234-5678"></div>
+      <div class="row"><label>メモ</label><textarea rows="3">首〜肩のこり。強め希望。</textarea></div>
+      <div style="text-align:right"><button class="btn" onclick="document.getElementById('customer').close()">閉じる</button></div>
+    </div>
+  </dialog>
+
+  <script>
+    // ====== 問い合わせフォーム ======
+    function submitInquiry(event) {
+        event.preventDefault();
+        
+        // フォームデータを取得
+        const formData = new FormData(event.target);
+        const inquiryData = {
+            inquiryType: formData.get('inquiryType'),
+            companyName: formData.get('companyName'),
+            userName: formData.get('userName'),
+            email: formData.get('email'),
+            tel: formData.get('tel'),
+            content: formData.get('content')
+        };
+        
+        // バリデーション
+        if (!inquiryData.userName || !inquiryData.email || !inquiryData.tel || !inquiryData.content) {
+            alert('必須項目を入力してください。');
+            return;
+        }
+        
+        // 確認画面へ（実際の実装では確認画面に遷移）
+        alert('確認画面へ遷移します。\n\n入力内容:\n' + 
+              'お問い合わせ内容: ' + (inquiryData.inquiryType === '1' ? 'システムの操作方法に関するお問い合わせ' : 'その他ご相談') + '\n' +
+              '会社名: ' + inquiryData.companyName + '\n' +
+              'お名前: ' + inquiryData.userName + '\n' +
+              'メールアドレス: ' + inquiryData.email + '\n' +
+              '電話番号: ' + inquiryData.tel + '\n' +
+              '問い合わせ内容: ' + inquiryData.content);
+    }
+    
+    function cancelInquiry() {
+        if (confirm('入力内容が破棄されます。よろしいですか？')) {
+            document.getElementById('inquiryForm').reset();
+            // 実際の実装では前の画面に戻る
+            alert('キャンセルしました。');
+        }
+    }
+
+    // ====== モーダル ======
+    function openNewReservation(){document.getElementById('newResv').showModal();}
+    function closeNewReservation(){document.getElementById('newResv').close();}
+    function openCustomer(){document.getElementById('customer').showModal();}
+    function notifyDemo(){alert('新規予約 1件 / キャンセル 1件');}
+
+    // ====== 簡易チャート描画（素のCanvas） ======
+    function drawBar(canvasId, values){
+      const c = document.getElementById(canvasId); if(!c) return; const ctx = c.getContext('2d');
+      const w=c.width=c.clientWidth, h=c.height=c.clientHeight; const pad=20; const max=Math.max(...values,10);
+      const bw=(w - pad*2)/values.length*0.7; const step=(w - pad*2)/values.length;
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = '#dbeafe';
+      ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = '#1e90ff';
+      values.forEach((v,i)=>{
+        const x=pad+i*step + (step-bw)/2; const barH=(h-pad*2)*v/max; const y=h-pad-barH;
+        ctx.fillRect(x,y,bw,barH);
+      });
+    }
+    function drawLine(canvasId, values){
+      const c=document.getElementById(canvasId); if(!c) return; const ctx=c.getContext('2d');
+      const w=c.width=c.clientWidth, h=c.height=c.clientHeight; const pad=20; const max=Math.max(...values,10);
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle='#f8fafc'; ctx.fillRect(0,0,w,h);
+      ctx.strokeStyle='#1e90ff'; ctx.resourceWidth=2; ctx.beginPath();
+      values.forEach((v,i)=>{const x=pad+i*(w-2*pad)/(values.length-1); const y=h-pad-(h-2*pad)*v/max; i?ctx.resourceTo(x,y):ctx.moveTo(x,y)});
+      ctx.stroke();
+    }
+    window.addEventListener('load',()=>{
+      drawBar('chart1',[22,18,25,30,28,35,42,44,38,27,24,35]);
+      drawLine('chart2',[6,8,7,9,7,6,8,7,6,7,7,7]);
+      drawBar('chart3',[54,21,17,8]);
+    });
+  </script>
+</body>
+</html>
