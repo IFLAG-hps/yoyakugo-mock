@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>利用料金の情報｜管理画面モック</title>
     <link href="./style.css" rel="stylesheet">
     <style>
@@ -154,7 +155,18 @@
         .withdrawal-details-table td:nth-child(4) { width: 15%; }
         .withdrawal-details-table th:nth-child(5),
         .withdrawal-details-table td:nth-child(5) { width: 30%; }
+        /* ご請求書テーブル：列幅固定 */
+        .invoice-details-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .invoice-details-table th:nth-child(1),
+        .invoice-details-table td:nth-child(1) { width: 70%; }
+        .invoice-details-table th:nth-child(2),
+        .invoice-details-table td:nth-child(2) { width: 30%; text-align: center; }
     </style>
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -211,7 +223,7 @@
                 <ul class="usage-tab-list" role="tablist">
                     <li><button type="button" class="usage-tab-btn active" role="tab" data-tab="tab-usage-list" aria-selected="true">ご利用料金一覧</button></li>
                     <li><button type="button" class="usage-tab-btn" role="tab" data-tab="tab-withdrawal" aria-selected="false">お引落明細一覧</button></li>
-<!--                    <li><button type="button" class="usage-tab-btn" role="tab" data-tab="tab-invoice" aria-selected="false">ご請求書</button></li>-->
+                    <li><button type="button" class="usage-tab-btn" role="tab" data-tab="tab-invoice" aria-selected="false">ご請求書</button></li>
                 </ul>
 
                 <!-- ご利用料金一覧 -->
@@ -398,15 +410,97 @@
                     </div>
                 </div>
 
-                <!-- ご請求書（プレースホルダー） 
+                <!-- ご請求書 -->
                 <div class="usage-tab-content" id="tab-invoice" role="tabpanel">
                     <div class="usage-list-card">
-                        <div class="usage-list-header">
-                            <h3>ご請求書</h3>
+                        <div class="usage-list-pager-wrap">
+                            <div class="results-info" style="margin-right: auto;">
+                                <span class="results-count">全<span id="invoiceRecordCount">0</span>件</span>
+                            </div>
+                            <div class="pagination-controls">
+                                <select id="invoicePageSizeSelect" name="selPageSizeSelect" class="page-size-select">
+                                    <option value="10" selected>10件</option>
+                                    <option value="20">20件</option>
+                                    <option value="50">50件</option>
+                                    <option value="100">100件</option>
+                                </select>
+                                <div class="pagination">
+                                    <button type="button" id="invoiceFirstPage" class="page-btn">«</button>
+                                    <button type="button" id="invoicePrePage" class="page-btn">‹</button>
+                                    <span class="page-info">
+                                        <input id="invoiceCurPage" type="text" value="1" class="page-input" readonly>
+                                        /<span id="invoiceTotalPage">1</span>ページ
+                                    </span>
+                                    <button type="button" id="invoiceNextPage" class="page-btn">›</button>
+                                    <button type="button" id="invoiceLastPage" class="page-btn">»</button>
+                                </div>
+                                <span class="page-range">
+                                    (<span id="invoiceFromRecord">0</span>-<span id="invoiceToRecord">0</span>件/全<span id="invoiceUsageRecordCount">0</span>件)
+                                </span>
+                            </div>
                         </div>
-                        <p style="color: var(--muted); padding: 24px;">ご請求書の内容はここに表示されます。</p>
+                        <div class="results-table-container">
+                            <table class="results-table invoice-details-table">
+                                <thead>
+                                    <tr>
+                                        <th>請求月</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoiceListTableBody">
+                                    <tr>
+                                        <td>2026年02月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2026年02月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2026年01月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2026年01月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年12月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年12月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年11月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年11月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年10月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年10月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年09月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年09月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年08月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年08月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年07月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年07月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年06月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年06月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年05月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年05月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年04月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年04月）')">ダウンロード</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2025年03月</td>
+                                        <td><button type="button" class="link-btn" onclick="alert('モック：ご請求書PDFをダウンロードします（2025年03月）')">ダウンロード</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>-->
+                </div>
             </div>
         </main>
     </div>
@@ -530,6 +624,67 @@
             if (yearSelect) yearSelect.addEventListener('change', updateWithdrawalList);
             if (monthSelect) monthSelect.addEventListener('change', updateWithdrawalList);
             if (tbody) updateWithdrawalList();
+        })();
+
+        (function() {
+            var tbody = document.getElementById('invoiceListTableBody');
+            var pageSizeSelect = document.getElementById('invoicePageSizeSelect');
+            var curPageInput = document.getElementById('invoiceCurPage');
+            var totalPageEl = document.getElementById('invoiceTotalPage');
+            var fromRecordEl = document.getElementById('invoiceFromRecord');
+            var toRecordEl = document.getElementById('invoiceToRecord');
+            var recordCountEl = document.getElementById('invoiceUsageRecordCount');
+            var recordCountTotalEl = document.getElementById('invoiceRecordCount');
+            var firstPageEl = document.getElementById('invoiceFirstPage');
+            var prePageEl = document.getElementById('invoicePrePage');
+            var nextPageEl = document.getElementById('invoiceNextPage');
+            var lastPageEl = document.getElementById('invoiceLastPage');
+            var curPage = 1;
+
+            function getPageSize() {
+                return pageSizeSelect ? (parseInt(pageSizeSelect.value, 10) || 10) : 10;
+            }
+
+            function getRows() {
+                return tbody ? Array.prototype.slice.call(tbody.querySelectorAll('tr')) : [];
+            }
+
+            function updateInvoiceList(page) {
+                if (!tbody) return;
+                var rows = getRows();
+                var pageSize = getPageSize();
+                var count = rows.length;
+                var totalPage = count > 0 ? Math.ceil(count / pageSize) : 1;
+                curPage = page != null ? page : curPage;
+                if (curPage < 1) curPage = 1;
+                if (curPage > totalPage) curPage = totalPage;
+
+                var start = (curPage - 1) * pageSize;
+                var end = Math.min(start + pageSize, count);
+                rows.forEach(function(tr, i) {
+                    tr.style.display = (i >= start && i < end) ? '' : 'none';
+                });
+
+                if (curPageInput) curPageInput.value = curPage;
+                if (totalPageEl) totalPageEl.textContent = totalPage;
+                if (fromRecordEl) fromRecordEl.textContent = count > 0 ? start + 1 : 0;
+                if (toRecordEl) toRecordEl.textContent = end;
+                if (recordCountEl) recordCountEl.textContent = count;
+                if (recordCountTotalEl) recordCountTotalEl.textContent = count;
+            }
+
+            if (firstPageEl) firstPageEl.onclick = function() { updateInvoiceList(1); };
+            if (prePageEl) prePageEl.onclick = function() { updateInvoiceList(Math.max(1, curPage - 1)); };
+            if (nextPageEl) nextPageEl.onclick = function() {
+                var totalPage = totalPageEl ? (parseInt(totalPageEl.textContent, 10) || 1) : 1;
+                updateInvoiceList(Math.min(totalPage, curPage + 1));
+            };
+            if (lastPageEl) lastPageEl.onclick = function() {
+                var totalPage = totalPageEl ? (parseInt(totalPageEl.textContent, 10) || 1) : 1;
+                updateInvoiceList(totalPage);
+            };
+            if (pageSizeSelect) pageSizeSelect.onchange = function() { updateInvoiceList(1); };
+            updateInvoiceList(1);
         })();
     </script>
 </body>

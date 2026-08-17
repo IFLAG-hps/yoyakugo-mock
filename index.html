@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./B画面(管理画面)ph.3/gate.js"></script>
+<title>予約GO 管理画面モック</title>
+<style>
+  :root{ --bg:#eef1f6; --panel:#fff; --line:#dfe4ec; --ink:#1f2937; --muted:#6b7280;
+         --primary:#10B981; --navy:#0b1f3a; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.75 system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+  header{background:var(--navy);color:#fff;padding:38px 20px 34px}
+  .in{max-width:820px;margin:0 auto}
+  h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:.02em}
+  h1 span{color:var(--primary)}
+  header p{margin:0;font-size:13px;color:#9fb6ff}
+  main{padding:30px 20px 70px}
+  h2{font-size:15px;margin:34px 0 12px;padding-left:10px;border-left:4px solid var(--primary)}
+  h2:first-child{margin-top:0}
+  .cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  a.card{display:block;padding:18px 20px;background:var(--panel);border:1px solid var(--line);
+         border-radius:12px;text-decoration:none;color:inherit;transition:.15s}
+  a.card:hover{border-color:var(--primary);transform:translateY(-2px);
+               box-shadow:0 6px 18px rgba(16,185,129,.13)}
+  a.card b{display:block;font-size:15px;margin-bottom:4px}
+  a.card small{color:var(--muted);font-size:12.5px;line-height:1.6;display:block}
+  .tag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9999px;
+       background:var(--primary);color:#fff;font-size:10.5px;font-weight:700;vertical-align:1px}
+  ul.plain{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  ul.plain li{margin-bottom:4px}
+  ul.plain code{background:#e4e9f0;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  .note{margin-top:34px;padding:14px 18px;background:#fff8e6;border:1px solid #f3dfae;
+        border-radius:10px;font-size:13px;color:#7a5a12}
+  footer{max-width:820px;margin:0 auto;padding:26px 20px 0;border-top:1px solid var(--line);
+         color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="in">
+    <h1>予約<span>GO</span> 管理画面モック<span class="tag">レスポンシブ対応版</span></h1>
+    <p>受付・予約管理システム／B画面（管理画面）ph.3 ─ スマートフォン対応の確認用</p>
+  </div>
+</header>
+
+<main class="in">
+
+  <h2>まずはこちら</h2>
+  <div class="cards">
+    <a class="card" href="./B画面(管理画面)ph.3/sp_preview.html">
+      <b>📱 スマホ表示プレビュー</b>
+      <small>主要7画面を実機と同じ幅で並べて表示します。端末幅の切り替え可。枠の中はそのまま操作できます。</small>
+    </a>
+    <a class="card" href="./docs/yoyakugo-admin-sp-responsive.pdf">
+      <b>📄 調整内容の資料（PDF）</b>
+      <small>現状の調査結果（実測値つき）、画面別の変更内容、修正の要点、本実装での推奨事項。</small>
+    </a>
+    <a class="card" href="./docs/yoyakugo-admin-sp-responsive.md">
+      <b>📝 同資料（Markdown）</b>
+      <small>GitHub上でそのまま読める形式です。内容はPDFと同じです。</small>
+    </a>
+  </div>
+
+  <h2>個別の画面</h2>
+  <div class="cards">
+    <a class="card" href="./B画面(管理画面)ph.3/admin_index.html"><b>ダッシュボード</b><small>1カラムに再構成</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_reservations.html"><b>受付・予約管理</b><small>スマホでは初期表示を「1日」に</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_customers.html"><b>顧客管理</b><small>一覧をカード表示に</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_menus.html"><b>メニュー管理</b><small>一覧をカード表示に</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_users.html"><b>スタッフ管理</b><small>一覧をカード表示に</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_setting.html"><b>基本設定</b><small>フォームを1カラムに</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_shift.html"><b>シフト設定</b><small>カレンダー見出しを2段に</small></a>
+    <a class="card" href="./B画面(管理画面)ph.3/admin_login.html"><b>ログイン</b><small>入力欄の拡大ズーム防止</small></a>
+  </div>
+
+  <h2>今回追加したファイル</h2>
+  <ul class="plain">
+    <li><code>B画面(管理画面)ph.3/sp.css</code> ─ スマホ・タブレット向けの追加スタイル</li>
+    <li><code>B画面(管理画面)ph.3/sp.js</code> ─ ハンバーガーの生成と、一覧表のラベル付与</li>
+    <li><code>B画面(管理画面)ph.3/sp_preview.html</code> ─ 確認用のプレビューページ</li>
+    <li><code>B画面(管理画面)ph.3/gate.js</code> ─ 公開時のPINゲート（モック閲覧用）</li>
+    <li>各HTML ─ <code>&lt;head&gt;</code> に読み込みを追記したのみ</li>
+  </ul>
+  <p style="font-size:13.5px;color:var(--muted);margin-top:10px">
+    既存の <code style="background:#e4e9f0;padding:1px 5px;border-radius:4px;font-size:12.5px">style.css</code>
+    と各HTMLの中身は変更していません。変更はすべてメディアクエリの中に閉じているため、PC表示（1025px以上）は変わりません。
+  </p>
+
+  <div class="note">
+    <strong>PINゲートについて</strong><br>
+    公開URLを知られただけの相手に中身が見えないようにするための簡易的な目隠しです。
+    静的サイトのためソースを見られれば突破できます。確実に隠したい場合はリポジトリを private にしてください。
+    なお、ローカルでファイルを直接開いた場合（file://）はPINを聞きません。
+  </div>
+
+  <footer>© 2026 IFLAG Co., Ltd. ／ 開発中のモックです</footer>
+</main>
+
+</body>
+</html>

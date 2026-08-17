@@ -29,8 +29,10 @@
     .foot{margin-top:auto;font-size:12px;color:#93a4c6}
 
     /* Topbar */
-    .topbar{grid-column:2/3;position:sticky;top:0;z-index:100;background:var(--panel);box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;padding:12px 18px}
-    .search{flex:1;display:flex;gap:10px}
+    .topbar{grid-column:2/3;position:sticky;top:0;z-index:100;background:var(--panel);box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;padding:12px 18px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .search{flex:1;display:flex;gap:10px;min-width:120px}
+    .topbar .regist-btn,
+    .topbar .btn{flex-shrink:0;white-space:nowrap}
     .search input{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:12px;outline:none}
     .btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.04)}
     .btn.ghost{background:#eef2ff;color:#1e3a8a}
@@ -47,6 +49,8 @@
         overflow-y:auto;
         max-height:100vh;
         width: calc(100vw - 220px);
+        min-width: 0;
+        max-width: 100%;
         min-height: 100vh;
         box-sizing: border-box;
     }
@@ -1018,6 +1022,21 @@
         margin-bottom: 0;
         padding: 5px 10px;
         border-bottom: 1px solid #e0e0e0;
+        flex-shrink: 0;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .modal-header .modal-title {
+        margin: 0;
+        min-width: 0;
+        flex: 1;
+        white-space: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-header .modal-close {
         flex-shrink: 0;
     }
 
@@ -2314,6 +2333,10 @@
         opacity: 0.9 !important;
         border: 1px solid var(--line) !important;
     }
+    .reservation-popup.block-memo-popup .popup-text {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
     .blocked-line {
         position: absolute;
         top: 0;
@@ -2481,6 +2504,11 @@
         min-height: 30px;
     }
 
+    .menu-description-cell {
+        white-space: pre-wrap;
+        line-height: 1.6;
+    }
+
     .form-textarea:focus {
         outline: none;
         border-color: #1976d2;
@@ -2508,6 +2536,14 @@
         background: #f8fafc;
         flex-shrink: 0;
         margin-top: auto;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-actions .modal-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
     }
 
     .modal-btn {
@@ -3218,9 +3254,15 @@
 }
 
 .results-table-container {
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  min-width: 0; /* flex内で縮められるようにし、はみ出し時に横スクロールを出す */
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
   padding: 18px;
+  box-sizing: border-box;
 }
 
 .results-table {
@@ -3279,12 +3321,14 @@
 
 .action-cell {
   text-align: center;
+  white-space: nowrap;
 }
 
-/* メニュー一覧：列幅固定（長いメニュー名でも比率が崩れない） */
+/* メニュー一覧：横幅はブラウザ（親）に合わせる。狭いときだけ横スクロール */
 .results-table.menu-list-table {
   table-layout: fixed;
   width: 100%;
+  border-collapse: collapse;
 }
 
 .menu-list-table .col-id {
@@ -3307,8 +3351,11 @@
   width: 14%;
 }
 
-.menu-list-table .col-action {
+.menu-list-table .col-action,
+.menu-list-table td.action-cell,
+.results-table td.action-cell {
   width: 20%;
+  white-space: nowrap;
 }
 
 .menu-list-table td.menu-name-cell {
@@ -3475,6 +3522,7 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
+        margin-bottom: 12px;
     }
 
     .detail-label {
@@ -4507,7 +4555,7 @@
     background: #f8fafc;
     margin-bottom: 12px;
     overflow: hidden;
-    padding: 0 0 10px;
+    padding: 0;
 }
 
 /* リソースグループモーダル：ドロップゾーンをモーダル本文の縦いっぱいに伸ばす */
@@ -4699,7 +4747,6 @@
     margin: 0;
     padding: 8px 12px 10px;
     flex-shrink: 0;
-    border-bottom: 1px solid #e2e8f0;
     background: #fff;
 }
 
@@ -4930,4 +4977,374 @@
     display: inline-flex;
     align-items: center;
     line-height: 1;
+}
+/* ========== オプションメニュー関連（メニュー管理タブ・ツールチップ等） ========== */
+.menu-mgmt-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+/* 横幅はブラウザ領域に固定。狭いときだけ横スクロール */
+.menu-mgmt-layout > .main-section {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    container-type: inline-size;
+    container-name: menu-main-section;
+}
+.menu-mgmt-layout .main-section-body {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+/* セクション幅が足りないときだけ、body を広げてヘッダーごとスクロール */
+@container menu-main-section (max-width: 639px) {
+    .menu-mgmt-layout .main-section-body {
+        min-width: 640px;
+        max-width: none;
+    }
+}
+.menu-mgmt-layout .main-header {
+    box-sizing: border-box;
+    width: 100%;
+    gap: 12px;
+    min-width: 0;
+}
+.menu-mgmt-layout .main-header .main-title {
+    flex-shrink: 1;
+    min-width: 0;
+}
+.menu-mgmt-layout .main-header .max-count {
+    margin-left: auto;
+    text-align: right;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.menu-mgmt-layout .search-results-header,
+.menu-mgmt-layout .menu-mgmt-panel.active,
+.menu-mgmt-layout .results-table-container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.menu-mgmt-layout .results-table-container {
+    overflow: visible;
+    flex: none;
+    margin: 5px 0;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.menu-mgmt-layout .results-table {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+.menu-mgmt-panel { display: none; }
+.menu-mgmt-panel.active { display: block; }
+.menu-mgmt-tabs {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2px;
+    border-bottom: none;
+    flex-shrink: 0;
+}
+.menu-mgmt-tabs li { margin: 0; }
+.menu-mgmt-tab-btn {
+    padding: 10px 18px;
+    border: 1px solid var(--line, #e5e7eb);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: #f1f5f9;
+    color: #374151;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.menu-mgmt-tab-btn:hover { background: #e2e8f0; }
+.menu-mgmt-tab-btn.active {
+    background: #10B981;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+    margin-bottom: -1px;
+    padding-bottom: 11px;
+    border-color: var(--line, #e5e7eb);
+}
+/* タブと main-section をくっつける（.main の gap の外で隣接させる） */
+.menu-mgmt-tabs + .main-section {
+    margin-top: -1px;
+    border-top-left-radius: 0;
+}
+
+.option-group-select-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+/* 料金(税込) と同じく form-row 4カラム時の1枠幅 */
+.option-group-select-row > .option-group-select-field {
+    flex: 0 0 calc((100% - 48px) / 4);
+    max-width: calc((100% - 48px) / 4);
+    min-width: 0;
+    width: calc((100% - 48px) / 4);
+}
+.option-group-select-row > .option-group-select-field .form-input {
+    width: 100%;
+    max-width: 100%;
+}
+.option-group-preview {
+    flex: 1 1 240px;
+    min-width: min(100%, 220px);
+    max-width: 100%;
+    margin-top: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    font-size: 12px;
+    line-height: 1.5;
+    box-sizing: border-box;
+}
+.option-group-preview[hidden] {
+    display: none !important;
+}
+.option-group-preview-title {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #111827;
+}
+.option-group-preview-empty {
+    color: #6b7280;
+}
+.option-group-preview-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+}
+.option-group-preview-chip {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 1 auto;
+    max-width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    box-sizing: border-box;
+}
+.option-group-preview-chip-name {
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+}
+.option-group-preview-chip-meta {
+    color: #6b7280;
+    font-size: 11px;
+    white-space: nowrap;
+}
+@media (max-width: 640px) {
+    .option-group-select-row > .option-group-select-field {
+        flex: 1 1 100%;
+        max-width: 100%;
+        width: 100%;
+    }
+    .option-group-preview {
+        flex: 1 1 100%;
+    }
+}
+/* オプションメニューグループ：左右パネル（resource-group-modal を再利用） */
+.option-menu-group-modal form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    padding: 0;
+}
+.option-menu-group-modal .form-section {
+    flex: 0 0 auto;
+    padding: 10px 16px 0;
+}
+.option-menu-group-modal .rg-modal-body {
+    flex: 1;
+    min-height: 0;
+}
+.option-menu-group-modal .rg-list.rg-drop-zone {
+    flex: 1;
+    min-height: 120px;
+    max-height: none;
+    overflow-y: auto;
+}
+.option-menu-group-modal .rg-pool-title {
+    margin: 0;
+    padding: 8px 12px 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+/* リソースグループ編集のヒントと同じレイアウト */
+.option-menu-group-modal .rg-group-block {
+    padding-bottom: 0;
+}
+.option-menu-group-modal .rg-group-hint {
+    margin: 0;
+    padding: 8px 12px 10px;
+    flex-shrink: 0;
+    border-bottom: none;
+    background: #fff;
+    font-size: 0.8rem;
+    color: #475569;
+    line-height: 1.45;
+}
+.option-menu-group-modal .rg-pool-sub {
+    font-size: 0.8rem;
+    color: #475569;
+    margin: 0 0 6px;
+    padding: 0 12px;
+    line-height: 1.45;
+}
+/* ダッシュボードの＋オプションと同じ薄いグリーン */
+.option-menu-group-modal .rg-item {
+    background: #d1fae5;
+    color: #047857;
+    border: 1px solid #6ee7b7;
+}
+.option-menu-group-modal .rg-item .rg-item-label {
+    color: #047857;
+    font-weight: 500;
+}
+.option-menu-group-modal .rg-item .rg-drag-handle,
+.option-menu-group-modal .rg-item .rg-drag-handle-icon {
+    color: #047857;
+}
+.option-menu-group-modal .rg-move-btn {
+    background: #ecfdf5;
+    border-color: #6ee7b7;
+    color: #047857;
+}
+.option-menu-group-modal .rg-move-btn:hover:not(:disabled) {
+    background: #a7f3d0;
+    border-color: #34d399;
+    color: #065f46;
+}
+
+/* オプションメニューグループ / オプションメニュー 一覧のページネーション非表示行 */
+#optionGroupTableBody tr.og-page-hidden,
+#optionGroupTableBody tr.og-filter-hidden,
+#optionMenuTableBody tr.om-page-hidden,
+#optionMenuTableBody tr.om-filter-hidden {
+    display: none;
+}
+
+.option-menu-link-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: #fafafa;
+}
+.option-menu-link-list label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 0;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+.option-menu-check-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fafafa;
+}
+.option-menu-check-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.option-menu-check-list .opt-meta {
+    color: #6b7280;
+    font-size: 12px;
+}
+.reservation-total-box {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    font-size: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.reservation-total-box .total-item strong {
+    color: #1e40af;
+}
+/* ダッシュボード／一覧：オプションありバッジ */
+.slot > div:nth-child(2) {
+    min-width: 0;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+.dash-opt-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 4px;
+    padding: 1px 8px;
+    border-radius: 9999px;
+    background: #d1fae5;
+    color: #047857;
+    border: 1px solid #6ee7b7;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+.dash-opt-names {
+    color: #047857;
+    font-size: 13px;
+    line-height: 1.45;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.print-option-menus {
+    font-size: inherit;
+    color: #374151;
+    margin-top: 2px;
 }

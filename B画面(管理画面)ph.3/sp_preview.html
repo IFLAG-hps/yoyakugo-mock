@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./gate.js"></script>
+<title>スマホ表示プレビュー｜予約GO 管理画面</title>
+<style>
+  :root{
+    --bg:#eef1f6; --panel:#fff; --line:#dfe4ec; --text:#1f2937; --muted:#6b7280; --primary:#10B981;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+       font:14px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif}
+  header{position:sticky;top:0;z-index:10;background:#0b1f3a;color:#fff;padding:14px 20px;
+         display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+  header h1{margin:0;font-size:16px;font-weight:700}
+  header p{margin:0;font-size:12px;color:#9fb6ff}
+  .controls{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px}
+  .controls select{padding:7px 10px;border:0;border-radius:8px;font-size:13px}
+  main{padding:24px 20px 60px}
+  .note{max-width:940px;margin:0 0 22px;padding:12px 16px;background:#fff;border:1px solid var(--line);
+        border-radius:10px;font-size:13px;color:var(--muted)}
+  .rail{display:flex;gap:26px;overflow-x:auto;padding-bottom:16px;align-items:flex-start}
+  figure{margin:0;flex:0 0 auto}
+  figcaption{margin:0 0 10px;font-size:13px;font-weight:700}
+  figcaption small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+  .device{background:#111827;border-radius:34px;padding:11px;box-shadow:0 14px 34px rgba(15,23,42,.22)}
+  .screen{position:relative;background:#fff;border-radius:24px;overflow:hidden}
+  .screen iframe{display:block;border:0;width:100%;height:100%}
+  .badge{display:inline-block;margin-left:8px;padding:2px 8px;border-radius:9999px;
+         background:var(--primary);color:#fff;font-size:11px;font-weight:700;vertical-align:middle}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>予約GO 管理画面 ─ スマホ表示プレビュー<span class="badge">レスポンシブ対応版</span></h1>
+    <p>各枠は実機と同じ幅（CSSピクセル）で管理画面をそのまま表示しています。枠内は操作できます。</p>
+  </div>
+  <div class="controls">
+    <label>端末幅
+      <select id="sizeSel">
+        <option value="390x844">iPhone 14/15（390 × 844）</option>
+        <option value="360x800">Android 標準（360 × 800）</option>
+        <option value="430x932">iPhone Pro Max（430 × 932）</option>
+        <option value="768x1024">タブレット縦（768 × 1024）</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<main>
+  <p class="note">
+    確認のポイント：①ハンバーガーで左メニューが開くか ②一覧がカード表示になっているか
+    ③ボタンが指で押せる大きさか ④横スクロールが発生していないか
+  </p>
+  <div class="rail" id="rail"></div>
+</main>
+
+<script>
+  var SCREENS = [
+    ['admin_index.html',        'ダッシュボード',   '1カラムに再構成'],
+    ['admin_reservations.html', '受付・予約管理',   '初期表示を「1日」に'],
+    ['admin_customers.html',    '顧客管理',        '一覧をカード表示に'],
+    ['admin_menus.html',        'メニュー管理',    '一覧をカード表示に'],
+    ['admin_users.html',        'スタッフ管理',    '一覧をカード表示に'],
+    ['admin_setting.html',      '基本設定',        'フォームを1カラムに'],
+    ['admin_login.html',        'ログイン',        '入力欄の拡大ズーム防止']
+  ];
+
+  var rail = document.getElementById('rail');
+  SCREENS.forEach(function (s) {
+    var fig = document.createElement('figure');
+    fig.innerHTML =
+      '<figcaption>' + s[1] + '<small>' + s[2] + '</small></figcaption>' +
+      '<div class="device"><div class="screen"><iframe src="./' + s[0] + '" loading="lazy" title="' + s[1] + '"></iframe></div></div>';
+    rail.appendChild(fig);
+  });
+
+  function applySize() {
+    var v = document.getElementById('sizeSel').value.split('x');
+    document.querySelectorAll('.screen').forEach(function (el) {
+      el.style.width = v[0] + 'px';
+      el.style.height = v[1] + 'px';
+    });
+  }
+  document.getElementById('sizeSel').addEventListener('change', applySize);
+  applySize();
+</script>
+</body>
+</html>

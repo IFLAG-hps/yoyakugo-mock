@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>シフト設定｜管理画面モック</title>
 
     <!-- Material Design Components CSS -->
@@ -127,6 +128,8 @@
             display: inline-block;
         }
     </style>
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -839,17 +842,7 @@
             }
         }
 
-        // モーダル外クリックで閉じる
-        document.addEventListener('DOMContentLoaded', function () {
-            const editCalendarModal = document.getElementById('editCalendarModal');
-            if (editCalendarModal) {
-                editCalendarModal.addEventListener('click', function (e) {
-                    if (e.target === this) {
-                        closeEditCalendarModal();
-                    }
-                });
-            }
-        });
+        // モーダル外クリックでは閉じない（×ボタン・閉じるボタンのみ）
 
         // 前月
         function previousMonth() {

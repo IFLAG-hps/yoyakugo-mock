@@ -1,0 +1,22 @@
+# OS / エディタ
+Thumbs.db
+.DS_Store
+desktop.ini
+.vscode/
+.cursor/
+
+# バックアップ・作業ファイル
+*.bak
+*.orig
+*.tmp
+*~
+* - コピー.*
+
+# 公開しないもの
+mail_attachments/
+
+# 認証情報（念のため）
+.env
+.env.*
+*.pem
+*.key

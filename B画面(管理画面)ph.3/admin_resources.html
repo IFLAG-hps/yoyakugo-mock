@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>リソース管理｜管理画面モック</title>
 
     <!-- Material Design Components CSS -->
@@ -14,6 +15,8 @@
     <!-- Material Design Components JavaScript -->
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <link href="./style.css" rel="stylesheet">
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -367,18 +370,6 @@
             }
         }
 
-        // モーダルの外側をクリックした時に閉じる
-        document.addEventListener('DOMContentLoaded', function () {
-            document.addEventListener('click', function (event) {
-                const editResourceModal = document.getElementById('editResourceModal');
-                const editResourceModalContent = document.getElementById('editResourceModalContent');
-
-                if (editResourceModal && event.target === editResourceModal) {
-                    closeEditResourceModal();
-                }
-            });
-        });
-
         // メニュー編集を保存
 
 
@@ -396,17 +387,7 @@
             window.location.href = './admin_shift.html?id=' + resourceId;
         }
 
-        // モーダル外クリックで閉じる
-        document.addEventListener('DOMContentLoaded', function () {
-            const editResourceModal = document.getElementById('editResourceModal');
-            if (editResourceModal) {
-                editResourceModal.addEventListener('click', function (e) {
-                    if (e.target === this) {
-                        closeEditResourceModal();
-                    }
-                });
-            }
-        });
+        // モーダル外クリックでは閉じない（×ボタン・閉じるボタンのみ）
 
         // リソースグループの設定
         function groupSetting() {
@@ -479,6 +460,7 @@
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <div id="resourceColorPalette" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
                             <!-- 最終的に指定された15色のカラーパレット -->
+                            <!-- 最終的に指定された15色のカラーパレット -->
                             <div class="resource-color-option" data-color="#1976D2" style="width: 40px; height: 40px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease;" title="ブルー"></div>
                             <div class="resource-color-option" data-color="#009688" style="width: 40px; height: 40px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease;" title="ターコイズ"></div>
                             <div class="resource-color-option" data-color="#009D5B" style="width: 40px; height: 40px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s ease;" title="エメラルド"></div>
@@ -497,10 +479,10 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                             <div id="resourceColorPreview"
-                                style="width: 50px; height: 40px; border: 1px solid #ccc; border-radius: 4px;">
+                                style="width: 50px; height: 40px; border: 1px solid #ccc; border-radius: 4px; background-color: #1976D2;">
                             </div>
                         </div>
-                        <input type="hidden" id="editResourceColorCode" value="">
+                        <input type="hidden" id="editResourceColorCode" value="#1976D2">
                     </div>
                     <small class="form-help">リソースの表示色を選択してください</small>
                 </div>
@@ -627,17 +609,7 @@
             }
         });
 
-        // ポップアップ外クリックで閉じる
-        document.addEventListener('DOMContentLoaded', function () {
-            const resourcePopupOverlay = document.getElementById('resourcePopupOverlay');
-            if (resourcePopupOverlay) {
-                resourcePopupOverlay.addEventListener('click', function (e) {
-                    if (e.target === this) {
-                        closeResourcePopup();
-                    }
-                });
-            }
-        });
+        // ポップアップ外クリックでは閉じない（×ボタン・閉じるボタンのみ）
 
         // カラーパレットとカラーコード入力枠の連動
         document.addEventListener('DOMContentLoaded', function () {
@@ -676,6 +648,20 @@
                     }
                 });
             });
+
+            // デフォルト色（ブルー）を選択
+            const defaultColor = '#1976D2';
+            colorOptions.forEach(opt => opt.style.border = '2px solid transparent');
+            const defaultOption = document.querySelector('.resource-color-option[data-color="' + defaultColor + '"]');
+            if (defaultOption) {
+                defaultOption.style.border = '2px solid #333';
+            }
+            if (colorCodeInput) {
+                colorCodeInput.value = defaultColor;
+            }
+            if (colorPreview) {
+                colorPreview.style.backgroundColor = defaultColor;
+            }
 
         });
 

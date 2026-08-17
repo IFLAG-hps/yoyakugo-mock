@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>メニュー管理｜管理画面モック</title>
 
     <!-- Material Design Components CSS -->
@@ -14,6 +15,8 @@
     <!-- Material Design Components JavaScript -->
     <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
     <link href="./style.css" rel="stylesheet">
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -46,21 +49,31 @@
 
         <header class="topbar">
             <div class="search">
-                <input type="search" placeholder="メニュー名 を検索" onchange="filterCustomers(this.value)" />
+                <input type="search" id="menuSearchInput" placeholder="メニュー名 を検索" onchange="filterCustomers(this.value)" />
             </div>
-            <button type="button" class="regist-btn" onclick="menuAdd(1, '2')"><i class="material-icons">add</i>
+            <button type="button" class="regist-btn" id="btnNewRegister" onclick="onClickNewRegister()"><i class="material-icons">add</i>
                 新規登録</button>
-            <button type="button" class="btn normal-btn" onclick="menuSort(1)">メニューの並び替え</button>
+            <button type="button" class="btn normal-btn" id="btnMenuSort" onclick="menuSort(1)">メニューの並び替え</button>
         </header>
         <!-- Main -->
         <main class="main">
+            <div class="menu-mgmt-layout">
+            <ul class="menu-mgmt-tabs" role="tablist">
+                <li><button type="button" class="menu-mgmt-tab-btn active" role="tab" data-tab="tab-menus" aria-selected="true" onclick="switchMenuMgmtTab('tab-menus')">メニュー</button></li>
+                <li><button type="button" class="menu-mgmt-tab-btn" role="tab" data-tab="tab-option-groups" aria-selected="false" onclick="switchMenuMgmtTab('tab-option-groups')">オプションメニューグループ</button></li>
+                <li><button type="button" class="menu-mgmt-tab-btn" role="tab" data-tab="tab-option-menus" aria-selected="false" onclick="switchMenuMgmtTab('tab-option-menus')">オプションメニュー</button></li>
+            </ul>
+
             <!-- メニュー管理セクション -->
             <div class="main-section">
+                <div class="main-section-body">
                 <div class="main-header">
-                    <h3 class="main-title">🛠 メニュー管理</h3>
-                    <div class="max-count" style="width: 70%; text-align: right;">登録上限数：99件</div>
+                    <h3 class="main-title" id="menuMainTitle">🛠 メニュー管理</h3>
+                    <div class="max-count" id="menuMaxCount">登録上限数：99件</div>
                 </div>
 
+                <!-- 通常メニュー -->
+                <div class="menu-mgmt-panel active" id="tab-menus">
                 <!-- 検索結果 -->
                 <div class="search-results-header">
                     <div class="results-info">
@@ -90,7 +103,7 @@
                     </div>
                 </div>
 
-                <div id="menuList" class="results-table-container" style="margin: 5px 10px;">
+                <div id="menuList" class="results-table-container">
                     <table class="results-table menu-list-table">
                         <colgroup>
                             <col class="col-id">
@@ -104,9 +117,9 @@
                             <tr>
                                 <th class="sortable">ID</th>
                                 <th class="sortable">メニュー名</th>
-                                <th>料金</th>
+                                <th>料金(税込)</th>
                                 <th>所要時間</th>
-                                <th class="sortable">ネット受付</th>
+                                <th class="sortable">WEB受付</th>
                                 <th>操作</th>
                             </tr>
                         </thead>
@@ -177,12 +190,303 @@
                             </tr>
                         </tbody>
                     </table>
-
                 </div>
-            </div>
-        </main>
-    </div>
+                </div>
 
+                <!-- オプションメニューグループ -->
+                <div class="menu-mgmt-panel" id="tab-option-groups">
+                    <div class="search-results-header">
+                        <div class="results-info">
+                            <span class="results-count">全<span id="optionGroupRecordCount">12</span>件</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <select id="ogPageSizeSelect" name="ogPageSizeSelect" class="page-size-select">
+                                <option value="10" selected="">10件</option>
+                                <option value="20">20件</option>
+                                <option value="50">50件</option>
+                                <option value="100">100件</option>
+                            </select>
+                            <div class="pagination">
+                                <button type="button" id="ogFirstPage" class="page-btn">«</button>
+                                <button type="button" id="ogPrePage" class="page-btn">‹</button>
+                                <span class="page-info">
+                                    <input id="ogCurPage" type="text" value="1" class="page-input">
+                                    /<span id="ogTotalPage">2</span>ページ
+                                </span>
+                                <button type="button" id="ogNextPage" class="page-btn">›</button>
+                                <button type="button" id="ogLastPage" class="page-btn">»</button>
+                            </div>
+                            <span class="page-range">
+                                <span id="ogFromRecord">1</span>-<span id="ogToRecord">10</span>件/全<span
+                                    id="ogFilteredCount">12</span>件)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>オプションメニューグループ名</th>
+                                    <th>紐づくオプションメニュー</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="optionGroupTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td>トリートメント選択</td>
+                                    <td>ヘアオイル、ダメージケア</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(1)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>2</td>
+                                    <td>カラーオプション</td>
+                                    <td>リタッチ、フルカラー追加</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(2)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>仕上げオプション</td>
+                                    <td>ブロー仕上げ、ヘアオイル</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(3)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>4</td>
+                                    <td>スパ・ケア</td>
+                                    <td>ヘッドスパ、ダメージケア</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(4)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>カラー追加セット</td>
+                                    <td>リタッチ、フルカラー追加、ヘアオイル</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(5)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>6</td>
+                                    <td>相談・カウンセリング</td>
+                                    <td>相談のみ</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(6)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>プレミアムケア</td>
+                                    <td>ダメージケア、ヘッドスパ、ヘアオイル</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(7)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>8</td>
+                                    <td>クイック追加</td>
+                                    <td>ブロー仕上げ</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(8)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>カラー＆ケア</td>
+                                    <td>フルカラー追加、ダメージケア</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(9)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>10</td>
+                                    <td>トリートメント＋スパ</td>
+                                    <td>ヘアオイル、ヘッドスパ</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(10)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>11</td>
+                                    <td>ライトオプション</td>
+                                    <td>ヘアオイル、ブロー仕上げ</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(11)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>12</td>
+                                    <td>フルオプションパック</td>
+                                    <td>ダメージケア、リタッチ、ヘッドスパ</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionGroupEdit(12)">編集</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- オプションメニュー -->
+                <div class="menu-mgmt-panel" id="tab-option-menus">
+                    <div class="search-results-header">
+                        <div class="results-info">
+                            <span class="results-count">全<span id="optionMenuRecordCount">12</span>件</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <select id="omPageSizeSelect" name="omPageSizeSelect" class="page-size-select">
+                                <option value="10" selected="">10件</option>
+                                <option value="20">20件</option>
+                                <option value="50">50件</option>
+                                <option value="100">100件</option>
+                            </select>
+                            <div class="pagination">
+                                <button type="button" id="omFirstPage" class="page-btn">«</button>
+                                <button type="button" id="omPrePage" class="page-btn">‹</button>
+                                <span class="page-info">
+                                    <input id="omCurPage" type="text" value="1" class="page-input">
+                                    /<span id="omTotalPage">2</span>ページ
+                                </span>
+                                <button type="button" id="omNextPage" class="page-btn">›</button>
+                                <button type="button" id="omLastPage" class="page-btn">»</button>
+                            </div>
+                            <span class="page-range">
+                                <span id="omFromRecord">1</span>-<span id="omToRecord">10</span>件/全<span
+                                    id="omFilteredCount">12</span>件)
+                            </span>
+                        </div>
+                    </div>
+                    <div class="results-table-container">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>オプションメニュー名</th>
+                                    <th>料金(税込)</th>
+                                    <th>所要時間</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="optionMenuTableBody">
+                                <tr>
+                                    <td>1</td>
+                                    <td>ヘアオイル</td>
+                                    <td>500円</td>
+                                    <td>0分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(1)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>2</td>
+                                    <td>ダメージケア</td>
+                                    <td>1,500円</td>
+                                    <td>15分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(2)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>リタッチ</td>
+                                    <td>2,000円</td>
+                                    <td>30分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(3)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>4</td>
+                                    <td>フルカラー追加</td>
+                                    <td>3,000円</td>
+                                    <td>45分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(4)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>ヘッドスパ</td>
+                                    <td>—</td>
+                                    <td>20分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(5)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>6</td>
+                                    <td>ブロー仕上げ</td>
+                                    <td>800円</td>
+                                    <td>—</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(6)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>相談のみ</td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(7)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>8</td>
+                                    <td>炭酸泉シャンプー</td>
+                                    <td>1,200円</td>
+                                    <td>10分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(8)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>トリートメント追加</td>
+                                    <td>2,500円</td>
+                                    <td>20分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(9)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>10</td>
+                                    <td>眉カット</td>
+                                    <td>500円</td>
+                                    <td>10分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(10)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>11</td>
+                                    <td>ヘアマスク</td>
+                                    <td>1,800円</td>
+                                    <td>15分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(11)">編集</button>
+                                    </td>
+                                </tr>
+                                <tr class="table-row-alt">
+                                    <td>12</td>
+                                    <td>スタイリング剤塗布</td>
+                                    <td>300円</td>
+                                    <td>5分</td>
+                                    <td class="action-cell">
+                                        <button type="button" class="link-btn" onclick="optionMenuEdit(12)">編集</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
     <!-- メニュー編集モーダル -->
     <div class="popup-overlay" id="editMenuModal" style="display: none;">
@@ -245,7 +549,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label class="form-label" for="editMenuPrice">
-                                料金
+                                料金(税込)
                                 <label style="margin-left: 15px; font-weight: normal; cursor: pointer;">
                                     <input type="checkbox" id="hidePriceDisplay" style="margin-right: 5px;">
                                     表示しない
@@ -301,7 +605,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">ネット受付 <span class="required">*</span></label>
+                            <label class="form-label">WEB受付 <span class="required">*</span></label>
                             <div style="display: flex; gap: 20px; margin-top: 8px;">
                                 <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
                                     <input type="radio" name="editWebReception" value="ON" id="editWebReceptionON"
@@ -347,19 +651,41 @@
 
                     </div>
 
-                    <!-- ネット受付設定 -->
+                    <div class="form-row option-group-select-row">
+                        <div class="form-group option-group-select-field">
+                            <label class="form-label" for="editOptionGroupSelect">オプションメニューグループ</label>
+                            <select class="form-input" id="editOptionGroupSelect" onchange="updateOptionGroupPreview()">
+                                <option value="">指定なし</option>
+                                <option value="1">トリートメント選択</option>
+                                <option value="2">カラーオプション</option>
+                                <option value="3">仕上げオプション</option>
+                                <option value="4">スパ・ケア</option>
+                                <option value="5">カラー追加セット</option>
+                                <option value="6">相談・カウンセリング</option>
+                                <option value="7">プレミアムケア</option>
+                                <option value="8">クイック追加</option>
+                                <option value="9">カラー＆ケア</option>
+                                <option value="10">トリートメント＋スパ</option>
+                                <option value="11">ライトオプション</option>
+                                <option value="12">フルオプションパック</option>
+                            </select>
+                        </div>
+                        <div class="option-group-preview" id="editOptionGroupPreview" hidden></div>
+                    </div>
+
+                    <!-- WEB受付設定 -->
                     <div class="form-row">
 
                         <div class="form-group">
-                            <label class="form-label" for="editWebReceptionStart">ネット受付開始時期 <span class="required">*</span></label>
+                            <label class="form-label" for="editWebReceptionStart">WEB受付開始時期 <span class="required">*</span></label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="number" class="form-input" id="editWebReceptionStart" min="0" placeholder="30" style="width: 80px;">
                                 <span>日前</span>
                             </div>
-                            <small class="form-help">例：[30] = 30日前からネット受付開始可能になります</small>
+                            <small class="form-help">例：[30] = 30日前からWEB受付開始可能になります</small>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="editWebReceptionDeadline">ネット受付期限 <span class="required">*</span></label>
+                            <label class="form-label" for="editWebReceptionDeadline">WEB受付期限 <span class="required">*</span></label>
                             <div style="display: flex; gap: 10px; align-items: center;">
                                 <input type="number" class="form-input" id="editWebReceptionDeadline" min="0"
                                     placeholder="7" style="width: 80px;">
@@ -384,20 +710,168 @@
                             <small class="form-help">例：[1]日前 [12]時 = 予約日の1日前、12時にリマインドメールが送信されます</small>
                         </div>
                     </div>
+                </div>
 
             </form>
-        </div>
 
         <div class="modal-actions">
             <button type="button" class="modal-btn modal-btn-save" onclick="saveMenuEdit()">保存</button>
             <button type="button" id="btn-delete-menu" class="modal-btn modal-btn-delete" onclick="deleteMenu()">削除</button>
             <button type="button" class="modal-btn modal-btn-cancel" onclick="closeEditMenuModal()">閉じる</button>
         </div>
+        </div>
+    </div>
+
+    <!-- オプションメニューグループ 登録・編集 -->
+    <div class="popup-overlay" id="editOptionGroupModal" style="display: none;">
+        <div class="normal-modal resource-group-modal option-menu-group-modal" id="editOptionGroupModalContent">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 4px;">
+                    <span id="editOptionGroupTitleIcon" class="modal-title-icon" aria-hidden="true">✏️</span>
+                    <span id="editOptionGroupTitle">オプションメニューグループ編集</span>
+                    <span id="editOptionGroupId">（ID：1）</span>
+                </h3>
+                <button class="modal-close" onclick="closeOptionGroupModal()">×</button>
+            </div>
+            <form id="editOptionGroupForm">
+                <div class="form-section" style="padding-bottom: 0;">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label class="form-label" for="editOptionGroupName">オプションメニューグループ名 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="editOptionGroupName" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="rg-modal-body">
+                    <div class="rg-left">
+                        <div class="rg-group-block">
+                            <p class="rg-hint rg-group-hint">条件にあったオプションが、上から順に優先されます。ドラッグで並べ替えができます。<br/>矢印（→）でオプションメニューグループから外すことができます。</p>
+                            <ul class="rg-list rg-drop-zone" id="optionGroupSelectedList" data-zone="group"></ul>
+                        </div>
+                    </div>
+                    <div class="rg-right">
+                        <div class="rg-pool-section">
+                            <h4 class="rg-pool-title">オプションメニュー</h4>
+                            <p class="rg-pool-sub">矢印（←）でオプションメニューグループに追加できます。</p>
+                            <ul class="rg-list rg-drop-zone" id="optionGroupPoolList" data-zone="pool"></ul>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" id="btnSaveOptionGroup" onclick="saveOptionGroup()">保存</button>
+                <button type="button" class="modal-btn modal-btn-delete" id="btnDeleteOptionGroup" onclick="deleteOptionGroup()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeOptionGroupModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- オプションメニュー 登録・編集 -->
+    <div class="popup-overlay" id="editOptionMenuModal" style="display: none;">
+        <div class="normal-modal" id="editOptionMenuModalContent">
+            <div class="modal-header">
+                <h3 class="modal-title" style="display: flex; align-items: center; gap: 4px;">
+                    <span id="editOptionMenuTitleIcon" class="modal-title-icon" aria-hidden="true">✏️</span>
+                    <span id="editOptionMenuTitle">オプションメニュー編集</span>
+                    <span id="editOptionMenuId">（ID：1）</span>
+                </h3>
+                <button class="modal-close" onclick="closeOptionMenuModal()">×</button>
+            </div>
+            <form id="editOptionMenuForm">
+                <div class="form-section">
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label class="form-label" for="editOptionMenuName">オプションメニュー名 <span class="required">*</span></label>
+                            <input type="text" class="form-input" id="editOptionMenuName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label class="form-label" for="editOptionMenuDescription">オプションメニュー説明</label>
+                            <textarea class="form-textarea" id="editOptionMenuDescription" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label class="form-label" for="editOptionMenuImage">オプションメニュー画像</label>
+                            <div id="optionImagePreviewContainer" style="margin-bottom: 10px; display: none; align-items: center; gap: 8px;">
+                                <img id="optionImagePreview" src="" alt="画像プレビュー" style="width: 60px; height: 60px; object-fit: contain; border: 1px solid #ccc; border-radius: 4px; flex-shrink: 0;">
+                                <button type="button" class="modal-btn modal-btn-delete" id="deleteOptionImageBtn" style="padding: 6px 12px; font-size: 0.85rem;">画像を削除</button>
+                            </div>
+                            <input type="file" class="form-input" id="editOptionMenuImage" accept="image/*">
+                            <small class="form-help">JPEG、PNG、GIF形式の画像ファイルを選択してください</small>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editOptionMenuPrice">料金(税込)</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="number" class="form-input" id="editOptionMenuPrice" min="0">
+                                <span>円</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editOptionMenuDuration">所要時間</label>
+                            <select class="form-input" id="editOptionMenuDuration">
+                                <option value="">未設定</option>
+                                <option value="0">0分</option>
+                                <option value="5">5分</option>
+                                <option value="10">10分</option>
+                                <option value="15">15分</option>
+                                <option value="30">30分</option>
+                                <option value="45">45分</option>
+                                <option value="60">60分</option>
+                                <option value="90">90分</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-actions">
+                <button type="button" class="modal-btn modal-btn-save" id="btnSaveOptionMenu" onclick="saveOptionMenu()">保存</button>
+                <button type="button" class="modal-btn modal-btn-delete" id="btnDeleteOptionMenu" onclick="deleteOptionMenu()">削除</button>
+                <button type="button" class="modal-btn modal-btn-cancel" onclick="closeOptionMenuModal()">閉じる</button>
+            </div>
+        </div>
     </div>
 
     <script>
         // 元のメニューデータを保持
         let originalMenuData = [];
+        let currentMenuMgmtTab = 'tab-menus';
+
+        // モック: オプションメニュー / グループ
+        const OPTION_MENUS = {
+            '1': { id: '1', name: 'ヘアオイル', price: 500, duration: 0, description: '仕上げ用ヘアオイル' },
+            '2': { id: '2', name: 'ダメージケア', price: 1500, duration: 15, description: '集中トリートメント' },
+            '3': { id: '3', name: 'リタッチ', price: 2000, duration: 30, description: '根元リタッチ' },
+            '4': { id: '4', name: 'フルカラー追加', price: 3000, duration: 45, description: '全体カラー追加' },
+            '5': { id: '5', name: 'ヘッドスパ', price: '', duration: 20, description: '料金未設定の例' },
+            '6': { id: '6', name: 'ブロー仕上げ', price: 800, duration: '', description: '所要時間未設定の例' },
+            '7': { id: '7', name: '相談のみ', price: '', duration: '', description: '料金・所要時間とも未設定の例' },
+            '8': { id: '8', name: '炭酸泉シャンプー', price: 1200, duration: 10, description: '炭酸泉でのシャンプー' },
+            '9': { id: '9', name: 'トリートメント追加', price: 2500, duration: 20, description: '追加トリートメント' },
+            '10': { id: '10', name: '眉カット', price: 500, duration: 10, description: '眉カット' },
+            '11': { id: '11', name: 'ヘアマスク', price: 1800, duration: 15, description: '集中ヘアマスク' },
+            '12': { id: '12', name: 'スタイリング剤塗布', price: 300, duration: 5, description: 'スタイリング剤塗布' }
+        };
+        const OPTION_GROUPS = {
+            '1': { id: '1', name: 'トリートメント選択', optionIds: ['1', '2'] },
+            '2': { id: '2', name: 'カラーオプション', optionIds: ['3', '4'] },
+            '3': { id: '3', name: '仕上げオプション', optionIds: ['6', '1'] },
+            '4': { id: '4', name: 'スパ・ケア', optionIds: ['5', '2'] },
+            '5': { id: '5', name: 'カラー追加セット', optionIds: ['3', '4', '1'] },
+            '6': { id: '6', name: '相談・カウンセリング', optionIds: ['7'] },
+            '7': { id: '7', name: 'プレミアムケア', optionIds: ['2', '5', '1'] },
+            '8': { id: '8', name: 'クイック追加', optionIds: ['6'] },
+            '9': { id: '9', name: 'カラー＆ケア', optionIds: ['4', '2'] },
+            '10': { id: '10', name: 'トリートメント＋スパ', optionIds: ['1', '5'] },
+            '11': { id: '11', name: 'ライトオプション', optionIds: ['1', '6'] },
+            '12': { id: '12', name: 'フルオプションパック', optionIds: ['2', '3', '5'] }
+        };
+        let editingOptionGroupOptionIds = [];
+        let ogCurrentPage = 1;
+        let omCurrentPage = 1;
 
         /** メニュー名セルHTML（表示色マーカー + 名前） */
         function renderMenuNameCell(menu) {
@@ -579,6 +1053,15 @@
             document.getElementById('editReminderDays').value = '1';
             document.getElementById('editReminderHours').value = '0';
 
+            // オプションメニューグループ（1つのみ）
+            var optionGroupSelect = document.getElementById('editOptionGroupSelect');
+            if (String(menuId) === '1' || String(menuId) === '7' || String(menuId) === '2') {
+                optionGroupSelect.value = '1';
+            } else {
+                optionGroupSelect.value = '';
+            }
+            updateOptionGroupPreview();
+
             // 利用可能リソースを設定
             const availableResources = document.getElementById('editAvailableResources');
             const resourceOptions = availableResources.options;
@@ -635,6 +1118,9 @@
             document.getElementById('editWebReceptionStart').value = '';
             document.getElementById('editReminderDays').value = '';
             document.getElementById('editReminderHours').value = '';
+
+            document.getElementById('editOptionGroupSelect').value = '';
+            updateOptionGroupPreview();
 
             // 利用可能リソースをクリア
             const availableResources = document.getElementById('editAvailableResources');
@@ -817,11 +1303,602 @@
 
         });
 
-        // モーダル外クリックで閉じる
-        document.getElementById('editMenuModal').addEventListener('click', function (e) {
-            if (e.target === this) {
-                closeEditMenuModal();
+
+        // ========== タブ切替・オプション管理 ==========
+        function switchMenuMgmtTab(tabId) {
+            currentMenuMgmtTab = tabId;
+            document.querySelectorAll('.menu-mgmt-tab-btn').forEach(function(btn) {
+                var active = btn.getAttribute('data-tab') === tabId;
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            document.querySelectorAll('.menu-mgmt-panel').forEach(function(panel) {
+                panel.classList.toggle('active', panel.id === tabId);
+            });
+
+            var search = document.getElementById('menuSearchInput');
+            var sortBtn = document.getElementById('btnMenuSort');
+            var maxCount = document.getElementById('menuMaxCount');
+            var mainTitle = document.getElementById('menuMainTitle');
+            if (tabId === 'tab-menus') {
+                search.placeholder = 'メニュー名 を検索';
+                sortBtn.style.display = '';
+                maxCount.textContent = '登録上限数：99件';
+                if (mainTitle) mainTitle.textContent = '🛠 メニュー管理';
+            } else if (tabId === 'tab-option-groups') {
+                search.placeholder = 'オプションメニューグループ名 を検索';
+                sortBtn.style.display = 'none';
+                maxCount.textContent = '登録上限数：99件';
+                if (mainTitle) mainTitle.textContent = '🛠 オプションメニューグループ管理';
+                ogApplyPagination();
+            } else {
+                search.placeholder = 'オプションメニュー名 を検索';
+                sortBtn.style.display = 'none';
+                maxCount.textContent = '登録上限数：99件';
+                if (mainTitle) mainTitle.textContent = '🛠 オプションメニュー管理';
+                omApplyPagination();
             }
+        }
+
+        function onClickNewRegister() {
+            if (currentMenuMgmtTab === 'tab-option-groups') {
+                showNewOptionGroupModal();
+            } else if (currentMenuMgmtTab === 'tab-option-menus') {
+                showNewOptionMenuModal();
+            } else {
+                menuAdd(1);
+            }
+        }
+
+        function formatYen(n) {
+            if (n === null || n === undefined || n === '') return '—';
+            return Number(n).toLocaleString('ja-JP') + '円';
+        }
+
+        function formatDuration(n) {
+            if (n === null || n === undefined || n === '') return '—';
+            return n + '分';
+        }
+
+        function formatOptionMenuMeta(o) {
+            return formatDuration(o.duration) + ' / ' + formatYen(o.price);
+        }
+
+        function updateOptionGroupPreview() {
+            var preview = document.getElementById('editOptionGroupPreview');
+            var sel = document.getElementById('editOptionGroupSelect');
+            if (!preview || !sel) return;
+            var gid = sel.value;
+            if (!gid || !OPTION_GROUPS[gid]) {
+                preview.hidden = true;
+                preview.innerHTML = '';
+                return;
+            }
+            var g = OPTION_GROUPS[gid];
+            var chips = (g.optionIds || []).map(function(oid) {
+                var o = OPTION_MENUS[oid];
+                if (!o) return '';
+                return '<span class="option-group-preview-chip">' +
+                    '<span class="option-group-preview-chip-name">' + o.name + '</span>' +
+                    '<span class="option-group-preview-chip-meta">' + formatOptionMenuMeta(o) + '</span>' +
+                    '</span>';
+            }).filter(Boolean);
+            preview.innerHTML =
+                '<div class="option-group-preview-title">グループ内のオプション</div>' +
+                (chips.length
+                    ? ('<div class="option-group-preview-chips">' + chips.join('') + '</div>')
+                    : '<div class="option-group-preview-empty">（オプション未設定）</div>');
+            preview.hidden = false;
+        }
+
+        function optionGroupEdit(id) {
+            var g = OPTION_GROUPS[String(id)];
+            if (!g) return;
+            document.getElementById('editOptionGroupTitleIcon').textContent = '✏️';
+            document.getElementById('editOptionGroupTitle').textContent = 'オプションメニューグループ編集';
+            document.getElementById('editOptionGroupId').style.display = 'inline';
+            document.getElementById('editOptionGroupId').textContent = '（ID：' + g.id + '）';
+            document.getElementById('editOptionGroupName').value = g.name;
+            document.getElementById('btnSaveOptionGroup').textContent = '保存';
+            document.getElementById('btnDeleteOptionGroup').style.display = 'inline-block';
+            editingOptionGroupOptionIds = (g.optionIds || []).slice();
+            renderOptionGroupLinkUI(editingOptionGroupOptionIds);
+            document.getElementById('editOptionGroupModal').style.display = 'flex';
+            document.getElementById('editOptionGroupModal').classList.add('show');
+        }
+
+        function showNewOptionGroupModal() {
+            document.getElementById('editOptionGroupTitleIcon').textContent = '📝';
+            document.getElementById('editOptionGroupTitle').textContent = 'オプションメニューグループ登録';
+            document.getElementById('editOptionGroupId').style.display = 'none';
+            document.getElementById('editOptionGroupName').value = '';
+            document.getElementById('btnSaveOptionGroup').textContent = '登録';
+            document.getElementById('btnDeleteOptionGroup').style.display = 'none';
+            editingOptionGroupOptionIds = [];
+            renderOptionGroupLinkUI(editingOptionGroupOptionIds);
+            document.getElementById('editOptionGroupModal').style.display = 'flex';
+            document.getElementById('editOptionGroupModal').classList.add('show');
+        }
+
+        function closeOptionGroupModal() {
+            document.getElementById('editOptionGroupModal').style.display = 'none';
+            document.getElementById('editOptionGroupModal').classList.remove('show');
+        }
+
+        function renderOptionGroupLinkUI(selectedIds) {
+            editingOptionGroupOptionIds = (selectedIds || []).map(String);
+            var selectedList = document.getElementById('optionGroupSelectedList');
+            var poolList = document.getElementById('optionGroupPoolList');
+            if (!selectedList || !poolList) return;
+
+            var selectedSet = {};
+            editingOptionGroupOptionIds.forEach(function(id) { selectedSet[id] = true; });
+
+            selectedList.innerHTML = '';
+            poolList.innerHTML = '';
+
+            editingOptionGroupOptionIds.forEach(function(id) {
+                var o = OPTION_MENUS[id];
+                if (!o) return;
+                selectedList.appendChild(createOptionLinkItem(o, 'group'));
+            });
+
+            Object.keys(OPTION_MENUS).forEach(function(id) {
+                if (selectedSet[id]) return;
+                var o = OPTION_MENUS[id];
+                if (!o) return;
+                poolList.appendChild(createOptionLinkItem(o, 'pool'));
+            });
+        }
+
+        function createOptionLinkItem(o, zone) {
+            var li = document.createElement('li');
+            li.className = 'rg-item';
+            li.setAttribute('data-id', o.id);
+            var label = document.createElement('span');
+            label.className = 'rg-item-label';
+            label.textContent = o.name + '（' + formatOptionMenuMeta(o) + '）';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'rg-move-btn ' + (zone === 'group' ? 'rg-move-to-pool' : 'rg-move-to-group');
+            if (zone === 'group') {
+                btn.title = 'オプションメニューグループから外す';
+                btn.setAttribute('aria-label', 'オプションメニューグループから外す');
+                btn.textContent = '→';
+                btn.addEventListener('click', function() { moveOptionToPool(o.id); });
+                var dragHandle = document.createElement('span');
+                dragHandle.className = 'rg-drag-handle';
+                dragHandle.title = 'ドラッグして並べ替え';
+                dragHandle.innerHTML = '<i class="material-icons rg-drag-handle-icon" aria-hidden="true">drag_indicator</i>';
+                li.setAttribute('draggable', 'true');
+                li.appendChild(dragHandle);
+                li.appendChild(label);
+                li.appendChild(btn);
+            } else {
+                btn.title = 'オプションメニューグループに追加';
+                btn.setAttribute('aria-label', 'オプションメニューグループに追加');
+                btn.textContent = '←';
+                btn.addEventListener('click', function() { moveOptionToGroup(o.id); });
+                li.setAttribute('draggable', 'false');
+                li.appendChild(btn);
+                li.appendChild(label);
+            }
+            return li;
+        }
+
+        function syncEditingOptionGroupOrderFromDom() {
+            var selectedList = document.getElementById('optionGroupSelectedList');
+            if (!selectedList) return;
+            editingOptionGroupOptionIds = Array.prototype.map.call(
+                selectedList.querySelectorAll('.rg-item[data-id]'),
+                function(li) { return String(li.getAttribute('data-id')); }
+            );
+        }
+
+        function ogGetDragAfterElementInList(container, y) {
+            var draggableElements = Array.prototype.slice
+                .call(container.querySelectorAll('.rg-item:not(.rg-dragging)'))
+                .filter(function(child) {
+                    return child.parentNode === container;
+                });
+            return draggableElements.reduce(
+                function(closest, child) {
+                    var box = child.getBoundingClientRect();
+                    var offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    }
+                    return closest;
+                },
+                { offset: Number.NEGATIVE_INFINITY, element: undefined }
+            ).element;
+        }
+
+        (function ogInitOptionGroupSortUi() {
+            var modal = document.getElementById('editOptionGroupModal');
+            if (!modal) return;
+            var draggedItem = null;
+
+            modal.addEventListener('dragstart', function(e) {
+                var li = e.target.closest('.rg-item');
+                if (!li) return;
+                var ul = li.closest('.rg-list.rg-drop-zone');
+                if (!ul || ul.dataset.zone !== 'group') return;
+                if (e.target.closest('.rg-move-btn')) {
+                    e.preventDefault();
+                    return;
+                }
+                draggedItem = li;
+                li.classList.add('rg-dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', li.dataset.id || '');
+            });
+
+            modal.addEventListener('dragend', function() {
+                if (draggedItem) {
+                    draggedItem.classList.remove('rg-dragging');
+                }
+                draggedItem = null;
+                modal.querySelectorAll('.rg-list[data-zone="group"].rg-sort-target-over').forEach(function(el) {
+                    el.classList.remove('rg-sort-target-over');
+                });
+                syncEditingOptionGroupOrderFromDom();
+            });
+
+            modal.addEventListener('dragover', function(e) {
+                if (!draggedItem) return;
+                var ul = e.target.closest('ul.rg-list.rg-drop-zone');
+                if (!ul || ul.dataset.zone !== 'group') return;
+                if (draggedItem.parentNode !== ul) return;
+
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                ul.classList.add('rg-sort-target-over');
+
+                var after = ogGetDragAfterElementInList(ul, e.clientY);
+                if (after == null) {
+                    ul.appendChild(draggedItem);
+                } else {
+                    ul.insertBefore(draggedItem, after);
+                }
+            });
+
+            modal.addEventListener('dragleave', function(e) {
+                var ul = e.target.closest('ul.rg-list.rg-drop-zone[data-zone="group"]');
+                if (ul && e.relatedTarget && !ul.contains(e.relatedTarget)) {
+                    ul.classList.remove('rg-sort-target-over');
+                }
+            });
+
+            modal.addEventListener('drop', function(e) {
+                var ul = e.target.closest('ul.rg-list.rg-drop-zone[data-zone="group"]');
+                if (ul) {
+                    e.preventDefault();
+                    ul.classList.remove('rg-sort-target-over');
+                    syncEditingOptionGroupOrderFromDom();
+                }
+            });
+        })();
+
+        function moveOptionToGroup(id) {
+            id = String(id);
+            if (editingOptionGroupOptionIds.indexOf(id) === -1) {
+                editingOptionGroupOptionIds.push(id);
+            }
+            renderOptionGroupLinkUI(editingOptionGroupOptionIds);
+        }
+
+        function moveOptionToPool(id) {
+            id = String(id);
+            editingOptionGroupOptionIds = editingOptionGroupOptionIds.filter(function(x) { return x !== id; });
+            renderOptionGroupLinkUI(editingOptionGroupOptionIds);
+        }
+
+        function saveOptionGroup() {
+            var name = document.getElementById('editOptionGroupName').value.trim();
+            if (!name) {
+                alert('オプションメニューグループ名を入力してください。');
+                return;
+            }
+            // editingOptionGroupOptionIds が紐づけ対象
+            console.log('saveOptionGroup optionIds:', editingOptionGroupOptionIds);
+            alert('オプションメニューグループを保存しました。（モック）');
+            closeOptionGroupModal();
+        }
+
+        function deleteOptionGroup() {
+            if (confirm('オプションメニューグループを削除します。よろしいですか？')) {
+                alert('削除しました。（モック）');
+                closeOptionGroupModal();
+            }
+        }
+
+        function resetOptionMenuImagePreview() {
+            var imageInput = document.getElementById('editOptionMenuImage');
+            var imagePreview = document.getElementById('optionImagePreview');
+            var imagePreviewContainer = document.getElementById('optionImagePreviewContainer');
+            if (imageInput) imageInput.value = '';
+            if (imagePreview) imagePreview.src = '';
+            if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
+        }
+
+        function setupOptionMenuImagePreview() {
+            var imageInput = document.getElementById('editOptionMenuImage');
+            var imagePreview = document.getElementById('optionImagePreview');
+            var imagePreviewContainer = document.getElementById('optionImagePreviewContainer');
+            var deleteImageBtn = document.getElementById('deleteOptionImageBtn');
+            if (!imageInput || !imagePreview || !imagePreviewContainer || !deleteImageBtn) return;
+
+            imageInput.addEventListener('change', function(e) {
+                var file = e.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(ev) {
+                        imagePreview.src = ev.target.result;
+                        imagePreviewContainer.style.display = 'flex';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreviewContainer.style.display = 'none';
+                }
+            });
+
+            deleteImageBtn.addEventListener('click', function() {
+                imageInput.value = '';
+                imagePreview.src = '';
+                imagePreviewContainer.style.display = 'none';
+            });
+        }
+
+        function optionMenuEdit(id) {
+            var o = OPTION_MENUS[String(id)];
+            if (!o) return;
+            document.getElementById('editOptionMenuTitleIcon').textContent = '✏️';
+            document.getElementById('editOptionMenuTitle').textContent = 'オプションメニュー編集';
+            document.getElementById('editOptionMenuId').style.display = 'inline';
+            document.getElementById('editOptionMenuId').textContent = '（ID：' + o.id + '）';
+            document.getElementById('editOptionMenuName').value = o.name;
+            document.getElementById('editOptionMenuPrice').value = (o.price === null || o.price === undefined || o.price === '') ? '' : o.price;
+            document.getElementById('editOptionMenuDuration').value = (o.duration === null || o.duration === undefined || o.duration === '') ? '' : String(o.duration);
+            document.getElementById('editOptionMenuDescription').value = o.description || '';
+            resetOptionMenuImagePreview();
+            document.getElementById('btnSaveOptionMenu').textContent = '保存';
+            document.getElementById('btnDeleteOptionMenu').style.display = 'inline-block';
+            document.getElementById('editOptionMenuModal').style.display = 'flex';
+            document.getElementById('editOptionMenuModal').classList.add('show');
+        }
+
+        function showNewOptionMenuModal() {
+            document.getElementById('editOptionMenuTitleIcon').textContent = '📝';
+            document.getElementById('editOptionMenuTitle').textContent = 'オプションメニュー登録';
+            document.getElementById('editOptionMenuId').style.display = 'none';
+            document.getElementById('editOptionMenuName').value = '';
+            document.getElementById('editOptionMenuPrice').value = '';
+            document.getElementById('editOptionMenuDuration').value = '';
+            document.getElementById('editOptionMenuDescription').value = '';
+            resetOptionMenuImagePreview();
+            document.getElementById('btnSaveOptionMenu').textContent = '登録';
+            document.getElementById('btnDeleteOptionMenu').style.display = 'none';
+            document.getElementById('editOptionMenuModal').style.display = 'flex';
+            document.getElementById('editOptionMenuModal').classList.add('show');
+        }
+
+        function closeOptionMenuModal() {
+            document.getElementById('editOptionMenuModal').style.display = 'none';
+            document.getElementById('editOptionMenuModal').classList.remove('show');
+        }
+
+        function saveOptionMenu() {
+            var name = document.getElementById('editOptionMenuName').value.trim();
+            if (!name) {
+                alert('オプションメニュー名を入力してください。');
+                return;
+            }
+            var menuImage = document.getElementById('editOptionMenuImage').files[0];
+            if (menuImage) {
+                var allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+                if (allowedTypes.indexOf(menuImage.type) === -1) {
+                    alert('画像ファイルはJPEG、PNG、GIF形式のみ対応しています。');
+                    return;
+                }
+                if (menuImage.size > 5 * 1024 * 1024) {
+                    alert('画像ファイルのサイズは5MB以下にしてください。');
+                    return;
+                }
+            }
+            alert('オプションメニューを保存しました。（モック）');
+            closeOptionMenuModal();
+        }
+
+        function deleteOptionMenu() {
+            if (confirm('オプションメニューを削除します。よろしいですか？')) {
+                alert('削除しました。（モック）');
+                closeOptionMenuModal();
+            }
+        }
+
+        // ========== オプションメニューグループ / オプションメニュー ページネーション ==========
+        function ogGetTableRows() {
+            return Array.prototype.slice.call(document.querySelectorAll('#optionGroupTableBody tr'));
+        }
+        function omGetTableRows() {
+            return Array.prototype.slice.call(document.querySelectorAll('#optionMenuTableBody tr'));
+        }
+
+        function applyListPagination(opts) {
+            var pageSizeEl = document.getElementById(opts.pageSizeId);
+            var pageSize = parseInt(pageSizeEl && pageSizeEl.value, 10) || 10;
+            var allRows = opts.getRows();
+            var matched = allRows.filter(function(row) {
+                return !row.classList.contains(opts.filterHiddenClass);
+            });
+            var totalFiltered = matched.length;
+            var totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize) || 1);
+            if (totalFiltered === 0) totalPages = 1;
+            if (opts.state.page > totalPages) opts.state.page = totalPages;
+            if (opts.state.page < 1) opts.state.page = 1;
+
+            var start = (opts.state.page - 1) * pageSize;
+            matched.forEach(function(row, idx) {
+                if (idx >= start && idx < start + pageSize) {
+                    row.classList.remove(opts.pageHiddenClass);
+                } else {
+                    row.classList.add(opts.pageHiddenClass);
+                }
+            });
+            allRows.forEach(function(row) {
+                if (row.classList.contains(opts.filterHiddenClass)) {
+                    row.classList.remove(opts.pageHiddenClass);
+                }
+            });
+
+            var curInput = document.getElementById(opts.curPageId);
+            if (curInput) curInput.value = String(opts.state.page);
+            var totalPageEl = document.getElementById(opts.totalPageId);
+            if (totalPageEl) totalPageEl.textContent = String(totalPages);
+            var from = totalFiltered === 0 ? 0 : start + 1;
+            var to = totalFiltered === 0 ? 0 : Math.min(start + pageSize, totalFiltered);
+            var fromEl = document.getElementById(opts.fromRecordId);
+            var toEl = document.getElementById(opts.toRecordId);
+            if (fromEl) fromEl.textContent = String(from);
+            if (toEl) toEl.textContent = String(to);
+            var filteredEl = document.getElementById(opts.filteredCountId);
+            if (filteredEl) filteredEl.textContent = String(totalFiltered);
+            var recordCountEl = document.getElementById(opts.recordCountId);
+            if (recordCountEl) recordCountEl.textContent = String(allRows.length);
+        }
+
+        var ogPagerState = { page: 1 };
+        var omPagerState = { page: 1 };
+
+        function ogApplyPagination() {
+            ogPagerState.page = ogCurrentPage;
+            applyListPagination({
+                pageSizeId: 'ogPageSizeSelect',
+                getRows: ogGetTableRows,
+                filterHiddenClass: 'og-filter-hidden',
+                pageHiddenClass: 'og-page-hidden',
+                state: ogPagerState,
+                curPageId: 'ogCurPage',
+                totalPageId: 'ogTotalPage',
+                fromRecordId: 'ogFromRecord',
+                toRecordId: 'ogToRecord',
+                filteredCountId: 'ogFilteredCount',
+                recordCountId: 'optionGroupRecordCount'
+            });
+            ogCurrentPage = ogPagerState.page;
+        }
+
+        function omApplyPagination() {
+            omPagerState.page = omCurrentPage;
+            applyListPagination({
+                pageSizeId: 'omPageSizeSelect',
+                getRows: omGetTableRows,
+                filterHiddenClass: 'om-filter-hidden',
+                pageHiddenClass: 'om-page-hidden',
+                state: omPagerState,
+                curPageId: 'omCurPage',
+                totalPageId: 'omTotalPage',
+                fromRecordId: 'omFromRecord',
+                toRecordId: 'omToRecord',
+                filteredCountId: 'omFilteredCount',
+                recordCountId: 'optionMenuRecordCount'
+            });
+            omCurrentPage = omPagerState.page;
+        }
+
+        function bindListPaginationEvents(cfg) {
+            var sel = document.getElementById(cfg.pageSizeId);
+            if (sel) {
+                sel.addEventListener('change', function() {
+                    cfg.setPage(1);
+                    cfg.apply();
+                });
+            }
+            function goFirst() { cfg.setPage(1); cfg.apply(); }
+            function goPrev() { cfg.setPage(cfg.getPage() - 1); cfg.apply(); }
+            function goNext() { cfg.setPage(cfg.getPage() + 1); cfg.apply(); }
+            function goLast() {
+                var pageSize = parseInt(document.getElementById(cfg.pageSizeId).value, 10) || 10;
+                var matched = cfg.getRows().filter(function(r) {
+                    return !r.classList.contains(cfg.filterHiddenClass);
+                });
+                var totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                cfg.setPage(totalPages);
+                cfg.apply();
+            }
+            var firstBtn = document.getElementById(cfg.firstId);
+            var preBtn = document.getElementById(cfg.preId);
+            var nextBtn = document.getElementById(cfg.nextId);
+            var lastBtn = document.getElementById(cfg.lastId);
+            if (firstBtn) firstBtn.addEventListener('click', goFirst);
+            if (preBtn) preBtn.addEventListener('click', goPrev);
+            if (nextBtn) nextBtn.addEventListener('click', goNext);
+            if (lastBtn) lastBtn.addEventListener('click', goLast);
+
+            var curInput = document.getElementById(cfg.curPageId);
+            if (curInput) {
+                function syncCurPageFromInput() {
+                    var v = parseInt(String(curInput.value).trim(), 10);
+                    if (isNaN(v) || v < 1) v = 1;
+                    var pageSize = parseInt(document.getElementById(cfg.pageSizeId).value, 10) || 10;
+                    var matched = cfg.getRows().filter(function(r) {
+                        return !r.classList.contains(cfg.filterHiddenClass);
+                    });
+                    var totalPages = Math.max(1, Math.ceil(matched.length / pageSize) || 1);
+                    if (v > totalPages) v = totalPages;
+                    cfg.setPage(v);
+                    cfg.apply();
+                }
+                curInput.addEventListener('change', syncCurPageFromInput);
+                curInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        syncCurPageFromInput();
+                        curInput.blur();
+                    }
+                });
+            }
+        }
+
+        function ogBindPaginationEvents() {
+            bindListPaginationEvents({
+                pageSizeId: 'ogPageSizeSelect',
+                firstId: 'ogFirstPage',
+                preId: 'ogPrePage',
+                nextId: 'ogNextPage',
+                lastId: 'ogLastPage',
+                curPageId: 'ogCurPage',
+                filterHiddenClass: 'og-filter-hidden',
+                getRows: ogGetTableRows,
+                getPage: function() { return ogCurrentPage; },
+                setPage: function(p) { ogCurrentPage = p; },
+                apply: ogApplyPagination
+            });
+        }
+
+        function omBindPaginationEvents() {
+            bindListPaginationEvents({
+                pageSizeId: 'omPageSizeSelect',
+                firstId: 'omFirstPage',
+                preId: 'omPrePage',
+                nextId: 'omNextPage',
+                lastId: 'omLastPage',
+                curPageId: 'omCurPage',
+                filterHiddenClass: 'om-filter-hidden',
+                getRows: omGetTableRows,
+                getPage: function() { return omCurrentPage; },
+                setPage: function(p) { omCurrentPage = p; },
+                apply: omApplyPagination
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupOptionMenuImagePreview();
+            ogBindPaginationEvents();
+            omBindPaginationEvents();
+            ogApplyPagination();
+            omApplyPagination();
         });
 
     </script>

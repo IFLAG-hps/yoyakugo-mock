@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="./gate.js"></script>
   <title>基本設定｜管理画面モック</title>
 
   <!-- Material Design Components CSS -->
@@ -62,18 +63,19 @@
 
     .search-form-row.copy-mail-row .search-form-label {
       line-height: 20px;
+      padding-bottom: 15px;
     }
     .search-form-input.radio-group.copy-mail-radio {
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 10px;
+      margin-bottom: 10px;
     }
     .search-form-input.radio-group.copy-mail-radio label {
       min-height: 20px;
     }
     .search-form-input.radio-group .copy-mail-description {
       flex-basis: 100%;
-      margin-left: 10px;
     }
     /* ラジオブロック内：受信メールアドレスと入力欄を横一列に */
     .copy-mail-description.copy-mail-addr-row {
@@ -89,6 +91,162 @@
     .copy-mail-description.copy-mail-addr-row .search-form-input {
       flex: 1;
       min-width: 0;
+    }
+
+    /* 受付・予約完了メールの添付ファイル */
+    .mail-attachment-input {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+      width: 100%;
+    }
+    .mail-attachment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+    }
+    .mail-attachment-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: #f9fafb;
+      min-width: 0;
+    }
+    .mail-attachment-icon {
+      font-size: 20px;
+      color: #dc2626;
+      flex-shrink: 0;
+    }
+    .mail-attachment-download {
+      flex: 1;
+      min-width: 0;
+      color: #1e90ff;
+      text-decoration: underline;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .mail-attachment-download:hover {
+      color: #187bcd;
+    }
+    .mail-attachment-size {
+      flex-shrink: 0;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    .mail-attachment-remove {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .mail-attachment-remove:hover {
+      color: #374151;
+      background: #f3f4f6;
+    }
+    .mail-attachment-select-btn {
+      align-self: flex-start;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .mail-attachment-select-btn:hover {
+      background: #0d9366;
+    }
+    .mail-attachment-select-btn:disabled {
+      background: #d1d5db;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .mail-attachment-description {
+      flex-basis: 100%;
+    }
+
+    /* キャンセル期限（WEB・電話） */
+    .search-form-row.cancel-deadline-row {
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .cancel-deadline-row .search-form-input {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      column-gap: 24px;
+      row-gap: 0;
+    }
+    .cancel-deadline-col {
+      flex: 1;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .cancel-deadline-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cancel-deadline-col-label {
+      font-weight: 500;
+      color: #1f2937;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    .cancel-deadline-days {
+      width: 80px;
+    }
+    .cancel-deadline-description {
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+      margin-left: 0;
+    }
+    .cancel-deadline-note {
+      flex-basis: 100%;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+      margin-top: 5px;
+    }
+    .cancel-deadline-caution {
+      flex-basis: 100%;
+      margin-top: 0px;
+      padding: 12px 16px;
+      background-color: #f0f7ff;
+      border-left: 4px solid #1e90ff;
+      border-radius: 4px;
+    }
+    .cancel-deadline-caution p {
+      margin: 0;
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.6;
+    }
+    .cancel-deadline-caution-label {
+      color: #1e90ff;
+      font-weight: 600;
+    }
+    .cancel-deadline-caution-row .search-form-input {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding-bottom: 0;
     }
 
     /* 時間・分のセレクトボックス */
@@ -336,6 +494,8 @@
       display: none !important;
     }
   </style>
+  <link href="./sp.css" rel="stylesheet">
+  <script src="./sp.js" defer></script>
 </head>
   <!-- 接続元IP表示・保存時チェック用: 本番ではサーバーが data-client-ip に接続元IPv4を埋め込み -->
 <body data-client-ip="203.0.113.10">
@@ -722,11 +882,83 @@
                                     </div>
                                 </div>
 
+                                <div class="search-form-row cancel-deadline-row">
+                                    <div class="search-form-label">受付・予約キャンセルの期限</div>
+                                    <div class="search-form-input">
+                                        <div class="cancel-deadline-col">
+                                            <div class="cancel-deadline-input-row">
+                                                <div class="cancel-deadline-col-label">WEBキャンセル期限</div>
+                                                <input type="number" id="txtNetCancelDeadline" name="txtNetCancelDeadline" class="form-input cancel-deadline-days" min="0" placeholder="7">
+                                                <span>日前まで</span>
+                                            </div>
+                                            <div class="cancel-deadline-description">例：[7] = 7日前までWEBキャンセルが可能です</div>
+                                        </div>
+                                        <div class="cancel-deadline-col">
+                                            <div class="cancel-deadline-input-row">
+                                                <div class="cancel-deadline-col-label">電話キャンセル期限</div>
+                                                <input type="number" id="txtPhoneCancelDeadline" name="txtPhoneCancelDeadline" class="form-input cancel-deadline-days" min="0" placeholder="1">
+                                                <span>日前まで</span>
+                                            </div>
+                                            <div class="cancel-deadline-description">例：[1] = 1日前まで電話キャンセルが可能です</div>
+                                        </div>
+                                        <p class="cancel-deadline-note">WEBキャンセル期限は、電話キャンセル期限と同じ日数、またはそれより多い日数で設定してください。</p>
+                                    </div>
+                                </div>
+                                <div class="search-form-row cancel-deadline-caution-row">
+                                    <div class="search-form-label">　</div>
+                                    <div class="search-form-input">
+                                        <div class="cancel-deadline-caution">
+                                            <p>
+                                                <span class="cancel-deadline-caution-label">💡 注意事項：</span>
+                                                WEBキャンセルの受付期限を極端に短く設定すると、実質的にキャンセルができない状態となり、消費者契約法上、施設様とお客様間の契約が無効と判断されるおそれがあります。お客様が十分ご検討・お手続きいただける日数での設定を推奨します。
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">キャンセルポリシー</div>
+                                    <div class="search-form-input">
+                                        <textarea rows="20" id="txCancelPolicy" name="txCancelPolicy" class="form-textarea" placeholder="キャンセルポリシーを入力してください">
+「株式会社アイフラッグ」は、予約GOを「サービス提供者」に提供しています。
+ キャンセルポリシー（以下「本ポリシー」といいます。）は、株式会社アイフラッグ（以下「当社」といいます。）が提供する予約・受付管理システム「予約GO」（以下「本サービス」といいます。）を通じて行われた本サービスに掲載の事業・店舗を開設・運営する施設等(以下「施設等」といいます)の[みらい総合LO1.1][TO1.2]予約のキャンセルに関する取扱いを定めるものです。本サービスのユーザー（以下「ユーザー」といいます。）は、本ポリシーの内容に同意したうえで、本サービスを利用するものとします。
+
+ 第1条（キャンセル方法及び受付期限）
+ 1.	ユーザーは、以下の方法により、本サービスの予約をキャンセルすることができます。
+(1)	Web上でのキャンセル
+施設等のご利用日の●日前までの場合、ユーザーは、本サービスの予約キャンセル画面よりWeb上でキャンセルの手続き（以下「Webキャンセル」といいます。）を行うことができます。本サービスの予約キャンセル画面へは、予約完了時のメールに記載のリンク等によりアクセスすることができます。
+(2)	お電話でのキャンセル
+施設等のご利用日の●日前から●日前までの場合、ユーザーは、以下の電話番号への架電（以下「電話キャンセル」といいます。）によって予約をキャンセルでき、Webキャンセルは行うことができません。なお、予約した施設等の営業時間を超過した場合、ユーザーからの電話キャンセルは、当該施設等の翌営業日に行われたものとしてこれを扱います。
+キャンセル時連絡先電話番号：xx-xxxx-xxxx
+2.	施設等のご利用日の●日前からご利用当日までの期間においては、ユーザーは予約をキャンセルすることができません。
+
+第2条（キャンセルの成立時期）
+ユーザーによる予約のキャンセルは、それぞれ以下の時点をもって成立するものとします。
+(1)	Webキャンセル
+本サービスの予約キャンセル画面において、キャンセルが完了したことを示すページへの遷移が行われることをもって、予約のキャンセルが成立します。
+(2)	電話キャンセル
+ユーザーからのキャンセルの連絡の終了後、キャンセルが完了したことを示すメールがユーザーに送付されたときをもって、予約のキャンセルが成立します。[みらい総合LO3.1][TO3.2]キャンセルの連絡が終了した時点では、予約のキャンセル成立とはなっておりませんので、予めご了承ください。
+
+第3条（無断キャンセル）
+ユーザーが事前にキャンセルの連絡をすることなく予約日時に来店または利用をしなかった場合、無断キャンセルとしてこれを取り扱います。当社は、ユーザーが無断キャンセルを行った場合、当該ユーザーによる本サービスの利用停止、予約機能の制限その他必要な措置を講じることができるものとします。[みらい総合LO4.1][TO4.2]
+
+第4条（本ポリシーの変更）
+当社は、事前にユーザーへ通知または公表することにより、本ポリシーの内容を変更することができるものとします。
+
+第5条（適用関係）
+1.	各施設等に別途キャンセル料等に関する規定がある場合、当該規定が本ポリシーに優先するものとし、ユーザーはその定めに従うものとします。
+2.	本ポリシーに規定のない事項については、本サービスの利用規約の定めに従うものとします。
+以上
+制定日：202●年●月●日
+                                        </textarea>
+                                    </div>
+                                </div>
+
                                 <div class="search-form-row">
                                     <div class="search-form-label">利用規約</div>
                                     <div class="search-form-input">
                                         <textarea rows="20" id="txTermsOfService" name="txTermsOfService" class="form-textarea" placeholder="利用規約を入力してください">第1条(規約の適用)
-1. 予約GOユーザー利用規約(以下「本規約」といいます)は、株式会社アイフラッグ(以下「当社」といいます)が管理・運営するインターネット上(PC向け、モバイル向け双方を含むものとします)の総合予約サービスサイト「予約GO」及びこれに付随する各種サービス(以下「予約GO」を含めて「本サービス」といいます)の利用者(以下「ユーザー」といいます)に対して適用されます。
+1. 予約GOユーザー利用規約(以下「本規約」といいます)は、株式会社アイフラッグ(以下「当社」といいます)が管理・運営するWEB上(PC向け、モバイル向け双方を含むものとします)の総合予約サービスサイト「予約GO」及びこれに付随する各種サービス(以下「予約GO」を含めて「本サービス」といいます)の利用者(以下「ユーザー」といいます)に対して適用されます。
 2.本規約の内容は、ユーザーへの事前の通知なしに変更することがあります。ユーザーは、本サービスの利用に際して、本サービス上に掲載されている最新の本規約を確認するものとします。
 3.当社が本サービス上に掲載するルール等が存在する場合、当該ルール等は、本規約の一部を構成するものとします。
 
@@ -746,7 +978,7 @@
 2. ユーザーは、ユーザー情報に関しては、自己の責任において正確な情報を入力するものとします。当該ユーザー情報の誤りや虚偽の記載に基づく施設等その他第三者とのトラブルに関して、当社は一切の責任を負いません。
 
 第4条(ユーザーの責任)
-1. ユーザーは、本サービスを利用するために必要なあらゆる設備と環境、機器、ソフトウェア、通信手段(パソコン・タブレット型端末等の機器、インターネット回線等の環境を含みますが、これらに限りません)を自己の責任と費用において用意するものとします。
+1. ユーザーは、本サービスを利用するために必要なあらゆる設備と環境、機器、ソフトウェア、通信手段(パソコン・タブレット型端末等の機器、WEB回線等の環境を含みますが、これらに限りません)を自己の責任と費用において用意するものとします。
 
 第5条(ユーザーの禁止事項)
 1. 本サービス上に掲載する画像、動画、口コミ、施設等の掲載情報等の著作権は当社又はそのライセンサーに帰属します。ユーザーは、著作権法その他関係法令等で認められる引用の範囲を超えて、当社の事前の承諾なく、当該画像、動画、口コミ、施設等の掲載情報等を使用できないものとします。
@@ -981,6 +1213,7 @@ b. 申込書面をご提出いただく際に同封いただくもの
                                             【店舗電話番号】(店舗・施設の電話番号)<br/>
                                             【ID】(ID)<br/>
                                             【受付・予約日時】受付日時(YYYY/MM/DD HH:MM)<br/>
+                                            【人数】(人数)<br/>
                                             【受付内容】(メニュー名)<br/>
                                             -----------------------<br/>
                                             　受付内容<br/>
@@ -990,7 +1223,12 @@ b. 申込書面をご提出いただく際に同封いただくもの
                                             【電話番号】(顧客電話番号)<br/>
                                             【メールアドレス】(顧客メールアドレス)<br/>
                                             【コメント】(受付・予約時に入力したコメント)<br/><br/>
-                                            受付・予約内容の変更・キャンセルにつきましては、お電話にて承ります。<br/>
+                                            受付・予約のキャンセルは、下記URLよりお手続きください。<br/>
+                                            (キャンセルURL)<br/><br/>
+                                            キャンセル受付期限<br>
+                                            ・WEBからのキャンセル：予約日の【◯日前】まで<br>
+                                            ・お電話からのキャンセル：予約日の【◯日前】まで<br><br>
+                                            ご不明な点がございましたら、下記までお電話にてお問い合わせください。<br/>
                                             (店舗・施設の電話番号)<br/><br/>
                                             ※このメールは送信専用のため返信はできません。<br/><br/>
                                         </div>
@@ -1024,6 +1262,18 @@ b. 申込書面をご提出いただく際に同封いただくもの
                                             </div>
                                         </div>
                                         <div class="copy-mail-description">指定したメールアドレスに受付・予約完了メールを受信することができます。</div>
+                                    </div>
+                                </div>
+
+                                <div class="search-form-row">
+                                    <div class="search-form-label">受付・予約完了メールの<br>添付ファイル</div>
+                                    <div class="search-form-input mail-attachment-input">
+                                        <div class="mail-attachment-list" id="mailAttachmentList"></div>
+                                        <div id="mailAttachmentUploadWrap">
+                                            <input type="file" id="mailAttachmentInput" accept="application/pdf,.pdf" hidden>
+                                            <button type="button" class="mail-attachment-select-btn" id="mailAttachmentAddBtn">ファイルを選択</button>
+                                        </div>
+                                        <div class="mail-attachment-description">1ファイル3MBまでのPDFファイルを最大3個までアップロードすることができます。</div>
                                     </div>
                                 </div>
                             </div>
@@ -1833,6 +2083,195 @@ b. 申込書面をご提出いただく際に同封いただくもの
         applyBreakSettingsDisabled(isBreakSettingsGloballyDisabled());
     }
 
+    // 受付・予約完了メールの添付ファイル
+    const MAX_MAIL_ATTACHMENTS = 3;
+    const MAX_MAIL_ATTACHMENT_SIZE = 3 * 1024 * 1024;
+    let mailAttachments = [];
+
+    function isPdfFile(file) {
+        const fileName = file.name.toLowerCase();
+        return file.type === 'application/pdf' || fileName.endsWith('.pdf');
+    }
+
+    function formatMailAttachmentSize(bytes) {
+        if (bytes < 1024) {
+            return bytes + ' B';
+        }
+        if (bytes < 1024 * 1024) {
+            return (bytes / 1024).toFixed(1) + ' KB';
+        }
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function renderMailAttachmentList() {
+        const list = document.getElementById('mailAttachmentList');
+        const addBtn = document.getElementById('mailAttachmentAddBtn');
+        if (!list) {
+            return;
+        }
+
+        list.innerHTML = '';
+
+        mailAttachments.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'mail-attachment-item';
+
+            const icon = document.createElement('span');
+            icon.className = 'material-icons mail-attachment-icon';
+            icon.setAttribute('aria-hidden', 'true');
+            icon.textContent = 'picture_as_pdf';
+
+            const downloadLink = document.createElement('a');
+            downloadLink.className = 'mail-attachment-download';
+            downloadLink.href = item.objectUrl;
+            downloadLink.download = item.file.name;
+            downloadLink.textContent = item.file.name;
+
+            const size = document.createElement('span');
+            size.className = 'mail-attachment-size';
+            size.textContent = formatMailAttachmentSize(item.file.size);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'mail-attachment-remove';
+            removeBtn.setAttribute('aria-label', '添付ファイルを削除');
+            removeBtn.dataset.index = String(index);
+            removeBtn.textContent = '×';
+
+            row.appendChild(icon);
+            row.appendChild(downloadLink);
+            row.appendChild(size);
+            row.appendChild(removeBtn);
+            list.appendChild(row);
+        });
+
+        const isFull = mailAttachments.length >= MAX_MAIL_ATTACHMENTS;
+        if (addBtn) {
+            addBtn.disabled = isFull;
+        }
+    }
+
+    function addMailAttachment(file) {
+        if (!isPdfFile(file)) {
+            alert('PDFファイルのみアップロードできます。');
+            return false;
+        }
+        if (file.size > MAX_MAIL_ATTACHMENT_SIZE) {
+            alert('1ファイル3MBまでアップロードできます。');
+            return false;
+        }
+        if (mailAttachments.length >= MAX_MAIL_ATTACHMENTS) {
+            alert('添付ファイルは最大3件までです。');
+            return false;
+        }
+        if (mailAttachments.some(item => item.file.name === file.name)) {
+            alert('同じファイル名のファイルが既に添付されています。');
+            return false;
+        }
+
+        mailAttachments.push({
+            file: file,
+            objectUrl: URL.createObjectURL(file)
+        });
+        renderMailAttachmentList();
+        return true;
+    }
+
+    function removeMailAttachment(index) {
+        const item = mailAttachments[index];
+        if (!item) {
+            return;
+        }
+        URL.revokeObjectURL(item.objectUrl);
+        mailAttachments.splice(index, 1);
+        renderMailAttachmentList();
+    }
+
+    function encodePdfTextHex(text) {
+        let hex = 'FEFF';
+        for (const char of text) {
+            hex += char.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
+        }
+        return hex;
+    }
+
+    function createMockPdfBlob(text) {
+        const stream = 'BT /F1 24 Tf 72 720 Td <' + encodePdfTextHex(text) + '> Tj ET';
+        const objects = [
+            '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
+            '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
+            '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n',
+            '4 0 obj\n<< /Length ' + stream.length + ' >>\nstream\n' + stream + '\nendstream\nendobj\n',
+            '5 0 obj\n<< /Type /Font /Subtype /Type0 /BaseFont /HeiseiKakuGo-W5 /Encoding /Identity-H /DescendantFonts [6 0 R] >>\nendobj\n',
+            '6 0 obj\n<< /Type /Font /Subtype /CIDFontType0 /BaseFont /HeiseiKakuGo-W5 /CIDSystemInfo << /Registry (Adobe) /Ordering (Japan1) /Supplement 2 >> /FontDescriptor << /Type /FontDescriptor /FontName /HeiseiKakuGo-W5 /Flags 6 /Ascent 880 /Descent -120 /CapHeight 880 >> >>\nendobj\n'
+        ];
+        let pdf = '%PDF-1.4\n';
+        const offsets = [0];
+        objects.forEach((obj) => {
+            offsets.push(pdf.length);
+            pdf += obj;
+        });
+        pdf += 'xref\n0 ' + (objects.length + 1) + '\n';
+        pdf += '0000000000 65535 f \n';
+        for (let i = 1; i <= objects.length; i++) {
+            pdf += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+        }
+        pdf += 'trailer\n<< /Size ' + (objects.length + 1) + ' /Root 1 0 R >>\n';
+        pdf += 'startxref\n' + pdf.length + '\n%%EOF';
+        return new Blob([pdf], { type: 'application/pdf' });
+    }
+
+    function registerMailAttachment(file) {
+        mailAttachments.push({
+            file: file,
+            objectUrl: URL.createObjectURL(file)
+        });
+    }
+
+    async function loadDefaultMailAttachments() {
+        const defaults = [
+            { name: '事前ヒアリングシート.pdf', text: '事前ヒアリングシート' },
+            { name: '免責事項.pdf', text: '免責事項' }
+        ];
+
+        for (const item of defaults) {
+            const file = new File([createMockPdfBlob(item.text)], item.name, { type: 'application/pdf' });
+            registerMailAttachment(file);
+        }
+        renderMailAttachmentList();
+    }
+
+    async function initMailAttachments() {
+        const input = document.getElementById('mailAttachmentInput');
+        const addBtn = document.getElementById('mailAttachmentAddBtn');
+        const list = document.getElementById('mailAttachmentList');
+        if (!input || !addBtn || !list) {
+            return;
+        }
+
+        addBtn.addEventListener('click', () => {
+            input.click();
+        });
+
+        input.addEventListener('change', () => {
+            const file = input.files[0];
+            if (file) {
+                addMailAttachment(file);
+            }
+            input.value = '';
+        });
+
+        list.addEventListener('click', (event) => {
+            const removeBtn = event.target.closest('.mail-attachment-remove');
+            if (!removeBtn) {
+                return;
+            }
+            removeMailAttachment(Number(removeBtn.dataset.index));
+        });
+
+        await loadDefaultMailAttachments();
+    }
+
     // 予約完了メールコピー受信のON/OFFに応じて受信メールアドレス欄の入力可否を切り替え
     function updateCopyMailAddrInputState() {
         const radCopyMailON = document.getElementById('radCopyMailON');
@@ -1889,6 +2328,8 @@ b. 申込書面をご提出いただく際に同封いただくもの
         document.querySelectorAll('input[name="radCopyMail"]').forEach(radio => {
             radio.addEventListener('change', updateCopyMailAddrInputState);
         });
+
+        initMailAttachments();
     });
   </script>
 </body>

@@ -1,0 +1,848 @@
+/* ==========================================================================
+   予約GO 管理画面 / スマートフォン・タブレット対応レイヤー
+   --------------------------------------------------------------------------
+   ・style.css の「後」に読み込む追加ファイルです。
+   ・既存の style.css / 各HTML のマークアップは変更していません。
+     （PC表示への影響を出さないため、変更はすべてメディアクエリの中に閉じています）
+   ・ブレークポイントは 2 つだけです。
+       1024px 以下 … レイアウトとナビゲーション（サイドメニューの引き出し化）
+        768px 以下 … コンテンツ（一覧テーブルのカード化・フォーム・モーダル）
+   ========================================================================== */
+
+:root {
+  --sp-appbar-h: 56px;          /* 上部バーの高さ */
+  --sp-bottomnav-h: 58px;       /* 下部タブの高さ */
+  --sp-tap: 44px;               /* タップ領域の最小サイズ */
+  --sp-drawer-w: 276px;         /* 引き出しメニューの幅 */
+  --sp-safe-t: env(safe-area-inset-top, 0px);
+  --sp-safe-b: env(safe-area-inset-bottom, 0px);
+  --sp-z-appbar: 1100;
+  --sp-z-drawer: 1300;
+  --sp-z-scrim: 1200;
+}
+
+/* ==========================================================================
+   1. 追加パーツの初期状態（PC幅では非表示）
+   ========================================================================== */
+
+.sp-appbar,
+.sp-scrim,
+.sp-bottomnav,
+.sp-drawer-head,
+.sp-drawer-account { display: none; }
+
+
+/* ==========================================================================
+   2. 1024px 以下：レイアウト崩れの修正とナビゲーション
+   ========================================================================== */
+@media (max-width: 1024px) {
+
+  /* --- 2-1. スクロールの土台をブラウザ本体に戻す -----------------------
+     既存は .main が max-height:100vh / overflow-y:auto の内側スクロールでした。
+     スマホでは「アドレスバーが隠れない」「二重スクロールになる」ため、
+     ページ全体（body）でスクロールする形に戻します。                     */
+  html, body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  /* --- 2-2. 【最重要】本文が画面幅からはみ出す不具合の修正 -------------
+     既存: .main { width: calc(100vw - 220px) }
+     → 幅390pxのスマホでは本文が 170px しかなくなり、画面の左半分に
+       押し込まれた状態になっていました（今回いただいたキャプチャの状態）。 */
+  .app {
+    display: block;
+    min-height: 100%;
+  }
+
+  .main {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: none;
+    min-height: 0;
+    height: auto;
+    overflow: visible;
+    padding: 12px 12px calc(var(--sp-bottomnav-h) + var(--sp-safe-b) + 16px);
+    gap: 12px;
+  }
+
+  /* topbar がある画面用の高さ指定も解除 */
+  .topbar ~ .main {
+    height: auto;
+    min-height: 0;
+  }
+
+  /* --- 2-3. 上部バー（ハンバーガー） -----------------------------------
+     ページ最上部に固定。ハンバーガー／画面名／ホーム を配置します。      */
+  .sp-appbar {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: var(--sp-z-appbar);
+    align-items: center;
+    gap: 4px;
+    height: calc(var(--sp-appbar-h) + var(--sp-safe-t));
+    padding: var(--sp-safe-t) 8px 0;
+    background: #0b1f3a;
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+  }
+
+  .sp-appbar-btn {
+    flex: 0 0 auto;
+    width: var(--sp-tap);
+    height: var(--sp-tap);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sp-appbar-btn:active { background: rgba(255, 255, 255, .14); }
+  .sp-appbar-btn svg { width: 22px; height: 22px; }
+
+  /* ハンバーガーアイコン（3本線 → ×） */
+  .sp-burger-icon {
+    position: relative;
+    width: 20px;
+    height: 14px;
+  }
+  .sp-burger-icon span {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform .22s ease, opacity .18s ease;
+  }
+  .sp-burger-icon span:nth-child(1) { top: 0; }
+  .sp-burger-icon span:nth-child(2) { top: 6px; }
+  .sp-burger-icon span:nth-child(3) { top: 12px; }
+
+  body.sp-nav-open .sp-burger-icon span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  body.sp-nav-open .sp-burger-icon span:nth-child(2) { opacity: 0; }
+  body.sp-nav-open .sp-burger-icon span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  .sp-appbar-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 0 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* --- 2-4. サイドメニューを引き出し（オフキャンバス）に ---------------
+     既存は 760px 以下で display:none にしていたため、スマホでは
+     メニューに一切たどり着けない状態でした。                            */
+  .sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sp-drawer-w);
+    max-width: 84vw;
+    z-index: var(--sp-z-drawer);
+    padding: calc(12px + var(--sp-safe-t)) 12px calc(12px + var(--sp-safe-b));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(-100%);
+    transition: transform .24s cubic-bezier(.4, 0, .2, 1);
+    will-change: transform;
+  }
+  body.sp-nav-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, .4);
+  }
+  /* 動きを減らす設定の端末ではアニメーションしない */
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar { transition: none; }
+  }
+
+  .sp-drawer-head {
+    display: flex;
+    justify-content: flex-end;
+    margin: -4px -4px 0 0;
+  }
+  .sp-drawer-close {
+    width: var(--sp-tap);
+    height: var(--sp-tap);
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #c9d6ff;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .sp-drawer-close:active { background: rgba(255, 255, 255, .12); }
+
+  /* メニュー項目をタップしやすい高さに */
+  .nav a {
+    min-height: 48px;
+    padding: 12px 14px;
+    font-size: 15px;
+  }
+
+  /* 引き出し下部のアカウント操作（PCでは topbar にあるもの） */
+  .sp-drawer-account {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, .14);
+  }
+  .sp-drawer-account a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #c9d6ff;
+    font-size: 14px;
+  }
+  .sp-drawer-account a:active { background: #102c4d; color: #fff; }
+
+  /* --- 2-5. 背面のスクリム（暗幕） ------------------------------------ */
+  .sp-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: var(--sp-z-scrim);
+    background: rgba(11, 31, 58, .5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .24s ease, visibility .24s;
+  }
+  body.sp-nav-open .sp-scrim {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* 引き出しを開いている間、背面をスクロールさせない */
+  body.sp-nav-open { overflow: hidden; }
+
+  /* --- 2-6. 下部タブ（よく使う4画面への近道） -------------------------
+     片手で親指が届く位置に主要導線を置きます。「メニュー」で引き出しを開きます。 */
+  .sp-bottomnav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--sp-z-appbar);
+    height: calc(var(--sp-bottomnav-h) + var(--sp-safe-b));
+    padding-bottom: var(--sp-safe-b);
+    background: #ffffff;
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, .06);
+  }
+  .sp-bottomnav a,
+  .sp-bottomnav button {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sp-bottomnav svg { width: 22px; height: 22px; }
+  .sp-bottomnav .is-active { color: var(--primary); }
+  .sp-bottomnav a:active,
+  .sp-bottomnav button:active { background: #f1f5f9; }
+
+  /* --- 2-7. 既存 topbar は「その画面の操作バー」として2段目に ---------- */
+  .topbar {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    overflow: visible;
+    gap: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+  }
+  .topbar .search {
+    flex: 1 1 100%;
+    order: -1;
+    min-width: 0;
+  }
+  .topbar .search input {
+    width: 100%;
+    height: var(--sp-tap);
+    font-size: 16px;              /* iOS の自動ズーム防止（16px 未満だと拡大される） */
+  }
+  .topbar .regist-btn,
+  .topbar .btn,
+  .topbar > button {
+    flex: 1 1 auto;
+    min-height: var(--sp-tap);
+    justify-content: center;
+    font-size: 14px;
+  }
+  /* アカウント系の操作は引き出し内へ集約したので topbar からは隠す */
+  .topbar .link-btn,
+  .topbar .phase-wrapper { display: none; }
+  /* 公開予約ページのURL表示は1行に収める */
+  .topbar > span:first-child {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 12px;
+    overflow: hidden;
+  }
+  .topbar > span:first-child a {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px !important;
+  }
+
+  /* --- 2-8. カード等の共通調整 ---------------------------------------- */
+  .grid.cols-2,
+  .grid.cols-3 { grid-template-columns: 1fr; }
+  /* 既存CSSで列位置が固定されているため、縦積みに戻す */
+  .grid.cols-2 .card:first-child,
+  .grid.cols-2 .card:last-child { grid-column: auto; }
+  .card { padding: 14px; }
+  .main-section { margin-bottom: 12px; }
+
+  /* --- 2-9. PC前提の最小幅指定を解除 ------------------------------------
+     既存CSSにはコンテナ幅が狭いときに逆に 640px まで広げて
+     横スクロールさせる指定が入っており、スマホでは常に横にはみ出します。 */
+  .menu-mgmt-layout .main-section-body {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .menu-mgmt-layout .main-section { overflow-x: visible; }
+}
+
+
+/* ==========================================================================
+   3. 768px 以下：コンテンツをスマホ向けに組み替える
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* --- 3-1. セクションヘッダー ----------------------------------------- */
+  .main-header,
+  .schedule-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    overflow: visible;
+    white-space: normal;
+  }
+  .main-title,
+  .schedule-title { font-size: 15px; }
+
+  /* --- 3-2. 一覧テーブル → カード表示 ----------------------------------
+     .results-table を対象に、1行 = 1カード に組み替えます。
+     見出し（th）のテキストは sp.js が各セルの data-label に写し、
+     ::before で項目名として表示します。                                   */
+  .results-table-container {
+    padding: 12px;
+    overflow-x: visible;
+  }
+
+  .results-table {
+    display: block;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .results-table thead {
+    /* 読み上げ用に残しつつ視覚的に隠す */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .results-table tbody { display: block; }
+
+  .results-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    padding: 4px 0 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .07);
+    overflow: hidden;
+  }
+  .results-table tbody tr:hover,
+  .results-table tbody tr.table-row-alt { background: #fff; }
+
+  .results-table tbody td {
+    display: grid;
+    grid-template-columns: 6.5em minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 10px 14px;
+    border-bottom: 1px dashed var(--line);
+    font-size: 14px;
+    width: auto !important;
+    white-space: normal;
+    word-break: break-word;
+  }
+  .results-table tbody td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+    padding-top: 1px;
+  }
+  /* data-label が無いセルはラベル列を作らない */
+  .results-table tbody td:not([data-label]) { grid-template-columns: minmax(0, 1fr); }
+  .results-table tbody td:not([data-label])::before { display: none; }
+
+  /* カード見出し（顧客名・メニュー名などの主項目）を先頭に大きく置く */
+  .results-table tbody td.sp-card-title {
+    order: -2;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 12px 14px 8px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+    border-bottom: 0;
+  }
+  .results-table tbody td.sp-card-title::before { display: none; }
+
+  /* ID などの識別子は見出しの直下に小さなチップで置く
+     （HTMLは書き換えず、data-label を ::before で頭に付けています） */
+  .results-table tbody td.sp-card-id {
+    order: -1;
+    display: block;
+    align-self: flex-start;
+    margin: 0 14px 10px;
+    padding: 3px 9px;
+    border: 0;
+    border-radius: 9999px;
+    background: #eef2f7;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .results-table tbody td.sp-card-id::before {
+    content: attr(data-label) " ";
+    padding: 0;
+    font-size: inherit;
+  }
+
+  /* 操作ボタンはカード末尾にまとめ、横並びで幅いっぱいに */
+  .results-table tbody td.action-cell,
+  .results-table tbody td.col-action {
+    order: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px calc(10px + 2px);
+    border-bottom: 0;
+    background: #fafbfc;
+    text-align: left;
+  }
+  .results-table tbody td.action-cell::before,
+  .results-table tbody td.col-action::before { display: none; }
+  .results-table tbody td.action-cell > *,
+  .results-table tbody td.col-action > * {
+    flex: 1 1 calc(50% - 4px);
+    min-height: var(--sp-tap);
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* --- 3-3. 検索結果ヘッダー／ページャー -------------------------------- */
+  .search-results-header,
+  .reservation-results-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+  .pagination-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 12px;
+  }
+  .page-btn {
+    min-width: var(--sp-tap);
+    min-height: var(--sp-tap);
+    font-size: 15px;
+  }
+  .page-size-select,
+  .page-input {
+    min-height: var(--sp-tap);
+    font-size: 16px;
+  }
+  .page-input { width: 56px; }
+  .page-range { width: 100%; text-align: center; }
+
+  /* --- 3-4. フォーム ---------------------------------------------------- */
+  .form-row,
+  .form-row-inresource {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    min-width: 0 !important;
+  }
+  .form-row .form-group,
+  .form-group-half,
+  .form-group-child-1,
+  .form-group-child-2,
+  .form-group-child-3 {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 auto;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 13px; }
+
+  /* 入力欄は 16px 以上（iOS Safari の自動ズーム対策）＋ 44px 以上の高さ */
+  .form-input,
+  select.form-input,
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: var(--sp-tap);
+  }
+  textarea,
+  textarea.form-input { min-height: 96px; height: auto; }
+  .form-zip { width: 7em; }
+  .form-icon { display: none; }
+
+  .search-form-section { padding: 12px; }
+  .search-form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .search-form-actions > * { width: 100%; min-height: var(--sp-tap); }
+
+  /* 基本設定・検索条件などの「ラベル：入力欄」行を縦積みに
+     （横並びのままだと 120px のラベル＋入力欄で画面幅を超えます） */
+  .search-form-grid,
+  .search-form-grid-setting {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .search-form-grid > *,
+  .search-form-grid-setting > *,
+  .search-form-content > * { min-width: 0; }
+
+  .search-form-row {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 4px;
+  }
+  .search-form-label {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto;
+    font-size: 13px;
+  }
+  .search-form-input {
+    width: 100%;
+    min-width: 0;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .search-form-input > input,
+  .search-form-input > select,
+  .search-form-input > textarea { min-width: 0; }
+  .search-form-input.radio-group { gap: 8px 16px; }
+  .search-form-input.radio-group label { min-height: var(--sp-tap); }
+
+  /* --- 3-5. モーダル → 全画面シート ------------------------------------
+     80vw × 80vh の中央モーダルはスマホでは中身が読めないため、
+     画面いっぱいのシート（ヘッダー固定・本文スクロール・ボタン下部固定）に。 */
+  .list-popup-overlay {
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    z-index: 1400;              /* 下部タブ(1100)より前面に出す */
+  }
+  .list-modal {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+  .normal-modal,
+  .division-modal,
+  .normal-modal .modal-content,
+  .division-modal .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+  .modal-header,
+  .modal-header-new {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding-top: calc(12px + var(--sp-safe-t));
+  }
+  .modal-header .modal-close,
+  .modal-header-new .modal-close {
+    width: var(--sp-tap);
+    height: var(--sp-tap);
+    font-size: 24px;
+  }
+  .modal-actions,
+  .modal-actions-new {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column-reverse;   /* 主ボタンを下（親指側）に */
+    gap: 8px;
+    padding: 12px 12px calc(12px + var(--sp-safe-b));
+    margin: 0;
+    background: #fff;
+    border-top: 1px solid var(--line);
+  }
+  .modal-actions > *,
+  .modal-actions-new > * {
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+    justify-content: center;
+  }
+
+  dialog { width: calc(100% - 24px); max-width: none; }
+  dialog .row { grid-template-columns: 1fr; gap: 4px; }
+
+  /* --- 3-6. 受付・予約（スケジュール表） -------------------------------
+     時間×リソースの表は性質上そのまま。ただし高さ固定を解除し、
+     横スクロールできることが分かるようにします。初期表示は sp.js が
+     「1日」に切り替えます。                                              */
+  .schedule-section {
+    height: auto;
+    min-height: 0;
+    margin-bottom: 12px;
+  }
+  .calendar-container { padding: 0 0 12px; }
+  .schedule-container {
+    height: 62dvh;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    overscroll-behavior-x: contain;
+  }
+  /* 日付・表示切替のツールバーを 2段（日付 → 前日/今日/翌日）に整える */
+  .schedule-controls,
+  .schedule-title-section {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .schedule-title-section { justify-content: space-between; }
+  .schedule-controls .view-toggle { flex: 1 1 auto; display: flex; }
+  .schedule-controls .view-toggle-button { flex: 1 1 0; }
+
+  .date-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .date-controls .date-input {
+    flex: 1 1 100%;
+    order: -1;                 /* 日付欄を先頭・全幅に */
+    width: 100%;
+    min-height: var(--sp-tap);
+    font-size: 16px;
+  }
+  .date-controls .date-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .date-btn,
+  .calendar-icon,
+  .view-toggle-button {
+    min-height: var(--sp-tap);
+    font-size: 14px;
+  }
+  .resource-filter-container { gap: 8px 16px; }
+  .resource-filter-item,
+  .user-filter-item { min-height: var(--sp-tap); }
+
+  /* --- 3-7. カード化しないテーブルは横スクロールで維持 -----------------
+     営業時間表など、項目数が多くカード化すると縦に伸びすぎる表と、
+     見出しに結合セルがある表（sp.js が .sp-no-card を付与）は据え置きます。 */
+  .business-hours-table,
+  .usage-info-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* テーブル自体をスクロール枠にし、中身は詰まらせず横スクロールさせる */
+  .business-hours-table > tbody,
+  .business-hours-table > thead,
+  .usage-info-table > tbody,
+  .usage-info-table > thead {
+    display: table;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .results-table.sp-no-card { display: table; }
+  .results-table.sp-no-card thead { position: static; width: auto; height: auto; margin: 0; clip: auto; }
+  .results-table.sp-no-card tbody { display: table-row-group; }
+  .results-table.sp-no-card tbody tr { display: table-row; margin: 0; border: 0; box-shadow: none; border-radius: 0; }
+  .results-table.sp-no-card tbody td { display: table-cell; padding: 10px; border-bottom: 1px solid var(--line); }
+  .results-table.sp-no-card tbody td::before { display: none; }
+  .results-table.sp-no-card { min-width: max-content !important; }
+  .results-table-container:has(.sp-no-card) { overflow-x: auto; }
+
+  /* --- 3-7b. 各ページの <style> に書かれた PC 前提の幅指定を打ち消す ----
+     （本実装ではページ側の指定自体を見直すのが望ましい箇所です）        */
+  .results-table:not(.sp-no-card) { min-width: 0 !important; }
+
+  /* 多言語管理：言語チェックボックスの4列固定 → 画面幅に応じて折り返す */
+  .search-form-input.checkbox-group {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 8px 12px !important;
+  }
+  .search-form-input.checkbox-group label { min-height: var(--sp-tap); }
+
+  /* 操作履歴：検索条件の3列グリッド → 1列、日付範囲は折り返す */
+  .oplog-search-form .oplog-search-grid-row { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .oplog-search-form .date-input-group { flex-wrap: wrap; }
+  .oplog-search-form .date-input-group .form-input { min-width: 0 !important; flex: 1 1 120px; }
+
+  /* シフト設定：カレンダー見出しと月送りを2段に、日セルの文字を小さく */
+  .mdc-calendar-header { flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .mdc-calendar-title { flex: 1 1 100%; }
+  .mdc-calendar-nav { flex: 1 1 100%; justify-content: space-between; }
+  .mdc-calendar-nav > * { min-height: var(--sp-tap); }
+  .mdc-calendar-day,
+  .mdc-calendar-day-header { padding: 6px 2px !important; font-size: 10px !important; line-height: 1.35; }
+  .mdc-calendar-day .day-number { font-size: 12px !important; }
+
+  /* --- 3-8. ダッシュボード -------------------------------------------- */
+  /* カード見出しの行（h3 と右肩の補足が横並びで潰れていたので折り返す）
+     ※ 現状は inline style で組まれているため属性セレクタで拾っています。
+        本実装では .card-head のようなクラスを付けて指定するのが望ましいです。 */
+  .card > div[style*="space-between"] {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .card > div[style*="space-between"] > h3 { flex: 1 1 100%; }
+  .card h3 { line-height: 1.4; }
+
+  .kpi {
+    flex-wrap: wrap;
+    align-items: baseline;
+    text-align: left !important;
+  }
+  .kpi .num { font-size: 24px; }
+  .kpi .muted {
+    flex: 1 1 100%;
+    padding: 0;
+    margin: 2px 0 0;
+    font-size: 13px;
+  }
+
+  .slot {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 4px 10px;
+  }
+  .slot > .chip { grid-column: 2; justify-self: start; }
+  .notice-slot { white-space: normal !important; }
+  .noticesource .notice-slot { display: block; }
+
+  /* --- 3-9. タブ ------------------------------------------------------- */
+  .menu-mgmt-tabs {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .menu-mgmt-tabs::-webkit-scrollbar { display: none; }
+  .menu-mgmt-tab-btn {
+    white-space: nowrap;
+    min-height: var(--sp-tap);
+  }
+
+  /* --- 3-10. 汎用ボタンのタップ領域 ------------------------------------ */
+  .btn,
+  .regist-btn,
+  .link-btn,
+  .action-btn {
+    min-height: var(--sp-tap);
+    font-size: 14px;
+  }
+}
+
+
+/* ==========================================================================
+   4. 400px 以下（小型端末）の微調整
+   ========================================================================== */
+@media (max-width: 360px) {
+  .main { padding-left: 8px; padding-right: 8px; }
+  .results-table tbody td { grid-template-columns: 5.5em minmax(0, 1fr); gap: 8px; }
+  .sp-bottomnav a,
+  .sp-bottomnav button { font-size: 9px; }
+}
+
+
+/* ==========================================================================
+   5. 印刷時は追加パーツを出さない
+   ========================================================================== */
+@media print {
+  .sp-appbar,
+  .sp-scrim,
+  .sp-bottomnav { display: none !important; }
+}

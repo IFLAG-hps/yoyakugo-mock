@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>ダッシュボード｜管理画面モック</title>
     <link href="./style.css" rel="stylesheet">
     <style>
@@ -12,6 +13,8 @@
             display: inline-block;
         }
     </style>
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -87,12 +90,12 @@
                             <div class="timeresource">
                                 <div class="slot">
                                     <div>10:00</div>
-                                    <div>山田太郎｜パーマ｜4,000円｜60分</div>
+                                    <div>山田太郎｜パーマ <span class="dash-opt-badge" title="オプションメニューあり">＋オプション</span><span class="dash-opt-names">リタッチ</span>｜5,500円｜75分</div>
                                     <div class="chip">受付待ち</div>
                                 </div>
                                 <div class="slot">
                                     <div>11:30</div>
-                                    <div>佐藤花子｜カット｜3,000円｜30分</div>
+                                    <div>佐藤花子｜カット <span class="dash-opt-badge" title="オプションメニューあり">＋オプション</span><span class="dash-opt-names">ヘアオイル / ダメージケア</span>｜5,000円｜45分</div>
                                     <div class="chip">受付待ち</div>
                                 </div>
                                 <div class="slot">
@@ -102,8 +105,13 @@
                                 </div>
                                 <div class="slot">
                                     <div>15:00</div>
-                                    <div>田中実｜カット＆カラー｜12,000円｜90分</div>
+                                    <div>田中実｜カット＆カラー <span class="dash-opt-badge" title="オプションメニューあり">＋オプション</span><span class="dash-opt-names">フルカラー追加</span>｜15,000円｜135分</div>
                                     <div class="chip">受付待ち</div>
+                                </div>
+                                <div class="slot">
+                                    <div>16:30</div>
+                                    <div>伊藤美咲｜フルコース <span class="dash-opt-badge" title="オプションメニューあり">＋オプション</span><span class="dash-opt-names">ヘアオイル / ダメージケア / ヘッドスパ / ブロー仕上げ / リタッチ / フルカラー追加</span>｜18,800円｜180分</div>
+                                    <div class="chip">受付完了</div>
                                 </div>
                             </div>
                         </div>

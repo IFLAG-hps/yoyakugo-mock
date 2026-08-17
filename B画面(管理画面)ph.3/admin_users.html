@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./gate.js"></script>
     <title>スタッフ管理｜管理画面モック</title>
     <!-- Material Design Components CSS -->
     <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
@@ -33,6 +34,8 @@
             }
         }
     </style>
+    <link href="./sp.css" rel="stylesheet">
+    <script src="./sp.js" defer></script>
 </head>
 
 <body>
@@ -589,14 +592,7 @@
             }
         }
 
-        // モーダルの外側をクリックした時に閉じる
-        document.addEventListener('click', function (event) {
-            const editStaffModal = document.getElementById('editStaffModal');
-
-            if (event.target === editStaffModal) {
-                closeEditStaffModal();
-            }
-        });
+        // モーダル外クリックでは閉じない（×ボタン・閉じるボタンのみ）
 
     </script>
 
